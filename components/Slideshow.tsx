@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useState } from "react";
 
@@ -95,20 +96,24 @@ export default function Slideshow({
                 src={currentItem.url} 
                 autoPlay={autoPlay} 
                 muted 
+                playsInline
                 controls={!autoPlay}
-                onEnded={() => {
+                onEnded={(e) => {
                     if (autoPlay) {
                         if (current === media.length - 1 && onCompleteCycle) {
                             onCompleteCycle();
                         }
                         if (media.length > 1) {
                             setCurrent((prev) => (prev + 1) % media.length);
-                        } else if (media.length === 1 && onCompleteCycle) {
-                            onCompleteCycle();
+                        } else if (media.length === 1) {
+                            if (onCompleteCycle) onCompleteCycle();
+                            // Forzar repetición en bucle infinito para 1 solo video
+                            e.currentTarget.currentTime = 0;
+                            e.currentTarget.play();
                         }
                     }
                 }}
-                className={`w-full h-full object-contain bg-black ${getAnimationClass()}`}
+                className={`w-full h-full object-contain bg-transparent ${getAnimationClass()}`}
             />
             </>
         );
@@ -117,7 +122,7 @@ export default function Slideshow({
     return (
         <>
             {ANIMATION_STYLES}
-            <img key={autoPlay ? current : selectedImage} src={currentItem.url} alt="slide" className={`w-full h-full object-contain bg-black ${getAnimationClass()}`}></img>
+            <img key={autoPlay ? current : selectedImage} src={currentItem.url} alt="slide" className={`w-full h-full object-contain bg-transparent ${getAnimationClass()}`}></img>
         </>
     );
 }

@@ -1,6 +1,7 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import UploadMedia from "@/components/UploadMedia";
 import Slideshow from "@/components/Slideshow";
 
@@ -19,7 +20,9 @@ export default function Proyectar() {
 
     const [transitionEffect, setTransitionEffect] = useState("fade");
 
-    const [mediaItems, setMediaItems] = useState<{url: string, type: string}[]>([]);
+    const [projectionMode, setProjectionMode] = useState("classic");
+
+    const [mediaItems, setMediaItems] = useState<{ url: string, type: string }[]>([]);
 
     const [showObituariesPreview, setShowObituariesPreview] = useState(true);
 
@@ -77,7 +80,7 @@ export default function Proyectar() {
         }
 
         let timeoutId: NodeJS.Timeout;
-        
+
         if (showObituariesPreview) {
             timeoutId = setTimeout(() => {
                 setShowObituariesPreview(false);
@@ -90,7 +93,7 @@ export default function Proyectar() {
     const formatDate = (dateString: string) => {
         if (!dateString) return "";
         const parts = dateString.split("-");
-        if(parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
         return dateString;
     };
 
@@ -105,40 +108,44 @@ export default function Proyectar() {
 
     const checkIsExpired = (endTime?: string, endDate?: string) => {
         if (!endTime || !currentTime) return false;
-        
+
         const [hours, minutes] = endTime.split(':').map(Number);
         const end = new Date(currentTime);
-        
+
         if (endDate) {
             const [year, month, day] = endDate.split('-').map(Number);
             end.setFullYear(year, month - 1, day);
         }
-        
+
         end.setHours(hours, minutes, 0, 0);
         return currentTime > end;
     };
 
+    const handleCompleteCycle = useCallback(() => {
+        setShowObituariesPreview(true);
+    }, []);
+
     // Autoguardado en tiempo real de todos los cambios
     useEffect(() => {
         localStorage.setItem(
-            "presentacion", JSON.stringify({media: mediaItems, autoPlay, seconds, selectedImage, obituaries, transitionEffect})
+            "presentacion", JSON.stringify({ media: mediaItems, autoPlay, seconds, selectedImage, obituaries, transitionEffect, projectionMode })
         );
-    }, [mediaItems, autoPlay, seconds, selectedImage, obituaries, transitionEffect]);
+    }, [mediaItems, autoPlay, seconds, selectedImage, obituaries, transitionEffect, projectionMode]);
 
     return (
         <div className="min-h-screen p-8 flex flex-col items-center">
-            
+
             {/* Header del Dashboard - Estilo Glassmorphism */}
-            <header className="w-full max-w-7xl flex justify-between items-center mb-8 p-4 bg-white/10 backdrop-blur-lg border border-white/20 shadow-xl rounded-2xl">
+            <header className="w-full max-w-7xl flex justify-between items-center mb-8 p-4 bg-white/40 backdrop-blur-lg border border-white/60 shadow-xl rounded-2xl">
                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center font-bold text-xl border border-white/30">
-                        JR {/* Aquí irá tu logo */}
+                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center font-bold text-xl border border-white/60 overflow-hidden shadow-sm">
+                        <img src="/imagenes/logo-oficial.webp" alt="JR Logo" className="w-full h-full object-contain" />
                     </div>
-                    <h1 className="text-2xl font-bold tracking-wider">Jardines del Renacer</h1>
+                    <h1 className="text-2xl font-bold tracking-wider text-slate-800">Aura 2026 - Jardines del Renacer</h1>
                 </div>
                 <div className="flex items-center gap-4">
-                    <span className="text-sm opacity-80">admin@jardinesdelrenacer.co</span>
-                    <div className="w-10 h-10 bg-blue-500 rounded-full border-2 border-white/50 overflow-hidden">
+                    <span className="text-sm text-slate-600 font-medium">admin@jardinesdelrenacer.co</span>
+                    <div className="w-10 h-10 bg-blue-100 rounded-full border-2 border-white shadow-sm overflow-hidden">
                         {/* Avatar dinámico temporal */}
                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" alt="Avatar" />
                     </div>
@@ -146,29 +153,37 @@ export default function Proyectar() {
             </header>
 
             {/* Contenedor Principal - Estilo Glassmorphism */}
-            <div className="w-full max-w-7xl bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl rounded-3xl p-8">
-                
+            <div className="w-full max-w-7xl bg-white/40 backdrop-blur-xl border border-white/60 shadow-2xl rounded-3xl p-8">
+
                 <div className="w-full flex flex-col gap-8">
-                    
+
                     {/* Sección 1: Configuración y Multimedia */}
-                    <div className="w-full space-y-6 bg-black/10 p-6 rounded-2xl border border-white/10">
-                        <h2 className="text-2xl font-bold border-b border-white/10 pb-4">1. Ajustes e Imágenes</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            <div className="p-4 bg-black/20 rounded-xl border border-white/10">
-                                <label className="block font-bold mb-2">Modo visualización</label>
-                                <select value={autoPlay ? "auto" : "fixed"} onChange={(e) => setAutoplay(e.target.value === "auto")} className="w-full bg-white/10 border border-white/20 p-3 rounded-lg text-white outline-none focus:border-blue-400">
+                    <div className="w-full space-y-6 bg-white/50 p-6 rounded-2xl border border-white/60 shadow-sm">
+                        <h2 className="text-2xl font-bold border-b border-slate-200 pb-4 text-slate-800">1. Ajustes e Imágenes</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                            <div className="p-4 bg-white/60 rounded-xl border border-white/60 shadow-sm">
+                                <label className="block font-bold mb-2 text-slate-700">Diseño de Pantalla</label>
+                                <select value={projectionMode} onChange={(e) => setProjectionMode(e.target.value)} className="w-full bg-white/70 border border-white/60 p-3 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white shadow-inner">
+                                    <option value="classic" className="text-black">Clásico (Alternado)</option>
+                                    <option value="split" className="text-black">Dividida (L + Publicidad)</option>
+                                </select>
+                            </div>
+
+                            <div className="p-4 bg-white/60 rounded-xl border border-white/60 shadow-sm">
+                                <label className="block font-bold mb-2 text-slate-700">Modo visualización</label>
+                                <select value={autoPlay ? "auto" : "fixed"} onChange={(e) => setAutoplay(e.target.value === "auto")} className="w-full bg-white/70 border border-white/60 p-3 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white shadow-inner">
                                     <option value="fixed" className="text-black">Imagen fija</option>
                                     <option value="auto" className="text-black">Presentación automática</option>
                                 </select>
                             </div>
-                            <div className="p-4 bg-black/20 rounded-xl border border-white/10">
-                                <label className="block font-bold mb-2">Tiempo por imagen (segundos)</label> 
-                                <input type="number" min={1} value={seconds} onChange={(e) => setSeconds(Number(e.target.value))} className="w-full bg-white/10 border border-white/20 p-3 rounded-lg text-white outline-none focus:border-blue-400" />
+                            <div className="p-4 bg-white/60 rounded-xl border border-white/60 shadow-sm">
+                                <label className="block font-bold mb-2 text-slate-700">Tiempo por imagen (s)</label>
+                                <input type="number" min={1} value={seconds} onChange={(e) => setSeconds(Number(e.target.value))} className="w-full bg-white/70 border border-white/60 p-3 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white shadow-inner" />
                             </div>
-                            
-                            <div className="p-4 bg-black/20 rounded-xl border border-white/10">
-                                <label className="block font-bold mb-2">Efecto de Transición</label>
-                                <select value={transitionEffect} onChange={(e) => setTransitionEffect(e.target.value)} className="w-full bg-white/10 border border-white/20 p-3 rounded-lg text-white outline-none focus:border-blue-400">
+
+                            <div className="p-4 bg-white/60 rounded-xl border border-white/60 shadow-sm">
+                                <label className="block font-bold mb-2 text-slate-700">Efecto de Transición</label>
+                                <select value={transitionEffect} onChange={(e) => setTransitionEffect(e.target.value)} className="w-full bg-white/70 border border-white/60 p-3 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white shadow-inner">
                                     <option value="fade" className="text-black">Difuminado (Fade)</option>
                                     <option value="slide" className="text-black">Deslizamiento</option>
                                     <option value="zoom" className="text-black">Acercamiento (Zoom)</option>
@@ -179,9 +194,9 @@ export default function Proyectar() {
                             </div>
 
                             {!autoPlay && (
-                                <div className="p-4 bg-black/20 rounded-xl border border-white/10">
-                                    <label className="block font-bold mb-2">Imagen a mostrar</label>
-                                    <select value={selectedImage} onChange={(e) => setSelectedImage(Number(e.target.value))} className="w-full bg-white/10 border border-white/20 p-3 rounded-lg text-white outline-none focus:border-blue-400">
+                                <div className="p-4 bg-white/60 rounded-xl border border-white/60 shadow-sm">
+                                    <label className="block font-bold mb-2 text-slate-700">Imagen a mostrar</label>
+                                    <select value={selectedImage} onChange={(e) => setSelectedImage(Number(e.target.value))} className="w-full bg-white/70 border border-white/60 p-3 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white shadow-inner">
                                         {files.map((file, index) => (
                                             <option key={index} value={index} className="text-black">{file.name}</option>
                                         ))}
@@ -189,15 +204,15 @@ export default function Proyectar() {
                                 </div>
                             )}
                         </div>
-                    
-                        <div className="mt-8 p-6 bg-black/20 rounded-2xl border border-white/10 shadow-inner">   
-                            <h3 className="text-xl font-semibold mb-4 text-white/90">Carga de Archivos Multimedia</h3>
-                            <UploadMedia files={files} setFiles={setFiles}/>
-                            <p className="mt-4 text-white/70">Archivos listos para proyectar: <span className="font-bold text-white">{files.length}</span></p>
+
+                        <div className="mt-8 p-6 bg-white/50 rounded-2xl border border-white/60 shadow-inner">
+                            <h3 className="text-xl font-bold mb-4 text-slate-800">Carga de Archivos Multimedia</h3>
+                            <UploadMedia files={files} setFiles={setFiles} />
+                            <p className="mt-4 text-slate-600">Archivos listos para proyectar: <span className="font-bold text-blue-600">{files.length}</span></p>
                             <div className="grid grid-cols-3 gap-4 mt-5">
                                 {mediaItems.map((item, index) => (
-                                    <div 
-                                        key={index} 
+                                    <div
+                                        key={index}
                                         className="relative group cursor-move"
                                         draggable
                                         onDragStart={(e) => { e.dataTransfer.setData("draggedIndex", index.toString()); }}
@@ -216,13 +231,13 @@ export default function Proyectar() {
                                         {item.type === "video" ? (
                                             <video src={item.url} className="w-full h-32 object-cover rounded-lg border border-white/20 shadow-md group-hover:scale-105 transition-transform" />
                                         ) : (
-                                            <img src={item.url} alt={`media-${index}`} className="w-full h-32 object-cover rounded-lg border border-white/20 shadow-md group-hover:scale-105 transition-transform" /> 
+                                            <img src={item.url} alt={`media-${index}`} className="w-full h-32 object-cover rounded-lg border border-white/20 shadow-md group-hover:scale-105 transition-transform" />
                                         )}
-                                        <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded shadow-lg border border-white/20">
+                                        <div className="absolute top-2 left-2 bg-white/80 backdrop-blur-sm text-blue-800 text-xs font-bold px-2 py-1 rounded shadow-md border border-white">
                                             #{index + 1}
                                         </div>
-                                        <button 
-                                            onClick={() => removeImage(index)} 
+                                        <button
+                                            onClick={() => removeImage(index)}
                                             className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white font-bold w-7 h-7 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg border border-red-700 z-10"
                                             title="Eliminar imagen"
                                         >
@@ -233,65 +248,65 @@ export default function Proyectar() {
                             </div>
                         </div>
                     </div>
-                
+
                     {/* Sección 2: Obituarios */}
-                    <div className="w-full space-y-6 bg-black/10 p-6 rounded-2xl border border-white/10 flex flex-col">
-                        <div className="border-b border-white/10 pb-4">
-                            <h2 className="text-2xl font-bold">2. Gestión de Obituarios</h2>
+                    <div className="w-full space-y-6 bg-white/50 p-6 rounded-2xl border border-white/60 flex flex-col shadow-sm">
+                        <div className="border-b border-slate-200 pb-4">
+                            <h2 className="text-2xl font-bold text-slate-800">2. Gestión de Obituarios</h2>
                         </div>
-                        
+
                         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mt-4">
                             {(Object.keys(obituaries) as Array<keyof typeof obituaries>).map((room) => (
-                                <div key={room} className="p-6 bg-black/20 rounded-2xl border border-white/10 shadow-lg flex flex-col gap-4">
-                                    <h3 className="text-xl font-bold text-blue-300 border-b border-white/20 pb-2">
+                                <div key={room} className="p-6 bg-white/60 rounded-2xl border border-white/60 shadow-md flex flex-col gap-4">
+                                    <h3 className="text-xl font-bold text-blue-700 border-b border-slate-200 pb-2">
                                         {room === "VIP" ? "Sala VIP" : room.replace("_", " ")}
                                     </h3>
-                                    
+
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-semibold mb-1 text-white/90">Nombre(s)</label>
-                                            <input type="text" value={obituaries[room].name} onChange={(e) => handleObituaryChange(room, "name", e.target.value)} className="w-full bg-white/10 border border-white/20 p-2.5 rounded-lg text-white outline-none focus:border-blue-400 focus:bg-white/20 transition-all placeholder-white/30" placeholder="Ej: Juan" />
+                                            <label className="block text-sm font-semibold mb-1 text-slate-700">Nombre(s)</label>
+                                            <input type="text" value={obituaries[room].name} onChange={(e) => handleObituaryChange(room, "name", e.target.value)} className="w-full bg-white/70 border border-white/60 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all placeholder-slate-400 shadow-inner" placeholder="Ej: Juan" />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-semibold mb-1 text-white/90">Apellido(s)</label>
-                                            <input type="text" value={obituaries[room].surname} onChange={(e) => handleObituaryChange(room, "surname", e.target.value)} className="w-full bg-white/10 border border-white/20 p-2.5 rounded-lg text-white outline-none focus:border-blue-400 focus:bg-white/20 transition-all placeholder-white/30" placeholder="Ej: Pérez" />
+                                            <label className="block text-sm font-semibold mb-1 text-slate-700">Apellido(s)</label>
+                                            <input type="text" value={obituaries[room].surname} onChange={(e) => handleObituaryChange(room, "surname", e.target.value)} className="w-full bg-white/70 border border-white/60 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all placeholder-slate-400 shadow-inner" placeholder="Ej: Pérez" />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-semibold mb-1 text-white/90">Fecha de Nacimiento</label>
-                                            <input type="date" value={obituaries[room].dob} onChange={(e) => handleObituaryChange(room, "dob", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className="w-full bg-white/10 border border-white/20 p-2.5 rounded-lg text-white outline-none focus:border-blue-400 focus:bg-white/20 transition-all [color-scheme:dark] cursor-pointer" />
+                                            <label className="block text-sm font-semibold mb-1 text-slate-700">Fecha de Nacimiento</label>
+                                            <input type="date" value={obituaries[room].dob} onChange={(e) => handleObituaryChange(room, "dob", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className="w-full bg-white/70 border border-white/60 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all cursor-pointer shadow-inner" />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-semibold mb-1 text-white/90">Fecha de Fallecimiento</label>
-                                            <input type="date" value={obituaries[room].dod} onChange={(e) => handleObituaryChange(room, "dod", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className="w-full bg-white/10 border border-white/20 p-2.5 rounded-lg text-white outline-none focus:border-blue-400 focus:bg-white/20 transition-all [color-scheme:dark] cursor-pointer" />
+                                            <label className="block text-sm font-semibold mb-1 text-slate-700">Fecha de Fallecimiento</label>
+                                            <input type="date" value={obituaries[room].dod} onChange={(e) => handleObituaryChange(room, "dod", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className="w-full bg-white/70 border border-white/60 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all cursor-pointer shadow-inner" />
                                         </div>
                                         <div className="sm:col-span-2">
                                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                                 <div>
-                                                    <label className="block text-sm font-semibold mb-1 text-white/90">Hora Inicio</label>
-                                                    <input type="time" value={obituaries[room].timeStart || ""} onChange={(e) => handleObituaryChange(room, "timeStart", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className="w-full bg-white/10 border border-white/20 p-2.5 rounded-lg text-white outline-none focus:border-blue-400 focus:bg-white/20 transition-all [color-scheme:dark] cursor-pointer" />
+                                                    <label className="block text-sm font-semibold mb-1 text-slate-700">Hora Inicio</label>
+                                                    <input type="time" value={obituaries[room].timeStart || ""} onChange={(e) => handleObituaryChange(room, "timeStart", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className="w-full bg-white/70 border border-white/60 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all cursor-pointer shadow-inner" />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-sm font-semibold mb-1 text-white/90">Hora Fin</label>
-                                                    <input type="time" value={obituaries[room].timeEnd || ""} onChange={(e) => handleObituaryChange(room, "timeEnd", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className="w-full bg-white/10 border border-white/20 p-2.5 rounded-lg text-white outline-none focus:border-blue-400 focus:bg-white/20 transition-all [color-scheme:dark] cursor-pointer" />
+                                                    <label className="block text-sm font-semibold mb-1 text-slate-700">Hora Fin</label>
+                                                    <input type="time" value={obituaries[room].timeEnd || ""} onChange={(e) => handleObituaryChange(room, "timeEnd", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className="w-full bg-white/70 border border-white/60 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all cursor-pointer shadow-inner" />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-sm font-semibold mb-1 text-white/90">Destino Final</label>
-                                                    <input type="text" value={obituaries[room].cemetery} onChange={(e) => handleObituaryChange(room, "cemetery", e.target.value)} className="w-full bg-white/10 border border-white/20 p-2.5 rounded-lg text-white outline-none focus:border-blue-400 focus:bg-white/20 transition-all placeholder-white/30" placeholder="Ej: Jardines..." />
+                                                    <label className="block text-sm font-semibold mb-1 text-slate-700">Destino Final</label>
+                                                    <input type="text" value={obituaries[room].cemetery} onChange={(e) => handleObituaryChange(room, "cemetery", e.target.value)} className="w-full bg-white/70 border border-white/60 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all placeholder-slate-400 shadow-inner" placeholder="Ej: Jardines..." />
                                                 </div>
                                             </div>
-                                            
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 bg-blue-900/20 p-3 rounded-xl border border-blue-400/20">
+
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 bg-blue-50/60 p-3 rounded-xl border border-blue-200 shadow-sm">
                                                 <div>
-                                                    <label className="block text-sm font-semibold mb-1 text-blue-300">Fecha de ocultamiento:</label>
-                                                    <input type="date" value={obituaries[room].endDate || ""} onChange={(e) => handleObituaryChange(room, "endDate", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className="w-full bg-white/10 border border-white/20 p-2.5 rounded-lg text-white outline-none focus:border-blue-400 focus:bg-white/20 transition-all [color-scheme:dark] cursor-pointer" />
+                                                    <label className="block text-sm font-semibold mb-1 text-blue-800">Fecha de ocultamiento:</label>
+                                                        <input type="date" value={obituaries[room].endDate || ""} onChange={(e) => handleObituaryChange(room, "endDate", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className="w-full bg-white/70 border border-blue-200 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all cursor-pointer shadow-inner" />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-sm font-semibold mb-1 text-blue-300">Ocultar a las:</label>
-                                                    <input type="time" value={obituaries[room].endTime || ""} onChange={(e) => handleObituaryChange(room, "endTime", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className="w-full bg-white/10 border border-white/20 p-2.5 rounded-lg text-white outline-none focus:border-blue-400 focus:bg-white/20 transition-all [color-scheme:dark] cursor-pointer" />
+                                                    <label className="block text-sm font-semibold mb-1 text-blue-800">Ocultar a las:</label>
+                                                        <input type="time" value={obituaries[room].endTime || ""} onChange={(e) => handleObituaryChange(room, "endTime", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className="w-full bg-white/70 border border-blue-200 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all cursor-pointer shadow-inner" />
                                                 </div>
                                             </div>
                                             <div className="flex justify-end mt-3">
-                                                <button type="button" onClick={() => { handleObituaryChange(room, "timeStart", ""); handleObituaryChange(room, "timeEnd", ""); handleObituaryChange(room, "endTime", ""); handleObituaryChange(room, "endDate", ""); }} className="text-xs font-medium text-red-400 hover:text-red-300 bg-red-400/10 hover:bg-red-400/20 px-3 py-1 rounded-full transition-colors border border-red-400/20">
+                                                <button type="button" onClick={() => { handleObituaryChange(room, "timeStart", ""); handleObituaryChange(room, "timeEnd", ""); handleObituaryChange(room, "endTime", ""); handleObituaryChange(room, "endDate", ""); }} className="text-xs font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-full transition-colors border border-red-200">
                                                     Limpiar Horarios
                                                 </button>
                                             </div>
@@ -301,18 +316,86 @@ export default function Proyectar() {
                             ))}
                         </div>
                     </div>
-                
-                {/* Sección 3: Vista Previa */}
-                <div className="mt-8 space-y-6 bg-black/10 p-6 rounded-2xl border border-white/10">
-                    <div className="flex flex-col md:flex-row md:justify-between md:items-center border-b border-white/10 pb-4 gap-2">
-                        <h2 className="text-2xl font-bold">3. Vista Previa en Vivo</h2>
-                        <p className="text-sm text-white/70 bg-black/30 px-3 py-1 rounded-full">Simulación a escala (Ciclo 30s)</p>
-                    </div>
-                            
+
+                    {/* Sección 3: Vista Previa */}
+                    <div className="mt-8 space-y-6 bg-white/50 p-6 rounded-2xl border border-white/60 shadow-sm">
+                        <div className="flex flex-col md:flex-row md:justify-between md:items-center border-b border-slate-200 pb-4 gap-2">
+                            <h2 className="text-2xl font-bold text-slate-800">3. Vista Previa en Vivo</h2>
+                            <p className="text-sm text-blue-800 bg-blue-100/80 px-3 py-1 rounded-full shadow-inner border border-blue-200">Simulación a escala (Ciclo 30s)</p>
+                        </div>
+
                         {/* Contenedor que simula la pantalla de proyección a escala */}
-                        <div className="w-full aspect-video bg-black rounded-3xl overflow-hidden relative border-4 border-white/20 shadow-2xl scale-100 transform origin-top">
-                            {showObituariesPreview ? (
-                                <div className="w-full h-full grid grid-cols-2 grid-rows-2 gap-4 p-4 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-950">
+                        <div className="w-full aspect-video bg-white/80 rounded-3xl overflow-hidden relative border-4 border-white shadow-2xl scale-100 transform origin-top">
+                            {projectionMode === "split" ? (
+                                <div className="w-full h-full p-2 sm:p-4 bg-gradient-to-br from-white/60 via-blue-50/50 to-white/40 backdrop-blur-2xl">
+                                    <div className="w-full h-full grid grid-cols-3 grid-rows-2 gap-2 sm:gap-4">
+                                        {/* Media Slider en Top Right */}
+                                        <div className="col-start-2 col-span-2 row-start-1 min-h-0 min-w-0 h-full w-full rounded-xl sm:rounded-2xl overflow-hidden relative shadow-xl border border-white/80 bg-white/40">
+                                            <div className="absolute inset-0">
+                                                <Slideshow media={mediaItems} autoPlay={autoPlay} seconds={seconds} selectedImage={selectedImage} transitionEffect={transitionEffect} />
+                                            </div>
+                                        </div>
+
+                                        {/* Obituarios en Forma de L */}
+                                        {Object.entries(obituaries)
+                                            .map(([roomKey, ob]) => {
+                                                const expired = checkIsExpired(ob.endTime, ob.endDate);
+                                                const isActive = Boolean((ob.name || ob.surname) && !expired);
+                                                return { roomKey, ob, isActive };
+                                            })
+                                            .sort((a, b) => Number(b.isActive) - Number(a.isActive))
+                                            .map(({ roomKey, ob, isActive }, index) => {
+                                                const slotClasses = ["col-start-1 row-start-1", "col-start-1 row-start-2", "col-start-2 row-start-2", "col-start-3 row-start-2"];
+                                                return (
+                                                    <div key={roomKey} className={`${slotClasses[index]} min-h-0 min-w-0 h-full w-full bg-[url('/imagenes/fondo_obituarios.png')] bg-[length:100%_100%] bg-no-repeat border border-white/20 rounded-xl sm:rounded-2xl p-2 sm:p-4 flex flex-col justify-start items-center text-center shadow-lg relative overflow-hidden`}>
+                                                        <div className="absolute inset-0 p-2 sm:p-4 flex flex-col justify-start items-center text-center">
+                                                            <h2 className="text-[0.6rem] sm:text-xs font-bold text-black mb-2 tracking-[0.1em] uppercase border-b border-black/20 pb-1 w-3/4 [text-shadow:_0_1px_2px_rgb(255_255_255)]">
+                                                                {roomKey === "VIP" ? "Sala VIP" : roomKey.replace("_", " ")}
+                                                            </h2>
+
+                                                            {isActive ? (
+                                                                <div className="flex flex-col flex-grow w-full justify-center items-center z-10 overflow-hidden">
+                                                                    <h3 className="text-sm sm:text-base font-extrabold text-black mb-1 truncate w-full px-1 [text-shadow:_0_1px_2px_rgb(255_255_255)]">{ob.name}</h3>
+                                                                    <h3 className="text-xs sm:text-sm font-bold text-black/90 mb-2 truncate w-full px-1 [text-shadow:_0_1px_2px_rgb(255_255_255)]">{ob.surname}</h3>
+
+                                                                    {(ob.dob || ob.dod) && (
+                                                                        <div className="flex items-center gap-1 sm:gap-2 text-[0.45rem] sm:text-[0.6rem] font-medium text-black mb-2 sm:mb-4 bg-white/40 px-2 py-1 rounded-full border border-black/10 shadow-sm backdrop-blur-sm whitespace-nowrap overflow-hidden">
+                                                                            <span className="truncate">Nac: {formatDate(ob.dob)}</span>
+                                                                            <span className="text-black/50">|</span>
+                                                                            <span className="truncate">Fall: {formatDate(ob.dod)}</span>
+                                                                        </div>
+                                                                    )}
+
+                                                                    <div className="mt-auto grid grid-cols-2 gap-1 w-full">
+                                                                        {(ob.timeStart || ob.timeEnd) && (
+                                                                            <div className="bg-white/30 border border-black/10 rounded-lg p-1 sm:p-2 backdrop-blur-md shadow-sm flex flex-col justify-center overflow-hidden">
+                                                                                <p className="text-black/80 text-[0.4rem] uppercase tracking-widest mb-0.5 font-bold [text-shadow:_0_1px_2px_rgb(255_255_255)] truncate">Horario</p>
+                                                                                <p className="text-[0.5rem] sm:text-xs font-bold text-black [text-shadow:_0_1px_2px_rgb(255_255_255)] truncate">
+                                                                                    {ob.timeStart && formatTime(ob.timeStart)} {ob.timeStart && ob.timeEnd && "-"} {ob.timeEnd && formatTime(ob.timeEnd)}
+                                                                                </p>
+                                                                            </div>
+                                                                        )}
+                                                                        {ob.cemetery && (
+                                                                            <div className="bg-white/30 border border-black/10 rounded-lg p-1 sm:p-2 backdrop-blur-md shadow-sm flex flex-col justify-center overflow-hidden">
+                                                                                <p className="text-black/80 text-[0.4rem] uppercase tracking-widest mb-0.5 font-bold [text-shadow:_0_1px_2px_rgb(255_255_255)] truncate">Destino</p>
+                                                                                <p className="text-[0.5rem] sm:text-xs font-bold text-black leading-tight truncate w-full px-1 [text-shadow:_0_1px_2px_rgb(255_255_255)]" title={ob.cemetery}>{ob.cemetery}</p>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex-grow flex items-center justify-center z-10">
+                                                                    <p className="text-xs font-bold text-black/40 tracking-widest uppercase [text-shadow:_0_1px_2px_rgb(255_255_255)] truncate">Disponible</p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                    </div>
+                                </div>
+                            ) : showObituariesPreview ? (
+                                <div className="w-full h-full grid grid-cols-2 grid-rows-2 gap-4 p-4 bg-gradient-to-br from-white/60 via-blue-50/50 to-white/40 backdrop-blur-2xl border border-white/80 shadow-[inset_0_0_20px_rgba(255,255,255,0.9),_0_8px_32px_rgba(0,0,0,0.1)]">
                                     {Object.entries(obituaries)
                                         .map(([roomKey, ob]) => {
                                             const expired = checkIsExpired(ob.endTime, ob.endDate);
@@ -321,65 +404,65 @@ export default function Proyectar() {
                                         })
                                         .sort((a, b) => Number(b.isActive) - Number(a.isActive))
                                         .map(({ roomKey, ob, isActive }) => (
-                                        <div key={roomKey} className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 flex flex-col justify-start items-center text-center shadow-xl relative overflow-hidden">
-                                            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-400/20 rounded-bl-full blur-2xl"></div>
-                                            <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-tr-full blur-2xl"></div>
+                                            <div key={roomKey} className="bg-[url('/imagenes/fondo_obituarios.png')] bg-[length:100%_100%] bg-no-repeat border border-white/20 rounded-2xl p-6 flex flex-col justify-start items-center text-center shadow-xl relative overflow-hidden">
+                                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/30 rounded-bl-full blur-2xl"></div>
+                                                <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/30 rounded-tr-full blur-2xl"></div>
 
-                                            <h2 className="text-xl font-bold text-blue-300 mb-4 tracking-[0.2em] uppercase border-b border-white/20 pb-2 w-3/4">
-                                                {roomKey === "VIP" ? "Sala VIP" : roomKey.replace("_", " ")}
-                                            </h2>
-                                            
-                                            {isActive ? (
-                                                <div className="flex flex-col flex-grow w-full justify-center items-center z-10">
-                                                    <h3 className="text-3xl font-extrabold text-white mb-2 drop-shadow-lg">{ob.name}</h3>
-                                                    <h3 className="text-2xl font-bold text-white/90 mb-4 drop-shadow-md">{ob.surname}</h3>
-                                                    
-                                                    {(ob.dob || ob.dod) && (
-                                                        <div className="flex items-center gap-2 text-sm font-medium text-white/90 mb-6 bg-black/30 px-4 py-2 rounded-full border border-white/10 shadow-inner">
-                                                            <span>Nac: {formatDate(ob.dob)}</span>
-                                                            <span className="text-blue-400">|</span>
-                                                            <span>Fall: {formatDate(ob.dod)}</span>
+                                                <h2 className="text-xl font-bold text-black mb-4 tracking-[0.2em] uppercase border-b border-black/20 pb-2 w-3/4 [text-shadow:_0_1px_3px_rgb(255_255_255)]">
+                                                    {roomKey === "VIP" ? "Sala VIP" : roomKey.replace("_", " ")}
+                                                </h2>
+
+                                                {isActive ? (
+                                                    <div className="flex flex-col flex-grow w-full justify-center items-center z-10">
+                                                        <h3 className="text-3xl font-extrabold text-black mb-2 [text-shadow:_0_1px_3px_rgb(255_255_255)]">{ob.name}</h3>
+                                                        <h3 className="text-2xl font-bold text-black/90 mb-4 [text-shadow:_0_1px_3px_rgb(255_255_255)]">{ob.surname}</h3>
+
+                                                        {(ob.dob || ob.dod) && (
+                                                            <div className="flex items-center gap-2 text-sm font-medium text-black mb-6 bg-white/40 px-4 py-2 rounded-full border border-black/10 shadow-lg backdrop-blur-sm">
+                                                                <span>Nac: {formatDate(ob.dob)}</span>
+                                                                <span className="text-black/50">|</span>
+                                                                <span>Fall: {formatDate(ob.dod)}</span>
+                                                            </div>
+                                                        )}
+
+                                                        <div className="mt-auto grid grid-cols-2 gap-2 w-full">
+                                                            {(ob.timeStart || ob.timeEnd) && (
+                                                                <div className="bg-white/30 border border-black/10 rounded-xl p-2 backdrop-blur-md shadow-lg">
+                                                                    <p className="text-black/80 text-[0.6rem] uppercase tracking-widest mb-1 font-bold [text-shadow:_0_1px_2px_rgb(255_255_255)]">Horario del Servicio</p>
+                                                                    <p className="text-sm font-bold text-black [text-shadow:_0_1px_3px_rgb(255_255_255)]">
+                                                                        {ob.timeStart && formatTime(ob.timeStart)} {ob.timeStart && ob.timeEnd && "-"} {ob.timeEnd && formatTime(ob.timeEnd)}
+                                                                    </p>
+                                                                </div>
+                                                            )}
+                                                            {ob.cemetery && (
+                                                                <div className="bg-white/30 border border-black/10 rounded-xl p-2 backdrop-blur-md shadow-lg">
+                                                                    <p className="text-black/80 text-[0.6rem] uppercase tracking-widest mb-1 font-bold [text-shadow:_0_1px_2px_rgb(255_255_255)]">Destino Final</p>
+                                                                    <p className="text-sm font-bold text-black leading-tight break-words px-1 [text-shadow:_0_1px_3px_rgb(255_255_255)]" title={ob.cemetery}>{ob.cemetery}</p>
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                    )}
-
-                                                    <div className="mt-auto grid grid-cols-2 gap-2 w-full">
-                                                        {(ob.timeStart || ob.timeEnd) && (
-                                                            <div className="bg-white/10 border border-white/20 rounded-xl p-2 backdrop-blur-sm shadow-lg">
-                                                                <p className="text-blue-300 text-[0.6rem] uppercase tracking-widest mb-1 font-semibold">Horario del Servicio</p>
-                                                                <p className="text-sm font-bold text-white">
-                                                                    {ob.timeStart && formatTime(ob.timeStart)} {ob.timeStart && ob.timeEnd && "-"} {ob.timeEnd && formatTime(ob.timeEnd)}
-                                                                </p>
-                                                            </div>
-                                                        )}
-                                                        {ob.cemetery && (
-                                                            <div className="bg-white/10 border border-white/20 rounded-xl p-2 backdrop-blur-sm shadow-lg">
-                                                                <p className="text-blue-300 text-[0.6rem] uppercase tracking-widest mb-1 font-semibold">Destino Final</p>
-                                                                <p className="text-sm font-bold text-white leading-tight break-words px-1" title={ob.cemetery}>{ob.cemetery}</p>
-                                                            </div>
-                                                        )}
                                                     </div>
-                                                </div>
-                                            ) : (
-                                                <div className="flex-grow flex items-center justify-center z-10">
-                                                    <p className="text-xl font-light text-white/30 tracking-widest uppercase">Sala Disponible</p>
-                                                </div>
-                                            )}
-                                        </div>
+                                                ) : (
+                                                    <div className="flex-grow flex items-center justify-center z-10">
+                                                        <p className="text-xl font-bold text-black/40 tracking-widest uppercase [text-shadow:_0_1px_3px_rgb(255_255_255)]">Sala Disponible</p>
+                                                    </div>
+                                                )}
+                                            </div>
                                         ))}
                                 </div>
                             ) : (
                                 <div className="w-full h-full">
-                                    <Slideshow media={mediaItems} autoPlay={autoPlay} seconds={seconds} selectedImage={selectedImage} onCompleteCycle={() => setShowObituariesPreview(true)} transitionEffect={transitionEffect}></Slideshow>
+                                    <Slideshow media={mediaItems} autoPlay={autoPlay} seconds={seconds} selectedImage={selectedImage} onCompleteCycle={handleCompleteCycle} transitionEffect={transitionEffect}></Slideshow>
                                 </div>
                             )}
                         </div>
                     </div>
                 </div>
 
-                <div className="mt-10 pt-6 border-t border-white/20 flex justify-end">
-                    <button 
+                <div className="mt-10 pt-6 border-t border-slate-300 flex justify-end">
+                    <button
                         onClick={() => {
-                            window.open("/Pantalla","_blank");
+                            window.open("/Pantalla", "_blank");
                         }}
                         className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-400 hover:to-blue-600 text-white font-bold px-8 py-4 rounded-xl shadow-lg shadow-blue-500/30 transform hover:-translate-y-1 transition-all"
                     >
