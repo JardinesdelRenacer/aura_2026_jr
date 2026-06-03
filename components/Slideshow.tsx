@@ -40,6 +40,11 @@ export default function Slideshow({
     const [current, setCurrent] = useState(0);
 
     useEffect(() => {
+        const timeout = setTimeout(() => setCurrent(0), 0);
+        return () => clearTimeout(timeout);
+    }, [media]);
+
+    useEffect(() => {
         if (!autoPlay || media.length === 0) return;
 
         const currentMedia = media[current];

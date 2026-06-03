@@ -29,7 +29,7 @@ export default function Pantalla() {
     const [obituaries, setObituaries] = useState<ObituariesData | null>(null);
     const [showObituaries, setShowObituaries] = useState(true);
 
-    const [currentTime, setCurrentTime] = useState<Date | null>(null);
+    const [currentTime, setCurrentTime] = useState(() => new Date());
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 10000); // Revisa cada 10 segundos
@@ -69,24 +69,16 @@ export default function Pantalla() {
     useEffect(() => {
         if (projectionMode === "split") return; // No alternar en modo dividido
 
-        if (!autoPlay || media.length === 0) {
-            return;
-        }
+        if (!autoPlay || media.length === 0 || !showObituaries) return;
 
-        let timeoutId: NodeJS.Timeout;
-        
-        if (showObituaries) {
-            timeoutId = setTimeout(() => {
-                setShowObituaries(false);
-            }, 30000);
-        } else {
-            timeoutId = setTimeout(() => {
-                setShowObituaries(true);
-            }, 30000);
-        }
+        const timeoutId = setTimeout(() => {
+            setShowObituaries(false);
+        }, 30000);
 
         return () => clearTimeout(timeoutId);
     }, [showObituaries, autoPlay, media.length, projectionMode]);
+
+    const isShowingObituaries = !autoPlay || media.length === 0 || showObituaries;
 
     // Formateador de fechas para que se vean más estéticas (ej: 25/12/2026)
     const formatDate = (dateString: string) => {
@@ -211,7 +203,7 @@ export default function Pantalla() {
 
     return (
         <div className="w-screen h-screen bg-blue-50 overflow-hidden relative font-sans">
-            {showObituaries ? (
+            {isShowingObituaries ? (
                 <div className="w-full h-full grid grid-cols-2 grid-rows-2 gap-3 sm:gap-4 md:gap-5 lg:gap-6 p-3 sm:p-4 md:p-5 lg:p-6 bg-linear-to-br from-white/60 via-blue-50/50 to-white/40 backdrop-blur-2xl border border-white/80 shadow-[inset_0_0_20px_rgba(255,255,255,0.9),0_8px_32px_rgba(0,0,0,0.1)]">
                     {Object.entries(obituaries)
                         .map(([roomKey, ob]) => {

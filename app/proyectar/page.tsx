@@ -24,7 +24,7 @@ export default function Proyectar() {
 
     const [showObituariesPreview, setShowObituariesPreview] = useState(true);
 
-    const [currentTime, setCurrentTime] = useState<Date | null>(null);
+    const [currentTime, setCurrentTime] = useState(() => new Date());
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 10000); // Revisa cada 10 segundos
@@ -60,37 +60,30 @@ export default function Proyectar() {
     };
 
     const mediaItems = useMemo(() => {
-        const items = files.map((file) => ({
+        return files.map((file) => ({
             url: URL.createObjectURL(file),
             type: file.type.startsWith("video/") ? "video" : "image"
         }));
-        return items;
     }, [files]);
 
     useEffect(() => {
-        return () => {
-            mediaItems.forEach((item) => URL.revokeObjectURL(item.url));
-        };
+        // Limpieza de memoria (muy importante para evitar memory leaks)
+        return () => mediaItems.forEach((item) => URL.revokeObjectURL(item.url));
     }, [mediaItems]);
+
+    const shouldForceObituariesPreview = !autoPlay || mediaItems.length === 0;
+    const isShowingObituariesPreview = shouldForceObituariesPreview || showObituariesPreview;
 
     // Lógica para alternar en la vista previa del Dashboard (30 segundos)
     useEffect(() => {
-        if (!autoPlay || mediaItems.length === 0) return;
+        if (shouldForceObituariesPreview || !isShowingObituariesPreview) return;
 
-        let timeoutId: NodeJS.Timeout;
-
-        if (showObituariesPreview) {
-            timeoutId = setTimeout(() => {
-                setShowObituariesPreview(false);
-            }, 30000);
-        } else {
-            timeoutId = setTimeout(() => {
-                setShowObituariesPreview(true);
-            }, 30000);
-        }
+        const timeoutId = setTimeout(() => {
+            setShowObituariesPreview(false);
+        }, 30000);
 
         return () => clearTimeout(timeoutId);
-    }, [showObituariesPreview, autoPlay, mediaItems.length]);
+    }, [isShowingObituariesPreview, shouldForceObituariesPreview]);
 
     const formatDate = (dateString: string) => {
         if (!dateString) return "";
@@ -209,7 +202,7 @@ export default function Proyectar() {
 
                         <div className="mt-8 p-6 bg-white/50 rounded-2xl border border-white/60 shadow-inner">
                             <h3 className="text-xl font-bold mb-4 text-slate-800">Carga de Archivos Multimedia</h3>
-                            <UploadMedia files={files} setFiles={setFiles} />
+                            <UploadMedia setFiles={setFiles} />
                             <p className="mt-4 text-slate-600">Archivos listos para proyectar: <span className="font-bold text-blue-600">{files.length}</span></p>
                             <div className="grid grid-cols-3 gap-4 mt-5">
                                 {mediaItems.map((item, index) => (
@@ -396,7 +389,7 @@ export default function Proyectar() {
                                             })}
                                     </div>
                                 </div>
-                            ) : showObituariesPreview ? (
+                            ) : isShowingObituariesPreview ? (
                                 <div className="w-full h-full grid grid-cols-2 grid-rows-2 gap-4 p-4 bg-linear-to-br from-white/60 via-blue-50/50 to-white/40 backdrop-blur-2xl border border-white/80 shadow-[inset_0_0_20px_rgba(255,255,255,0.9),0_8px_32px_rgba(0,0,0,0.1)]">
                                     {Object.entries(obituaries)
                                         .map(([roomKey, ob]) => {

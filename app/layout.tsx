@@ -29,9 +29,9 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-      style={{ backgroundColor: '#E3F2FD' }}
+      style={{ backgroundColor: '#E3F2FD', colorScheme: "light" }}
     >
-      <body className="min-h-full flex flex-col text-slate-800" style={{ backgroundColor: '#E3F2FD' }}>{children}</body>
+      <body className="min-h-full flex flex-col text-slate-800" style={{ backgroundColor: '#E3F2FD', colorScheme: "light" }}>{children}</body>
     </html>
   );
 }

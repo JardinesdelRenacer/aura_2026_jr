@@ -1,14 +1,12 @@
 "use client";
 
 interface Props {
-    files: File[];
     setFiles: React.Dispatch<
         React.SetStateAction<File[]>
     >;
 }
 
 export default function UploadMedia({
-    files,
     setFiles,
 }: Props) {
     
