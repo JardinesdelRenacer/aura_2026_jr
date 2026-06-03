@@ -48,6 +48,7 @@ export default function Proyectar() {
         }));
     };
 
+<<<<<<< HEAD
     // Función para eliminar una imagen específica
     const removeImage = (indexToRemove: number) => {
         setFiles((prev) => prev.filter((_, i) => i !== indexToRemove));
@@ -134,6 +135,41 @@ export default function Proyectar() {
         );
     }, [mediaItems, autoPlay, seconds, selectedImage, obituaries, transitionEffect, projectionMode]);
 
+=======
+    const compartirLink = async () => {
+        try {
+            const response = await fetch(
+                "/api/presentaciones",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        nombre: "Presentación TV",
+                        images: imageUrls,
+                        autoPlay,
+                        seconds,
+                    }),
+                }
+            );
+
+            const text = await response.text();
+
+            console.log("Respuesta API:");
+            console.log(text);
+
+            alert(text);
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert("Error al generar enlace");
+        }
+    };
+
+>>>>>>> 87120e6 (Boton CompartirLink y mas cositas)
     return (
         <div className="min-h-screen p-8 flex flex-col items-center">
 
@@ -471,6 +507,26 @@ export default function Proyectar() {
                         Abrir Pantalla de Proyección
                     </button>
                 </div>
+<<<<<<< HEAD
+=======
+                
+                {/* Esto es un botón, no lo junte en una sola linea y se ve medio feo xd */}
+                <button onClick={() => {
+                    guardarPresentacion();
+
+                    window.open("/Pantalla","_blank");
+                    }}
+                    className="bg-blue-600 text-white px-6 py-3 rounded mt-5">
+                        Proyectar
+                </button>
+
+                {/* Botón de compartir link */}
+                <button onClick={compartirLink} className="bg-green-600 text-white px-6 py-3 rounded mt-5 ml-3">
+                    Compartir Link
+                </button>
+
+
+>>>>>>> 87120e6 (Boton CompartirLink y mas cositas)
             </div>
         </div>
     );
