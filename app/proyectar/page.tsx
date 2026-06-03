@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import UploadMedia from "@/components/UploadMedia";
 import Slideshow from "@/components/Slideshow";
 
@@ -22,14 +22,11 @@ export default function Proyectar() {
 
     const [projectionMode, setProjectionMode] = useState("classic");
 
-    const [mediaItems, setMediaItems] = useState<{ url: string, type: string }[]>([]);
-
     const [showObituariesPreview, setShowObituariesPreview] = useState(true);
 
     const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
     useEffect(() => {
-        setCurrentTime(new Date());
         const timer = setInterval(() => setCurrentTime(new Date()), 10000); // Revisa cada 10 segundos
         return () => clearInterval(timer);
     }, []);
@@ -62,28 +59,33 @@ export default function Proyectar() {
         }
     };
 
-    useEffect(() => {
+    const mediaItems = useMemo(() => {
         const items = files.map((file) => ({
             url: URL.createObjectURL(file),
             type: file.type.startsWith("video/") ? "video" : "image"
         }));
-        setMediaItems(items);
-        // Limpieza de memoria (muy importante para evitar memory leaks)
-        return () => items.forEach((item) => URL.revokeObjectURL(item.url));
+        return items;
     }, [files]);
+
+    useEffect(() => {
+        return () => {
+            mediaItems.forEach((item) => URL.revokeObjectURL(item.url));
+        };
+    }, [mediaItems]);
 
     // Lógica para alternar en la vista previa del Dashboard (30 segundos)
     useEffect(() => {
-        if (!autoPlay || mediaItems.length === 0) {
-            setShowObituariesPreview(true);
-            return;
-        }
+        if (!autoPlay || mediaItems.length === 0) return;
 
         let timeoutId: NodeJS.Timeout;
 
         if (showObituariesPreview) {
             timeoutId = setTimeout(() => {
                 setShowObituariesPreview(false);
+            }, 30000);
+        } else {
+            timeoutId = setTimeout(() => {
+                setShowObituariesPreview(true);
             }, 30000);
         }
 
@@ -327,7 +329,7 @@ export default function Proyectar() {
                         {/* Contenedor que simula la pantalla de proyección a escala */}
                         <div className="w-full aspect-video bg-white/80 rounded-3xl overflow-hidden relative border-4 border-white shadow-2xl scale-100 transform origin-top">
                             {projectionMode === "split" ? (
-                                <div className="w-full h-full p-2 sm:p-4 bg-gradient-to-br from-white/60 via-blue-50/50 to-white/40 backdrop-blur-2xl">
+                                <div className="w-full h-full p-2 sm:p-4 bg-linear-to-br from-white/60 via-blue-50/50 to-white/40 backdrop-blur-2xl">
                                     <div className="w-full h-full grid grid-cols-3 grid-rows-2 gap-2 sm:gap-4">
                                         {/* Media Slider en Top Right */}
                                         <div className="col-start-2 col-span-2 row-start-1 min-h-0 min-w-0 h-full w-full rounded-xl sm:rounded-2xl overflow-hidden relative shadow-xl border border-white/80 bg-white/40">
@@ -347,16 +349,16 @@ export default function Proyectar() {
                                             .map(({ roomKey, ob, isActive }, index) => {
                                                 const slotClasses = ["col-start-1 row-start-1", "col-start-1 row-start-2", "col-start-2 row-start-2", "col-start-3 row-start-2"];
                                                 return (
-                                                    <div key={roomKey} className={`${slotClasses[index]} min-h-0 min-w-0 h-full w-full bg-[url('/imagenes/fondo_obituarios.png')] bg-[length:100%_100%] bg-no-repeat border border-white/20 rounded-xl sm:rounded-2xl p-2 sm:p-4 flex flex-col justify-start items-center text-center shadow-lg relative overflow-hidden`}>
+                                                    <div key={roomKey} className={`${slotClasses[index]} min-h-0 min-w-0 h-full w-full bg-[url('/imagenes/fondo_obituarios.png')] bg-size-[100%_100%] bg-no-repeat border border-white/20 rounded-xl sm:rounded-2xl p-2 sm:p-4 flex flex-col justify-start items-center text-center shadow-lg relative overflow-hidden`}>
                                                         <div className="absolute inset-0 p-2 sm:p-4 flex flex-col justify-start items-center text-center">
-                                                            <h2 className="text-[0.6rem] sm:text-xs font-bold text-black mb-2 tracking-[0.1em] uppercase border-b border-black/20 pb-1 w-3/4 [text-shadow:_0_1px_2px_rgb(255_255_255)]">
+                                                            <h2 className="text-[0.6rem] sm:text-xs font-bold text-black mb-2 tracking-widest uppercase border-b border-black/20 pb-1 w-3/4 [text-shadow:0_1px_2px_rgb(255_255_255)]">
                                                                 {roomKey === "VIP" ? "Sala VIP" : roomKey.replace("_", " ")}
                                                             </h2>
 
                                                             {isActive ? (
-                                                                <div className="flex flex-col flex-grow w-full justify-center items-center z-10 overflow-hidden">
-                                                                    <h3 className="text-sm sm:text-base font-extrabold text-black mb-1 truncate w-full px-1 [text-shadow:_0_1px_2px_rgb(255_255_255)]">{ob.name}</h3>
-                                                                    <h3 className="text-xs sm:text-sm font-bold text-black/90 mb-2 truncate w-full px-1 [text-shadow:_0_1px_2px_rgb(255_255_255)]">{ob.surname}</h3>
+                                                                <div className="flex flex-col grow w-full justify-center items-center z-10 overflow-hidden">
+                                                                    <h3 className="text-sm sm:text-base font-extrabold text-black mb-1 truncate w-full px-1 [text-shadow:0_1px_2px_rgb(255_255_255)]">{ob.name}</h3>
+                                                                    <h3 className="text-xs sm:text-sm font-bold text-black/90 mb-2 truncate w-full px-1 [text-shadow:0_1px_2px_rgb(255_255_255)]">{ob.surname}</h3>
 
                                                                     {(ob.dob || ob.dod) && (
                                                                         <div className="flex items-center gap-1 sm:gap-2 text-[0.45rem] sm:text-[0.6rem] font-medium text-black mb-2 sm:mb-4 bg-white/40 px-2 py-1 rounded-full border border-black/10 shadow-sm backdrop-blur-sm whitespace-nowrap overflow-hidden">
@@ -369,23 +371,23 @@ export default function Proyectar() {
                                                                     <div className="mt-auto grid grid-cols-2 gap-1 w-full">
                                                                         {(ob.timeStart || ob.timeEnd) && (
                                                                             <div className="bg-white/30 border border-black/10 rounded-lg p-1 sm:p-2 backdrop-blur-md shadow-sm flex flex-col justify-center overflow-hidden">
-                                                                                <p className="text-black/80 text-[0.4rem] uppercase tracking-widest mb-0.5 font-bold [text-shadow:_0_1px_2px_rgb(255_255_255)] truncate">Horario</p>
-                                                                                <p className="text-[0.5rem] sm:text-xs font-bold text-black [text-shadow:_0_1px_2px_rgb(255_255_255)] truncate">
+                                                                                <p className="text-black/80 text-[0.4rem] uppercase tracking-widest mb-0.5 font-bold [text-shadow:0_1px_2px_rgb(255_255_255)] truncate">Horario</p>
+                                                                                <p className="text-[0.5rem] sm:text-xs font-bold text-black [text-shadow:0_1px_2px_rgb(255_255_255)] truncate">
                                                                                     {ob.timeStart && formatTime(ob.timeStart)} {ob.timeStart && ob.timeEnd && "-"} {ob.timeEnd && formatTime(ob.timeEnd)}
                                                                                 </p>
                                                                             </div>
                                                                         )}
                                                                         {ob.cemetery && (
                                                                             <div className="bg-white/30 border border-black/10 rounded-lg p-1 sm:p-2 backdrop-blur-md shadow-sm flex flex-col justify-center overflow-hidden">
-                                                                                <p className="text-black/80 text-[0.4rem] uppercase tracking-widest mb-0.5 font-bold [text-shadow:_0_1px_2px_rgb(255_255_255)] truncate">Destino</p>
-                                                                                <p className="text-[0.5rem] sm:text-xs font-bold text-black leading-tight truncate w-full px-1 [text-shadow:_0_1px_2px_rgb(255_255_255)]" title={ob.cemetery}>{ob.cemetery}</p>
+                                                                                <p className="text-black/80 text-[0.4rem] uppercase tracking-widest mb-0.5 font-bold [text-shadow:0_1px_2px_rgb(255_255_255)] truncate">Destino</p>
+                                                                                <p className="text-[0.5rem] sm:text-xs font-bold text-black leading-tight truncate w-full px-1 [text-shadow:0_1px_2px_rgb(255_255_255)]" title={ob.cemetery}>{ob.cemetery}</p>
                                                                             </div>
                                                                         )}
                                                                     </div>
                                                                 </div>
                                                             ) : (
-                                                                <div className="flex-grow flex items-center justify-center z-10">
-                                                                    <p className="text-xs font-bold text-black/40 tracking-widest uppercase [text-shadow:_0_1px_2px_rgb(255_255_255)] truncate">Disponible</p>
+                                                                <div className="grow flex items-center justify-center z-10">
+                                                                    <p className="text-xs font-bold text-black/40 tracking-widest uppercase [text-shadow:0_1px_2px_rgb(255_255_255)] truncate">Disponible</p>
                                                                 </div>
                                                             )}
                                                         </div>
@@ -395,7 +397,7 @@ export default function Proyectar() {
                                     </div>
                                 </div>
                             ) : showObituariesPreview ? (
-                                <div className="w-full h-full grid grid-cols-2 grid-rows-2 gap-4 p-4 bg-gradient-to-br from-white/60 via-blue-50/50 to-white/40 backdrop-blur-2xl border border-white/80 shadow-[inset_0_0_20px_rgba(255,255,255,0.9),_0_8px_32px_rgba(0,0,0,0.1)]">
+                                <div className="w-full h-full grid grid-cols-2 grid-rows-2 gap-4 p-4 bg-linear-to-br from-white/60 via-blue-50/50 to-white/40 backdrop-blur-2xl border border-white/80 shadow-[inset_0_0_20px_rgba(255,255,255,0.9),0_8px_32px_rgba(0,0,0,0.1)]">
                                     {Object.entries(obituaries)
                                         .map(([roomKey, ob]) => {
                                             const expired = checkIsExpired(ob.endTime, ob.endDate);
@@ -404,18 +406,18 @@ export default function Proyectar() {
                                         })
                                         .sort((a, b) => Number(b.isActive) - Number(a.isActive))
                                         .map(({ roomKey, ob, isActive }) => (
-                                            <div key={roomKey} className="bg-[url('/imagenes/fondo_obituarios.png')] bg-[length:100%_100%] bg-no-repeat border border-white/20 rounded-2xl p-6 flex flex-col justify-start items-center text-center shadow-xl relative overflow-hidden">
+                                            <div key={roomKey} className="bg-[url('/imagenes/fondo_obituarios.png')] bg-size-[100%_100%] bg-no-repeat border border-white/20 rounded-2xl p-6 flex flex-col justify-start items-center text-center shadow-xl relative overflow-hidden">
                                                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/30 rounded-bl-full blur-2xl"></div>
                                                 <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/30 rounded-tr-full blur-2xl"></div>
 
-                                                <h2 className="text-xl font-bold text-black mb-4 tracking-[0.2em] uppercase border-b border-black/20 pb-2 w-3/4 [text-shadow:_0_1px_3px_rgb(255_255_255)]">
+                                                <h2 className="text-xl font-bold text-black mb-4 tracking-[0.2em] uppercase border-b border-black/20 pb-2 w-3/4 [text-shadow:0_1px_3px_rgb(255_255_255)]">
                                                     {roomKey === "VIP" ? "Sala VIP" : roomKey.replace("_", " ")}
                                                 </h2>
 
                                                 {isActive ? (
-                                                    <div className="flex flex-col flex-grow w-full justify-center items-center z-10">
-                                                        <h3 className="text-3xl font-extrabold text-black mb-2 [text-shadow:_0_1px_3px_rgb(255_255_255)]">{ob.name}</h3>
-                                                        <h3 className="text-2xl font-bold text-black/90 mb-4 [text-shadow:_0_1px_3px_rgb(255_255_255)]">{ob.surname}</h3>
+                                                    <div className="flex flex-col grow w-full justify-center items-center z-10">
+                                                        <h3 className="text-3xl font-extrabold text-black mb-2 [text-shadow:0_1px_3px_rgb(255_255_255)]">{ob.name}</h3>
+                                                        <h3 className="text-2xl font-bold text-black/90 mb-4 [text-shadow:0_1px_3px_rgb(255_255_255)]">{ob.surname}</h3>
 
                                                         {(ob.dob || ob.dod) && (
                                                             <div className="flex items-center gap-2 text-sm font-medium text-black mb-6 bg-white/40 px-4 py-2 rounded-full border border-black/10 shadow-lg backdrop-blur-sm">
@@ -428,23 +430,23 @@ export default function Proyectar() {
                                                         <div className="mt-auto grid grid-cols-2 gap-2 w-full">
                                                             {(ob.timeStart || ob.timeEnd) && (
                                                                 <div className="bg-white/30 border border-black/10 rounded-xl p-2 backdrop-blur-md shadow-lg">
-                                                                    <p className="text-black/80 text-[0.6rem] uppercase tracking-widest mb-1 font-bold [text-shadow:_0_1px_2px_rgb(255_255_255)]">Horario del Servicio</p>
-                                                                    <p className="text-sm font-bold text-black [text-shadow:_0_1px_3px_rgb(255_255_255)]">
+                                                                    <p className="text-black/80 text-[0.6rem] uppercase tracking-widest mb-1 font-bold [text-shadow:0_1px_2px_rgb(255_255_255)]">Horario del Servicio</p>
+                                                                    <p className="text-sm font-bold text-black [text-shadow:0_1px_3px_rgb(255_255_255)]">
                                                                         {ob.timeStart && formatTime(ob.timeStart)} {ob.timeStart && ob.timeEnd && "-"} {ob.timeEnd && formatTime(ob.timeEnd)}
                                                                     </p>
                                                                 </div>
                                                             )}
                                                             {ob.cemetery && (
                                                                 <div className="bg-white/30 border border-black/10 rounded-xl p-2 backdrop-blur-md shadow-lg">
-                                                                    <p className="text-black/80 text-[0.6rem] uppercase tracking-widest mb-1 font-bold [text-shadow:_0_1px_2px_rgb(255_255_255)]">Destino Final</p>
-                                                                    <p className="text-sm font-bold text-black leading-tight break-words px-1 [text-shadow:_0_1px_3px_rgb(255_255_255)]" title={ob.cemetery}>{ob.cemetery}</p>
+                                                                    <p className="text-black/80 text-[0.6rem] uppercase tracking-widest mb-1 font-bold [text-shadow:0_1px_2px_rgb(255_255_255)]">Destino Final</p>
+                                                                    <p className="text-sm font-bold text-black leading-tight wrap-break-word px-1 [text-shadow:0_1px_3px_rgb(255_255_255)]" title={ob.cemetery}>{ob.cemetery}</p>
                                                                 </div>
                                                             )}
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div className="flex-grow flex items-center justify-center z-10">
-                                                        <p className="text-xl font-bold text-black/40 tracking-widest uppercase [text-shadow:_0_1px_3px_rgb(255_255_255)]">Sala Disponible</p>
+                                                    <div className="grow flex items-center justify-center z-10">
+                                                        <p className="text-xl font-bold text-black/40 tracking-widest uppercase [text-shadow:0_1px_3px_rgb(255_255_255)]">Sala Disponible</p>
                                                     </div>
                                                 )}
                                             </div>
@@ -464,7 +466,7 @@ export default function Proyectar() {
                         onClick={() => {
                             window.open("/Pantalla", "_blank");
                         }}
-                        className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-400 hover:to-blue-600 text-white font-bold px-8 py-4 rounded-xl shadow-lg shadow-blue-500/30 transform hover:-translate-y-1 transition-all"
+                        className="bg-linear-to-r from-blue-500 to-blue-700 hover:from-blue-400 hover:to-blue-600 text-white font-bold px-8 py-4 rounded-xl shadow-lg shadow-blue-500/30 transform hover:-translate-y-1 transition-all"
                     >
                         Abrir Pantalla de Proyección
                     </button>

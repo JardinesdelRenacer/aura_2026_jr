@@ -40,29 +40,26 @@ export default function Slideshow({
     const [current, setCurrent] = useState(0);
 
     useEffect(() => {
-        setCurrent(0);
-    }, [media]);
-
-    useEffect(() => {
-        
-        if (!autoPlay) return;
+        if (!autoPlay || media.length === 0) return;
 
         const currentMedia = media[current];
         let timeout: NodeJS.Timeout;
 
         const handleNext = () => {
-            if (current === media.length - 1 && onCompleteCycle) {
-                onCompleteCycle();
-            }
-            if (media.length > 1) {
-                setCurrent((prev) => (prev + 1) % media.length);
-            } else if (media.length === 1 && onCompleteCycle) {
-                onCompleteCycle(); // If there's only 1 item, still trigger cycle complete
-            }
+            setCurrent((prev) => {
+                const next = (prev + 1) % media.length;
+                if (next === 0 && onCompleteCycle) {
+                    onCompleteCycle();
+                }
+                return next;
+            });
         };
 
         if (currentMedia?.type !== 'video') {
-            timeout = setTimeout(handleNext, seconds * 1000);
+            timeout = setTimeout(handleNext, (seconds || 5) * 1000);
+        } else if (currentMedia?.type === 'video') {
+            // Para videos, espera a que terminen - aquí podrías agregar un listener de fin de video
+            timeout = setTimeout(handleNext, (seconds || 5) * 1000);
         }
 
         return () => clearTimeout(timeout);
