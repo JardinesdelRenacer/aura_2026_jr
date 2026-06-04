@@ -4,7 +4,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Slideshow from "@/components/Slideshow";
 
-type Obituary = { name: string, surname: string, dob: string, dod: string, timeStart: string, timeEnd: string, cemetery: string, endTime?: string, endDate?: string };
+type Obituary = { name: string, surname: string, dob: string, dod: string, timeStart: string, timeEnd: string, cemetery: string, endTime?: string, endDate?: string, massTime?: string, massChurch?: string, massChurchType?: string, massAddress?: string };
 type ObituariesData = {
     VIP: Obituary;
     SALA_1: Obituary;
@@ -153,28 +153,39 @@ export default function Pantalla() {
                                             </h2>
                                             {isActive ? (
                                                 <div className="flex flex-col grow w-full justify-center items-center z-10 overflow-hidden">
-                                                    <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-black mb-1 sm:mb-2 truncate w-full px-2 [text-shadow:0_1px_5px_rgb(255_255_255)]">{ob.name}</h3>
-                                                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-black/90 mb-3 sm:mb-6 truncate w-full px-2 [text-shadow:0_1px_5px_rgb(255_255_255)]">{ob.surname}</h3>
+                                                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-black mb-1 sm:mb-2 truncate w-full px-2 [text-shadow:0_1px_5px_rgb(255_255_255)]">{ob.name}</h3>
+                                                    <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-black/90 mb-2 sm:mb-4 truncate w-full px-2 [text-shadow:0_1px_5px_rgb(255_255_255)]">{ob.surname}</h3>
                                                     {(ob.dob || ob.dod) && (
-                                                        <div className="flex items-center gap-1 sm:gap-3 lg:gap-4 text-sm sm:text-lg lg:text-xl font-medium text-black mb-3 sm:mb-6 bg-white/40 px-3 sm:px-5 lg:px-6 py-1 sm:py-2 rounded-full border border-black/10 shadow-lg backdrop-blur-sm whitespace-nowrap overflow-hidden">
-                                                            <span className="truncate">Nac: {formatDate(ob.dob)}</span>
+                                                        <div className="flex items-center gap-1 sm:gap-3 lg:gap-4 text-sm sm:text-base lg:text-lg font-medium text-black mb-2 sm:mb-4 bg-white/40 px-3 sm:px-5 lg:px-6 py-1 sm:py-2 rounded-full border border-black/10 shadow-lg backdrop-blur-sm whitespace-nowrap overflow-hidden">
+                                                            <span className="truncate">Nacimiento: {formatDate(ob.dob)}</span>
                                                             <span className="text-black/50 hidden sm:inline">|</span>
-                                                            <span className="truncate">Fall: {formatDate(ob.dod)}</span>
+                                                            <span className="truncate">Fallecimiento: {formatDate(ob.dod)}</span>
                                                         </div>
                                                     )}
+
+                                                    {(ob.massTime || ob.massChurch) && (
+                                                        <div className="flex flex-col items-center justify-center gap-1 bg-white/40 px-3 lg:px-4 py-1.5 lg:py-2 rounded-xl border border-black/10 shadow-md backdrop-blur-sm mb-2 sm:mb-4 w-[95%] overflow-hidden">
+                                                            <span className="text-[0.45rem] sm:text-[0.55rem] lg:text-[0.65rem] font-bold uppercase tracking-widest text-black/80">Eucaristía</span>
+                                                            <span className="text-[0.65rem] sm:text-xs lg:text-sm font-bold text-black truncate w-full px-1">
+                                                                {ob.massChurch ? `${ob.massChurchType || "Parroquia"}: ${ob.massChurch}` : (ob.massChurchType || "Parroquia")} {ob.massTime && `- ${formatTime(ob.massTime)}`}
+                                                            </span>
+                                                            {ob.massAddress && <span className="text-[0.55rem] sm:text-[0.65rem] lg:text-xs font-medium text-black/80 truncate w-full px-1">{ob.massAddress}</span>}
+                                                        </div>
+                                                    )}
+
                                                     <div className="mt-auto grid grid-cols-2 gap-1 sm:gap-3 lg:gap-4 w-full px-2">
                                                         {(ob.timeStart || ob.timeEnd) && (
-                                                            <div className="bg-white/30 border border-black/10 rounded-xl sm:rounded-2xl p-2 lg:p-4 backdrop-blur-md shadow-xl flex flex-col justify-center overflow-hidden">
+                                                            <div className="bg-white/30 border border-black/10 rounded-xl sm:rounded-2xl p-1.5 lg:p-3 backdrop-blur-md shadow-xl flex flex-col justify-center overflow-hidden">
                                                                 <p className="text-black/80 text-[10px] sm:text-xs lg:text-sm uppercase tracking-widest mb-0.5 sm:mb-1 font-bold [text-shadow:0_1px_3px_rgb(255_255_255)] truncate">Horario</p>
-                                                                <p className="text-sm sm:text-lg lg:text-xl font-bold text-black [text-shadow:0_1px_5px_rgb(255_255_255)] truncate">
+                                                                <p className="text-xs sm:text-base lg:text-lg font-bold text-black [text-shadow:0_1px_5px_rgb(255_255_255)] truncate">
                                                                     {ob.timeStart && formatTime(ob.timeStart)} {ob.timeStart && ob.timeEnd && "-"} {ob.timeEnd && formatTime(ob.timeEnd)}
                                                                 </p>
                                                             </div>
                                                         )}
                                                         {ob.cemetery && (
-                                                            <div className="bg-white/30 border border-black/10 rounded-xl sm:rounded-2xl p-2 lg:p-4 backdrop-blur-md shadow-xl flex flex-col justify-center overflow-hidden">
+                                                            <div className="bg-white/30 border border-black/10 rounded-xl sm:rounded-2xl p-1.5 lg:p-3 backdrop-blur-md shadow-xl flex flex-col justify-center overflow-hidden">
                                                                 <p className="text-black/80 text-[10px] sm:text-xs lg:text-sm uppercase tracking-widest mb-0.5 sm:mb-1 font-bold [text-shadow:0_1px_3px_rgb(255_255_255)] truncate">Destino</p>
-                                                                <p className="text-sm sm:text-lg lg:text-xl font-bold text-black leading-tight truncate w-full px-1 [text-shadow:0_1px_5px_rgb(255_255_255)]" title={ob.cemetery}>{ob.cemetery}</p>
+                                                                <p className="text-xs sm:text-base lg:text-lg font-bold text-black leading-tight truncate w-full px-1 [text-shadow:0_1px_5px_rgb(255_255_255)]" title={ob.cemetery}>{ob.cemetery}</p>
                                                             </div>
                                                         )}
                                                     </div>
@@ -216,30 +227,40 @@ export default function Pantalla() {
                             
                             {isActive ? (
                                 <div className="flex flex-col grow w-full justify-center items-center z-10">
-                                    <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-black mb-1 sm:mb-2 md:mb-3 lg:mb-3 truncate w-full px-1 sm:px-2 [text-shadow:0_1px_5px_rgb(255_255_255)]">{ob.name}</h3>
-                                    <h3 className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-bold text-black/90 mb-3 sm:mb-4 md:mb-6 lg:mb-8 truncate w-full px-1 sm:px-2 [text-shadow:0_1px_5px_rgb(255_255_255)]">{ob.surname}</h3>
+                                    <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-extrabold text-black mb-1 sm:mb-2 md:mb-2 lg:mb-3 truncate w-full px-1 sm:px-2 [text-shadow:0_1px_5px_rgb(255_255_255)]">{ob.name}</h3>
+                                    <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-black/90 mb-2 sm:mb-4 md:mb-4 lg:mb-6 truncate w-full px-1 sm:px-2 [text-shadow:0_1px_5px_rgb(255_255_255)]">{ob.surname}</h3>
                                     
                                     {(ob.dob || ob.dod) && (
-                                        <div className="flex items-center gap-1 sm:gap-2 md:gap-3 lg:gap-4 text-xs sm:text-sm md:text-lg lg:text-2xl font-medium text-black mb-3 sm:mb-6 md:mb-8 lg:mb-10 bg-white/40 px-2 sm:px-4 md:px-6 lg:px-8 py-1 sm:py-2 md:py-2 lg:py-3 rounded-full border border-black/10 shadow-lg backdrop-blur-sm whitespace-nowrap overflow-hidden">
-                                            <span className="truncate">Nac: {formatDate(ob.dob)}</span>
+                                        <div className="flex items-center gap-1 sm:gap-2 md:gap-3 lg:gap-4 text-xs sm:text-sm md:text-base lg:text-xl font-medium text-black mb-3 sm:mb-4 md:mb-6 lg:mb-8 bg-white/40 px-2 sm:px-4 md:px-6 lg:px-8 py-1 sm:py-2 md:py-2 lg:py-3 rounded-full border border-black/10 shadow-lg backdrop-blur-sm whitespace-nowrap overflow-hidden">
+                                            <span className="truncate">Nacimiento: {formatDate(ob.dob)}</span>
                                             <span className="text-black/50 hidden sm:inline">|</span>
-                                            <span className="truncate">Fall: {formatDate(ob.dod)}</span>
+                                            <span className="truncate">Fallecimiento: {formatDate(ob.dod)}</span>
+                                        </div>
+                                    )}
+
+                                    {(ob.massTime || ob.massChurch) && (
+                                        <div className="flex flex-col items-center justify-center gap-1 bg-white/40 px-4 sm:px-6 md:px-8 py-2 md:py-3 rounded-2xl border border-black/10 shadow-xl backdrop-blur-sm mb-4 sm:mb-6 md:mb-8 w-[95%] overflow-hidden">
+                                            <span className="text-[0.65rem] sm:text-xs md:text-sm lg:text-base font-bold uppercase tracking-widest text-black/80">Eucaristía</span>
+                                            <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-black truncate w-full px-2">
+                                                {ob.massChurch ? `${ob.massChurchType || "Parroquia"}: ${ob.massChurch}` : (ob.massChurchType || "Parroquia")} {ob.massTime && `- ${formatTime(ob.massTime)}`}
+                                            </span>
+                                            {ob.massAddress && <span className="text-xs sm:text-sm md:text-base lg:text-lg font-medium text-black/80 truncate w-full px-2">{ob.massAddress}</span>}
                                         </div>
                                     )}
 
                                     <div className="mt-auto grid grid-cols-2 gap-1 sm:gap-2 md:gap-3 lg:gap-4 w-full px-1 sm:px-2 md:px-3 lg:px-0">
                                         {(ob.timeStart || ob.timeEnd) && (
-                                            <div className="bg-white/30 border border-black/10 rounded-lg sm:rounded-xl md:rounded-2xl p-1 sm:p-2 md:p-3 lg:p-4 backdrop-blur-md shadow-xl">
+                                            <div className="bg-white/30 border border-black/10 rounded-lg sm:rounded-xl md:rounded-2xl p-1 sm:p-2 md:p-2 lg:p-3 backdrop-blur-md shadow-xl flex flex-col justify-center overflow-hidden">
                                                 <p className="text-black/80 text-[10px] sm:text-xs md:text-sm lg:text-sm uppercase tracking-widest mb-0.5 sm:mb-1 md:mb-1 lg:mb-1 font-bold [text-shadow:0_1px_3px_rgb(255_255_255)] truncate">Horario</p>
-                                                <p className="text-xs sm:text-sm md:text-base lg:text-2xl font-bold text-black [text-shadow:0_1px_5px_rgb(255_255_255)] truncate">
+                                                <p className="text-xs sm:text-sm md:text-base lg:text-xl font-bold text-black [text-shadow:0_1px_5px_rgb(255_255_255)] truncate">
                                                     {ob.timeStart && formatTime(ob.timeStart)} {ob.timeStart && ob.timeEnd && "-"} {ob.timeEnd && formatTime(ob.timeEnd)}
                                                 </p>
                                             </div>
                                         )}
                                         {ob.cemetery && (
-                                            <div className="bg-white/30 border border-black/10 rounded-lg sm:rounded-xl md:rounded-2xl p-1 sm:p-2 md:p-3 lg:p-4 backdrop-blur-md shadow-xl">
+                                            <div className="bg-white/30 border border-black/10 rounded-lg sm:rounded-xl md:rounded-2xl p-1 sm:p-2 md:p-2 lg:p-3 backdrop-blur-md shadow-xl flex flex-col justify-center overflow-hidden">
                                                 <p className="text-black/80 text-[10px] sm:text-xs md:text-sm lg:text-sm uppercase tracking-widest mb-0.5 sm:mb-1 md:mb-1 lg:mb-1 font-bold [text-shadow:0_1px_3px_rgb(255_255_255)] truncate">Destino</p>
-                                                <p className="text-xs sm:text-sm md:text-base lg:text-2xl font-bold text-black leading-tight wrap-break-word px-0 sm:px-1 md:px-1 lg:px-2 [text-shadow:0_1px_5px_rgb(255_255_255)] line-clamp-2" title={ob.cemetery}>{ob.cemetery}</p>
+                                                <p className="text-xs sm:text-sm md:text-base lg:text-xl font-bold text-black leading-tight truncate w-full px-0 sm:px-1 md:px-1 lg:px-2 [text-shadow:0_1px_5px_rgb(255_255_255)]" title={ob.cemetery}>{ob.cemetery}</p>
                                             </div>
                                         )}
                                     </div>

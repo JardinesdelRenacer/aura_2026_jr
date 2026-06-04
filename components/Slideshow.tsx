@@ -63,8 +63,7 @@ export default function Slideshow({
         if (currentMedia?.type !== 'video') {
             timeout = setTimeout(handleNext, (seconds || 5) * 1000);
         } else if (currentMedia?.type === 'video') {
-            // Para videos, espera a que terminen - aquí podrías agregar un listener de fin de video
-            timeout = setTimeout(handleNext, (seconds || 5) * 1000);
+            // Para videos, el cambio de diapositiva lo maneja el evento onEnded nativo del elemento <video>
         }
 
         return () => clearTimeout(timeout);

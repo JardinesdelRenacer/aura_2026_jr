@@ -60,8 +60,8 @@ export default function MasterDashboard() {
                 </div>
                 <div className="flex items-center gap-4">
                     <span className="text-sm font-bold text-slate-600 bg-white/50 px-4 py-2 rounded-full border border-white/60 shadow-inner">Sistemas en línea</span>
-                    <div className="w-10 h-10 bg-amber-100 rounded-full border-2 border-white shadow-sm overflow-hidden flex items-center justify-center">
-                        <span className="font-bold text-amber-700">MS</span>
+                    <div className="w-10 h-10 bg-blue-100 rounded-full border-2 border-white shadow-sm overflow-hidden flex items-center justify-center">
+                        <span className="font-bold text-blue-700">MS</span>
                     </div>
                     <button onClick={handleLogout} className="bg-red-500/10 hover:bg-red-500/20 text-red-600 border border-red-200 hover:border-red-300 font-bold px-4 py-2 rounded-full transition-all text-xs uppercase tracking-widest">
                         Salir

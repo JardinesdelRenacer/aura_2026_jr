@@ -7,7 +7,7 @@ import UploadMedia from "@/components/UploadMedia";
 import Slideshow from "@/components/Slideshow";
 
 // Tipos para los obituarios (se usarán en la Fase 2)
-type Obituary = { name: string, surname: string, dob: string, dod: string, timeStart: string, timeEnd: string, cemetery: string, endTime?: string, endDate?: string };
+type Obituary = { name: string, surname: string, dob: string, dod: string, timeStart: string, timeEnd: string, cemetery: string, endTime?: string, endDate?: string, massTime?: string, massChurch?: string, massChurchType?: string, massAddress?: string };
 
 export default function Proyectar() {
 
@@ -39,10 +39,10 @@ export default function Proyectar() {
     }, []);
 
     const [obituaries, setObituaries] = useState({
-        VIP: { name: "", surname: "", dob: "", dod: "", timeStart: "", timeEnd: "", cemetery: "", endTime: "", endDate: "" },
-        SALA_1: { name: "", surname: "", dob: "", dod: "", timeStart: "", timeEnd: "", cemetery: "", endTime: "", endDate: "" },
-        SALA_2: { name: "", surname: "", dob: "", dod: "", timeStart: "", timeEnd: "", cemetery: "", endTime: "", endDate: "" },
-        SALA_3: { name: "", surname: "", dob: "", dod: "", timeStart: "", timeEnd: "", cemetery: "", endTime: "", endDate: "" },
+        VIP: { name: "", surname: "", dob: "", dod: "", timeStart: "", timeEnd: "", cemetery: "", endTime: "", endDate: "", massTime: "", massChurch: "", massChurchType: "Parroquia", massAddress: "" },
+        SALA_1: { name: "", surname: "", dob: "", dod: "", timeStart: "", timeEnd: "", cemetery: "", endTime: "", endDate: "", massTime: "", massChurch: "", massChurchType: "Parroquia", massAddress: "" },
+        SALA_2: { name: "", surname: "", dob: "", dod: "", timeStart: "", timeEnd: "", cemetery: "", endTime: "", endDate: "", massTime: "", massChurch: "", massChurchType: "Parroquia", massAddress: "" },
+        SALA_3: { name: "", surname: "", dob: "", dod: "", timeStart: "", timeEnd: "", cemetery: "", endTime: "", endDate: "", massTime: "", massChurch: "", massChurchType: "Parroquia", massAddress: "" },
     });
 
     const handleObituaryChange = (room: keyof typeof obituaries, field: keyof Obituary, value: string) => {
@@ -302,6 +302,32 @@ export default function Proyectar() {
                                                 </div>
                                             </div>
 
+                                            <div className="border-t border-slate-200 mt-4 pt-4">
+                                                <h4 className="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">⛪ Eucaristía</h4>
+                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                                    <div>
+                                                        <label className="block text-xs font-semibold mb-1 text-slate-700">Hora</label>
+                                                        <input type="time" value={obituaries[room].massTime || ""} onChange={(e) => handleObituaryChange(room, "massTime", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className="w-full bg-white/70 border border-white/60 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all cursor-pointer shadow-inner" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-semibold mb-1 text-slate-700">Lugar</label>
+                                                        <div className="flex gap-1">
+                                                            <select value={obituaries[room].massChurchType || "Parroquia"} onChange={(e) => handleObituaryChange(room, "massChurchType", e.target.value)} className="w-[45%] bg-white/70 border border-white/60 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all shadow-inner text-xs px-1">
+                                                                <option value="Parroquia">Parroquia</option>
+                                                                <option value="Iglesia">Iglesia</option>
+                                                                <option value="Capilla">Capilla</option>
+                                                                <option value="Catedral">Catedral</option>
+                                                            </select>
+                                                            <input type="text" value={obituaries[room].massChurch || ""} onChange={(e) => handleObituaryChange(room, "massChurch", e.target.value)} className="w-[55%] bg-white/70 border border-white/60 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all placeholder-slate-400 shadow-inner" placeholder="Ej: San Miguel" />
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-semibold mb-1 text-slate-700">Dirección</label>
+                                                        <input type="text" value={obituaries[room].massAddress || ""} onChange={(e) => handleObituaryChange(room, "massAddress", e.target.value)} className="w-full bg-white/70 border border-white/60 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all placeholder-slate-400 shadow-inner" placeholder="Ej: Calle 10 # 5-20" />
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 bg-blue-50/60 p-3 rounded-xl border border-blue-200 shadow-sm">
                                                 <div>
                                                     <label className="block text-sm font-semibold mb-1 text-blue-800">Fecha de ocultamiento:</label>
@@ -313,8 +339,8 @@ export default function Proyectar() {
                                                 </div>
                                             </div>
                                             <div className="flex justify-end mt-3">
-                                                <button type="button" onClick={() => { handleObituaryChange(room, "timeStart", ""); handleObituaryChange(room, "timeEnd", ""); handleObituaryChange(room, "endTime", ""); handleObituaryChange(room, "endDate", ""); }} className="text-xs font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-full transition-colors border border-red-200">
-                                                    Limpiar Horarios
+                                                <button type="button" onClick={() => { handleObituaryChange(room, "timeStart", ""); handleObituaryChange(room, "timeEnd", ""); handleObituaryChange(room, "endTime", ""); handleObituaryChange(room, "endDate", ""); handleObituaryChange(room, "massTime", ""); handleObituaryChange(room, "massChurch", ""); handleObituaryChange(room, "massChurchType", "Parroquia"); handleObituaryChange(room, "massAddress", ""); }} className="text-xs font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-full transition-colors border border-red-200">
+                                                    Limpiar Horarios / Datos
                                                 </button>
                                             </div>
                                         </div>
@@ -362,14 +388,24 @@ export default function Proyectar() {
 
                                                             {isActive ? (
                                                                 <div className="flex flex-col grow w-full justify-center items-center z-10 overflow-hidden">
-                                                                    <h3 className="text-sm sm:text-base font-extrabold text-black mb-1 truncate w-full px-1 [text-shadow:0_1px_2px_rgb(255_255_255)]">{ob.name}</h3>
-                                                                    <h3 className="text-xs sm:text-sm font-bold text-black/90 mb-2 truncate w-full px-1 [text-shadow:0_1px_2px_rgb(255_255_255)]">{ob.surname}</h3>
+                                                                    <h3 className="text-xs sm:text-sm font-extrabold text-black mb-1 truncate w-full px-1 [text-shadow:0_1px_2px_rgb(255_255_255)]">{ob.name}</h3>
+                                                                    <h3 className="text-[0.65rem] sm:text-xs font-bold text-black/90 mb-1 sm:mb-2 truncate w-full px-1 [text-shadow:0_1px_2px_rgb(255_255_255)]">{ob.surname}</h3>
 
                                                                     {(ob.dob || ob.dod) && (
-                                                                        <div className="flex items-center gap-1 sm:gap-2 text-[0.45rem] sm:text-[0.6rem] font-medium text-black mb-2 sm:mb-4 bg-white/40 px-2 py-1 rounded-full border border-black/10 shadow-sm backdrop-blur-sm whitespace-nowrap overflow-hidden">
-                                                                            <span className="truncate">Nac: {formatDate(ob.dob)}</span>
+                                                                        <div className="flex items-center gap-1 sm:gap-2 text-[0.45rem] sm:text-[0.55rem] font-medium text-black mb-1 sm:mb-2 bg-white/40 px-2 py-1 rounded-full border border-black/10 shadow-sm backdrop-blur-sm whitespace-nowrap overflow-hidden">
+                                                                            <span className="truncate">Nacimiento: {formatDate(ob.dob)}</span>
                                                                             <span className="text-black/50">|</span>
-                                                                            <span className="truncate">Fall: {formatDate(ob.dod)}</span>
+                                                                            <span className="truncate">Fallecimiento: {formatDate(ob.dod)}</span>
+                                                                        </div>
+                                                                    )}
+
+                                                                    {(ob.massTime || ob.massChurch) && (
+                                                                        <div className="flex flex-col items-center justify-center gap-0.5 bg-white/40 px-2 py-1 rounded-lg border border-black/10 shadow-sm backdrop-blur-sm mb-1 sm:mb-2 w-[95%] overflow-hidden">
+                                                                            <span className="text-[0.35rem] font-bold uppercase tracking-widest text-black/80">Eucaristía</span>
+                                                                            <span className="text-[0.45rem] font-bold text-black truncate w-full px-1">
+                                                                                {ob.massChurch ? `${ob.massChurchType || "Parroquia"}: ${ob.massChurch}` : (ob.massChurchType || "Parroquia")} {ob.massTime && `- ${formatTime(ob.massTime)}`}
+                                                                            </span>
+                                                                            {ob.massAddress && <span className="text-[0.4rem] font-medium text-black/80 truncate w-full px-1">{ob.massAddress}</span>}
                                                                         </div>
                                                                     )}
 
@@ -421,30 +457,40 @@ export default function Proyectar() {
 
                                                 {isActive ? (
                                                     <div className="flex flex-col grow w-full justify-center items-center z-10">
-                                                        <h3 className="text-3xl font-extrabold text-black mb-2 [text-shadow:0_1px_3px_rgb(255_255_255)]">{ob.name}</h3>
-                                                        <h3 className="text-2xl font-bold text-black/90 mb-4 [text-shadow:0_1px_3px_rgb(255_255_255)]">{ob.surname}</h3>
+                                                        <h3 className="text-xl sm:text-2xl font-extrabold text-black mb-1 truncate w-full px-2 [text-shadow:0_1px_3px_rgb(255_255_255)]">{ob.name}</h3>
+                                                        <h3 className="text-lg sm:text-xl font-bold text-black/90 mb-3 truncate w-full px-2 [text-shadow:0_1px_3px_rgb(255_255_255)]">{ob.surname}</h3>
 
                                                         {(ob.dob || ob.dod) && (
-                                                            <div className="flex items-center gap-2 text-sm font-medium text-black mb-6 bg-white/40 px-4 py-2 rounded-full border border-black/10 shadow-lg backdrop-blur-sm">
-                                                                <span>Nac: {formatDate(ob.dob)}</span>
+                                                            <div className="flex items-center gap-2 text-xs sm:text-sm font-medium text-black mb-4 bg-white/40 px-4 py-1.5 rounded-full border border-black/10 shadow-lg backdrop-blur-sm overflow-hidden whitespace-nowrap">
+                                                                <span>Nacimiento: {formatDate(ob.dob)}</span>
                                                                 <span className="text-black/50">|</span>
-                                                                <span>Fall: {formatDate(ob.dod)}</span>
+                                                                <span>Fallecimiento: {formatDate(ob.dod)}</span>
+                                                            </div>
+                                                        )}
+
+                                                        {(ob.massTime || ob.massChurch) && (
+                                                            <div className="flex flex-col items-center justify-center gap-1 bg-white/40 px-4 py-2 rounded-xl border border-black/10 shadow-lg backdrop-blur-sm mb-4 w-[95%] overflow-hidden">
+                                                                <span className="text-[0.5rem] font-bold uppercase tracking-widest text-black/80">Eucaristía</span>
+                                                                <span className="text-xs font-bold text-black truncate w-full px-2">
+                                                                    {ob.massChurch ? `${ob.massChurchType || "Parroquia"}: ${ob.massChurch}` : (ob.massChurchType || "Parroquia")} {ob.massTime && `- ${formatTime(ob.massTime)}`}
+                                                                </span>
+                                                                {ob.massAddress && <span className="text-[0.65rem] font-medium text-black/80 truncate w-full px-2">{ob.massAddress}</span>}
                                                             </div>
                                                         )}
 
                                                         <div className="mt-auto grid grid-cols-2 gap-2 w-full">
                                                             {(ob.timeStart || ob.timeEnd) && (
-                                                                <div className="bg-white/30 border border-black/10 rounded-xl p-2 backdrop-blur-md shadow-lg">
-                                                                    <p className="text-black/80 text-[0.6rem] uppercase tracking-widest mb-1 font-bold [text-shadow:0_1px_2px_rgb(255_255_255)]">Horario del Servicio</p>
-                                                                    <p className="text-sm font-bold text-black [text-shadow:0_1px_3px_rgb(255_255_255)]">
+                                                                <div className="bg-white/30 border border-black/10 rounded-xl p-2 backdrop-blur-md shadow-lg flex flex-col justify-center overflow-hidden">
+                                                                    <p className="text-black/80 text-[0.5rem] sm:text-[0.6rem] uppercase tracking-widest mb-0.5 font-bold [text-shadow:0_1px_2px_rgb(255_255_255)] truncate">Horario</p>
+                                                                    <p className="text-xs sm:text-sm font-bold text-black [text-shadow:0_1px_3px_rgb(255_255_255)] truncate">
                                                                         {ob.timeStart && formatTime(ob.timeStart)} {ob.timeStart && ob.timeEnd && "-"} {ob.timeEnd && formatTime(ob.timeEnd)}
                                                                     </p>
                                                                 </div>
                                                             )}
                                                             {ob.cemetery && (
-                                                                <div className="bg-white/30 border border-black/10 rounded-xl p-2 backdrop-blur-md shadow-lg">
-                                                                    <p className="text-black/80 text-[0.6rem] uppercase tracking-widest mb-1 font-bold [text-shadow:0_1px_2px_rgb(255_255_255)]">Destino Final</p>
-                                                                    <p className="text-sm font-bold text-black leading-tight wrap-break-word px-1 [text-shadow:0_1px_3px_rgb(255_255_255)]" title={ob.cemetery}>{ob.cemetery}</p>
+                                                                <div className="bg-white/30 border border-black/10 rounded-xl p-2 backdrop-blur-md shadow-lg flex flex-col justify-center overflow-hidden">
+                                                                    <p className="text-black/80 text-[0.5rem] sm:text-[0.6rem] uppercase tracking-widest mb-0.5 font-bold [text-shadow:0_1px_2px_rgb(255_255_255)] truncate">Destino</p>
+                                                                    <p className="text-xs sm:text-sm font-bold text-black leading-tight truncate w-full px-1 [text-shadow:0_1px_3px_rgb(255_255_255)]" title={ob.cemetery}>{ob.cemetery}</p>
                                                                 </div>
                                                             )}
                                                         </div>
