@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import UploadMedia from "@/components/UploadMedia";
 import Slideshow from "@/components/Slideshow";
 
@@ -25,6 +26,12 @@ export default function Proyectar() {
     const [showObituariesPreview, setShowObituariesPreview] = useState(true);
 
     const [currentTime, setCurrentTime] = useState(() => new Date());
+
+    const router = useRouter();
+
+    const handleLogout = () => {
+        router.push("/login");
+    };
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 10000); // Revisa cada 10 segundos
@@ -133,7 +140,7 @@ export default function Proyectar() {
             {/* Header del Dashboard - Estilo Glassmorphism */}
             <header className="w-full max-w-7xl flex justify-between items-center mb-8 p-4 bg-white/40 backdrop-blur-lg border border-white/60 shadow-xl rounded-2xl">
                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center font-bold text-xl border border-white/60 overflow-hidden shadow-sm">
+                    <div className="w-12 h-12 bg-blue-950 rounded-full flex items-center justify-center border border-white/60 shadow-sm p-1.5">
                         <img src="/imagenes/logo-oficial.webp" alt="JR Logo" className="w-full h-full object-contain" />
                     </div>
                     <h1 className="text-2xl font-bold tracking-wider text-slate-800">Aura 2026 - Jardines del Renacer</h1>
@@ -144,6 +151,9 @@ export default function Proyectar() {
                         {/* Avatar dinámico temporal */}
                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" alt="Avatar" />
                     </div>
+                    <button onClick={handleLogout} className="bg-red-500/10 hover:bg-red-500/20 text-red-600 border border-red-200 hover:border-red-300 font-bold px-4 py-2 rounded-full transition-all text-xs uppercase tracking-widest">
+                        Salir
+                    </button>
                 </div>
             </header>
 
@@ -153,47 +163,49 @@ export default function Proyectar() {
                 <div className="w-full flex flex-col gap-8">
 
                     {/* Sección 1: Configuración y Multimedia */}
-                    <div className="w-full space-y-6 bg-white/50 p-6 rounded-2xl border border-white/60 shadow-sm">
-                        <h2 className="text-2xl font-bold border-b border-slate-200 pb-4 text-slate-800">1. Ajustes e Imágenes</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                            <div className="p-4 bg-white/60 rounded-xl border border-white/60 shadow-sm">
-                                <label className="block font-bold mb-2 text-slate-700">Diseño de Pantalla</label>
-                                <select value={projectionMode} onChange={(e) => setProjectionMode(e.target.value)} className="w-full bg-white/70 border border-white/60 p-3 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white shadow-inner">
-                                    <option value="classic" className="text-black">Clásico (Alternado)</option>
-                                    <option value="split" className="text-black">Dividida (L + Publicidad)</option>
+                    <div className="w-full space-y-6 bg-white/50 p-6 md:p-8 rounded-[2rem] border border-white/60 shadow-lg">
+                        <h2 className="text-2xl font-black border-b-2 border-slate-200/60 pb-4 text-slate-800 text-center tracking-wide">1. Ajustes de Proyección</h2>
+                        <div className="flex flex-wrap justify-center items-stretch gap-5 mt-8">
+                            
+                            <div className="p-5 bg-white/80 backdrop-blur-xl rounded-3xl border-2 border-white shadow-xl hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col items-center w-full sm:w-[220px] group">
+                                <label className="block font-extrabold mb-3 text-slate-400 group-hover:text-blue-600 text-[10px] sm:text-xs uppercase tracking-[0.2em] text-center transition-colors">Diseño Pantalla</label>
+                                <select value={projectionMode} onChange={(e) => setProjectionMode(e.target.value)} className="w-full bg-slate-50 hover:bg-white border-2 border-slate-100 hover:border-blue-300 p-3 rounded-2xl text-slate-800 font-bold outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer text-center text-sm shadow-inner">
+                                    <option value="classic" className="text-black font-medium">Clásico (Alternado)</option>
+                                    <option value="split" className="text-black font-medium">Dividida (L + Publ.)</option>
                                 </select>
                             </div>
 
-                            <div className="p-4 bg-white/60 rounded-xl border border-white/60 shadow-sm">
-                                <label className="block font-bold mb-2 text-slate-700">Modo visualización</label>
-                                <select value={autoPlay ? "auto" : "fixed"} onChange={(e) => setAutoplay(e.target.value === "auto")} className="w-full bg-white/70 border border-white/60 p-3 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white shadow-inner">
-                                    <option value="fixed" className="text-black">Imagen fija</option>
-                                    <option value="auto" className="text-black">Presentación automática</option>
+                            <div className="p-5 bg-white/80 backdrop-blur-xl rounded-3xl border-2 border-white shadow-xl hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col items-center w-full sm:w-[220px] group">
+                                <label className="block font-extrabold mb-3 text-slate-400 group-hover:text-blue-600 text-[10px] sm:text-xs uppercase tracking-[0.2em] text-center transition-colors">Visualización</label>
+                                <select value={autoPlay ? "auto" : "fixed"} onChange={(e) => setAutoplay(e.target.value === "auto")} className="w-full bg-slate-50 hover:bg-white border-2 border-slate-100 hover:border-blue-300 p-3 rounded-2xl text-slate-800 font-bold outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer text-center text-sm shadow-inner">
+                                    <option value="fixed" className="text-black font-medium">Imagen Fija</option>
+                                    <option value="auto" className="text-black font-medium">Automática</option>
                                 </select>
                             </div>
-                            <div className="p-4 bg-white/60 rounded-xl border border-white/60 shadow-sm">
-                                <label className="block font-bold mb-2 text-slate-700">Tiempo por imagen (s)</label>
-                                <input type="number" min={1} value={seconds} onChange={(e) => setSeconds(Number(e.target.value))} className="w-full bg-white/70 border border-white/60 p-3 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white shadow-inner" />
+
+                            <div className="p-5 bg-white/80 backdrop-blur-xl rounded-3xl border-2 border-white shadow-xl hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col items-center w-full sm:w-[220px] group">
+                                <label className="block font-extrabold mb-3 text-slate-400 group-hover:text-blue-600 text-[10px] sm:text-xs uppercase tracking-[0.2em] text-center transition-colors">Tiempo (Segundos)</label>
+                                <input type="number" min={1} max={30} value={seconds} onChange={(e) => setSeconds(Math.min(30, Math.max(1, Number(e.target.value))))} className="w-full bg-slate-50 hover:bg-white border-2 border-slate-100 hover:border-blue-300 p-3 rounded-2xl text-blue-600 font-black outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer text-center text-lg shadow-inner" />
                             </div>
 
-                            <div className="p-4 bg-white/60 rounded-xl border border-white/60 shadow-sm">
-                                <label className="block font-bold mb-2 text-slate-700">Efecto de Transición</label>
-                                <select value={transitionEffect} onChange={(e) => setTransitionEffect(e.target.value)} className="w-full bg-white/70 border border-white/60 p-3 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white shadow-inner">
-                                    <option value="fade" className="text-black">Difuminado (Fade)</option>
-                                    <option value="slide" className="text-black">Deslizamiento</option>
-                                    <option value="zoom" className="text-black">Acercamiento (Zoom)</option>
-                                    <option value="blur" className="text-black">Enfoque (Blur)</option>
-                                    <option value="flip" className="text-black">Giro 3D</option>
-                                    <option value="none" className="text-black">Ninguno (Corte brusco)</option>
+                            <div className="p-5 bg-white/80 backdrop-blur-xl rounded-3xl border-2 border-white shadow-xl hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col items-center w-full sm:w-[220px] group">
+                                <label className="block font-extrabold mb-3 text-slate-400 group-hover:text-blue-600 text-[10px] sm:text-xs uppercase tracking-[0.2em] text-center transition-colors">Transición</label>
+                                <select value={transitionEffect} onChange={(e) => setTransitionEffect(e.target.value)} className="w-full bg-slate-50 hover:bg-white border-2 border-slate-100 hover:border-blue-300 p-3 rounded-2xl text-slate-800 font-bold outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer text-center text-sm shadow-inner">
+                                    <option value="fade" className="text-black font-medium">Difuminado</option>
+                                    <option value="slide" className="text-black font-medium">Deslizamiento</option>
+                                    <option value="zoom" className="text-black font-medium">Acercamiento</option>
+                                    <option value="blur" className="text-black font-medium">Enfoque (Blur)</option>
+                                    <option value="flip" className="text-black font-medium">Giro 3D</option>
+                                    <option value="none" className="text-black font-medium">Ninguno</option>
                                 </select>
                             </div>
 
                             {!autoPlay && (
-                                <div className="p-4 bg-white/60 rounded-xl border border-white/60 shadow-sm">
-                                    <label className="block font-bold mb-2 text-slate-700">Imagen a mostrar</label>
-                                    <select value={selectedImage} onChange={(e) => setSelectedImage(Number(e.target.value))} className="w-full bg-white/70 border border-white/60 p-3 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white shadow-inner">
+                                <div className="p-5 bg-white/80 backdrop-blur-xl rounded-3xl border-2 border-white shadow-xl hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col items-center w-full sm:w-[220px] group">
+                                    <label className="block font-extrabold mb-3 text-slate-400 group-hover:text-blue-600 text-[10px] sm:text-xs uppercase tracking-[0.2em] text-center transition-colors">Mostrar Imagen</label>
+                                    <select value={selectedImage} onChange={(e) => setSelectedImage(Number(e.target.value))} className="w-full bg-slate-50 hover:bg-white border-2 border-slate-100 hover:border-blue-300 p-3 rounded-2xl text-slate-800 font-bold outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer text-center text-sm shadow-inner">
                                         {files.map((file, index) => (
-                                            <option key={index} value={index} className="text-black">{file.name}</option>
+                                            <option key={index} value={index} className="text-black font-medium">{file.name}</option>
                                         ))}
                                     </select>
                                 </div>

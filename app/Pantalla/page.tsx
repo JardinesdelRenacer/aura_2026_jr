@@ -124,77 +124,70 @@ export default function Pantalla() {
     if (projectionMode === "split") {
         return (
             <div className="w-screen h-screen bg-blue-50 overflow-hidden relative font-sans">
-                <div className="w-full h-full flex flex-col gap-4 p-4 bg-linear-to-br from-white/60 via-blue-50/50 to-white/40 backdrop-blur-2xl border border-white/80 shadow-[inset_0_0_20px_rgba(255,255,255,0.9),0_8px_32px_rgba(0,0,0,0.1)]">
-                    <div className="flex gap-4 h-1/3">
-                        <div className="w-1/4"></div>
-                        <div className="flex-1 min-h-0 min-w-0 rounded-4xl overflow-hidden relative shadow-2xl border border-white/80 bg-white/40">
+                <div className="w-full h-full p-4 sm:p-6 lg:p-8 bg-linear-to-br from-white/60 via-blue-50/50 to-white/40 backdrop-blur-2xl border border-white/80 shadow-[inset_0_0_20px_rgba(255,255,255,0.9),0_8px_32px_rgba(0,0,0,0.1)]">
+                    <div className="w-full h-full grid grid-cols-3 grid-rows-2 gap-4 sm:gap-6 lg:gap-8">
+                        {/* Media Slider en Top Right */}
+                        <div className="col-start-2 col-span-2 row-start-1 min-h-0 min-w-0 h-full w-full rounded-4xl overflow-hidden relative shadow-2xl border border-white/80 bg-white/40">
                             <div className="absolute inset-0">
                                 <Slideshow media={media} autoPlay={autoPlay} seconds={seconds} selectedImage={selectedImage} transitionEffect={transitionEffect} />
                             </div>
                         </div>
-                    </div>
-                    <div className="flex-1 min-h-0">
-                        <div className="h-full grid grid-cols-4 grid-rows-2 gap-4">
-                            {Object.entries(obituaries)
-                                .map(([roomKey, ob]) => {
-                                    const expired = checkIsExpired(ob.endTime, ob.endDate);
-                                    const isActive = Boolean((ob.name || ob.surname) && !expired);
-                                    return { roomKey, ob, isActive };
-                                })
-                                .sort((a, b) => Number(b.isActive) - Number(a.isActive))
-                                .map(({ roomKey, ob, isActive }, index) => {
-                                    const slotClasses = [
-                                        "col-span-2 row-start-1",
-                                        "col-span-2 row-start-2",
-                                        "col-start-3 row-span-2",
-                                        "col-start-4 row-span-2"
-                                    ];
-                                    return (
-                                        <div key={roomKey} className={`${slotClasses[index]} min-h-0 min-w-0 h-full w-full bg-[url('/imagenes/fondo_obituarios.png')] bg-size-[100%_100%] bg-no-repeat border border-white/20 rounded-4xl p-4 sm:p-6 flex flex-col justify-start items-center text-center shadow-2xl relative overflow-hidden`}>
-                                            <div className="absolute inset-0 p-4 sm:p-6 flex flex-col justify-start items-center text-center">
-                                                <div className="absolute top-0 right-0 w-20 sm:w-32 h-20 sm:h-32 bg-white/30 rounded-bl-full blur-3xl"></div>
-                                                <div className="absolute bottom-0 left-0 w-20 sm:w-32 h-20 sm:h-32 bg-white/30 rounded-tr-full blur-3xl"></div>
-                                                <h2 className="text-lg sm:text-xl md:text-2xl xl:text-3xl font-bold text-black mb-3 sm:mb-4 tracking-[0.2em] uppercase border-b border-black/20 pb-2 w-3/4 [text-shadow:0_1px_5px_rgb(255_255_255)]">
-                                                    {roomKey === "VIP" ? "Sala VIP" : roomKey.replace("_", " ")}
-                                                </h2>
-                                                {isActive ? (
-                                                    <div className="flex flex-col grow w-full justify-center items-center z-10 overflow-hidden">
-                                                        <h3 className="text-xl sm:text-2xl md:text-3xl xl:text-4xl font-extrabold text-black mb-1 sm:mb-2 truncate w-full px-2 [text-shadow:0_1px_5px_rgb(255_255_255)]">{ob.name}</h3>
-                                                        <h3 className="text-lg sm:text-xl md:text-2xl xl:text-3xl font-bold text-black/90 mb-3 sm:mb-6 truncate w-full px-2 [text-shadow:0_1px_5px_rgb(255_255_255)]">{ob.surname}</h3>
-                                                        {(ob.dob || ob.dod) && (
-                                                            <div className="flex items-center gap-1 sm:gap-2 xl:gap-4 text-xs sm:text-sm md:text-base xl:text-xl font-medium text-black mb-3 sm:mb-6 bg-white/40 px-2 sm:px-4 xl:px-6 py-1 sm:py-2 rounded-full border border-black/10 shadow-lg backdrop-blur-sm whitespace-nowrap overflow-hidden">
-                                                                <span className="truncate">Nac: {formatDate(ob.dob)}</span>
-                                                                <span className="text-black/50 hidden sm:inline">|</span>
-                                                                <span className="truncate">Fall: {formatDate(ob.dod)}</span>
+
+                        {/* Obituarios en Forma de L */}
+                        {Object.entries(obituaries)
+                            .map(([roomKey, ob]) => {
+                                const expired = checkIsExpired(ob.endTime, ob.endDate);
+                                const isActive = Boolean((ob.name || ob.surname) && !expired);
+                                return { roomKey, ob, isActive };
+                            })
+                            .sort((a, b) => Number(b.isActive) - Number(a.isActive))
+                            .map(({ roomKey, ob, isActive }, index) => {
+                                const slotClasses = ["col-start-1 row-start-1", "col-start-1 row-start-2", "col-start-2 row-start-2", "col-start-3 row-start-2"];
+                                return (
+                                    <div key={roomKey} className={`${slotClasses[index]} min-h-0 min-w-0 h-full w-full bg-[url('/imagenes/fondo_obituarios.png')] bg-size-[100%_100%] bg-no-repeat border border-white/20 rounded-4xl shadow-2xl relative overflow-hidden`}>
+                                        <div className="absolute inset-0 p-4 sm:p-6 lg:p-8 flex flex-col justify-start items-center text-center">
+                                            <div className="absolute top-0 right-0 w-20 sm:w-32 lg:w-40 h-20 sm:h-32 lg:h-40 bg-white/30 rounded-bl-full blur-3xl"></div>
+                                            <div className="absolute bottom-0 left-0 w-20 sm:w-32 lg:w-40 h-20 sm:h-32 lg:h-40 bg-white/30 rounded-tr-full blur-3xl"></div>
+                                            <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold text-black mb-3 sm:mb-4 tracking-[0.2em] uppercase border-b border-black/20 pb-2 w-3/4 [text-shadow:0_1px_5px_rgb(255_255_255)]">
+                                                {roomKey === "VIP" ? "Sala VIP" : roomKey.replace("_", " ")}
+                                            </h2>
+                                            {isActive ? (
+                                                <div className="flex flex-col grow w-full justify-center items-center z-10 overflow-hidden">
+                                                    <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-black mb-1 sm:mb-2 truncate w-full px-2 [text-shadow:0_1px_5px_rgb(255_255_255)]">{ob.name}</h3>
+                                                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-black/90 mb-3 sm:mb-6 truncate w-full px-2 [text-shadow:0_1px_5px_rgb(255_255_255)]">{ob.surname}</h3>
+                                                    {(ob.dob || ob.dod) && (
+                                                        <div className="flex items-center gap-1 sm:gap-3 lg:gap-4 text-sm sm:text-lg lg:text-xl font-medium text-black mb-3 sm:mb-6 bg-white/40 px-3 sm:px-5 lg:px-6 py-1 sm:py-2 rounded-full border border-black/10 shadow-lg backdrop-blur-sm whitespace-nowrap overflow-hidden">
+                                                            <span className="truncate">Nac: {formatDate(ob.dob)}</span>
+                                                            <span className="text-black/50 hidden sm:inline">|</span>
+                                                            <span className="truncate">Fall: {formatDate(ob.dod)}</span>
+                                                        </div>
+                                                    )}
+                                                    <div className="mt-auto grid grid-cols-2 gap-1 sm:gap-3 lg:gap-4 w-full px-2">
+                                                        {(ob.timeStart || ob.timeEnd) && (
+                                                            <div className="bg-white/30 border border-black/10 rounded-xl sm:rounded-2xl p-2 lg:p-4 backdrop-blur-md shadow-xl flex flex-col justify-center overflow-hidden">
+                                                                <p className="text-black/80 text-[10px] sm:text-xs lg:text-sm uppercase tracking-widest mb-0.5 sm:mb-1 font-bold [text-shadow:0_1px_3px_rgb(255_255_255)] truncate">Horario</p>
+                                                                <p className="text-sm sm:text-lg lg:text-xl font-bold text-black [text-shadow:0_1px_5px_rgb(255_255_255)] truncate">
+                                                                    {ob.timeStart && formatTime(ob.timeStart)} {ob.timeStart && ob.timeEnd && "-"} {ob.timeEnd && formatTime(ob.timeEnd)}
+                                                                </p>
                                                             </div>
                                                         )}
-                                                        <div className="mt-auto grid grid-cols-2 gap-1 sm:gap-2 xl:gap-4 w-full px-2">
-                                                            {(ob.timeStart || ob.timeEnd) && (
-                                                                <div className="bg-white/30 border border-black/10 rounded-xl sm:rounded-2xl p-1 sm:p-2 xl:p-4 backdrop-blur-md shadow-xl flex flex-col justify-center overflow-hidden">
-                                                                    <p className="text-black/80 text-[10px] sm:text-xs xl:text-sm uppercase tracking-widest mb-0.5 sm:mb-1 font-bold [text-shadow:0_1px_3px_rgb(255_255_255)] truncate">Horario</p>
-                                                                    <p className="text-xs sm:text-sm md:text-base xl:text-xl font-bold text-black [text-shadow:0_1px_5px_rgb(255_255_255)] truncate">
-                                                                        {ob.timeStart && formatTime(ob.timeStart)} {ob.timeStart && ob.timeEnd && "-"} {ob.timeEnd && formatTime(ob.timeEnd)}
-                                                                    </p>
-                                                                </div>
-                                                            )}
-                                                            {ob.cemetery && (
-                                                                <div className="bg-white/30 border border-black/10 rounded-xl sm:rounded-2xl p-1 sm:p-2 xl:p-4 backdrop-blur-md shadow-xl flex flex-col justify-center overflow-hidden">
-                                                                    <p className="text-black/80 text-[10px] sm:text-xs xl:text-sm uppercase tracking-widest mb-0.5 sm:mb-1 font-bold [text-shadow:0_1px_3px_rgb(255_255_255)] truncate">Destino</p>
-                                                                    <p className="text-xs sm:text-sm md:text-base xl:text-xl font-bold text-black leading-tight truncate w-full px-1 [text-shadow:0_1px_5px_rgb(255_255_255)]" title={ob.cemetery}>{ob.cemetery}</p>
-                                                                </div>
-                                                            )}
-                                                        </div>
+                                                        {ob.cemetery && (
+                                                            <div className="bg-white/30 border border-black/10 rounded-xl sm:rounded-2xl p-2 lg:p-4 backdrop-blur-md shadow-xl flex flex-col justify-center overflow-hidden">
+                                                                <p className="text-black/80 text-[10px] sm:text-xs lg:text-sm uppercase tracking-widest mb-0.5 sm:mb-1 font-bold [text-shadow:0_1px_3px_rgb(255_255_255)] truncate">Destino</p>
+                                                                <p className="text-sm sm:text-lg lg:text-xl font-bold text-black leading-tight truncate w-full px-1 [text-shadow:0_1px_5px_rgb(255_255_255)]" title={ob.cemetery}>{ob.cemetery}</p>
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                ) : (
-                                                    <div className="grow flex items-center justify-center z-10">
-                                                        <p className="text-sm sm:text-lg md:text-xl xl:text-2xl font-bold text-black/40 tracking-widest uppercase [text-shadow:0_1px_5px_rgb(255_255_255)] truncate">Sala Disponible</p>
-                                                    </div>
-                                                )}
-                                            </div>
+                                                </div>
+                                            ) : (
+                                                <div className="grow flex items-center justify-center z-10">
+                                                    <p className="text-base sm:text-xl lg:text-2xl font-bold text-black/40 tracking-widest uppercase [text-shadow:0_1px_5px_rgb(255_255_255)] truncate">Sala Disponible</p>
+                                                </div>
+                                            )}
                                         </div>
-                                    );
-                                })}
-                        </div>
+                                    </div>
+                                );
+                            })}
                     </div>
                 </div>
             </div>

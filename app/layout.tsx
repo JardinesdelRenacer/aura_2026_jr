@@ -16,7 +16,9 @@ export const metadata: Metadata = {
   title: "Aura 2026 - Jardines del Renacer",
   description: "Sistema de Proyección Corporativo",
   icons: {
-    icon: "/imagenes/log_footer.webp",
+    icon: [
+      { url: "/imagenes/log_footer.webp", type: "image/webp" }
+    ],
   },
 };
 
