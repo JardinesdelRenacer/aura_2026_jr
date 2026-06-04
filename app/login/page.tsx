@@ -6,21 +6,57 @@ import { useRouter } from "next/navigation";
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        
-        // Normalizamos el correo para evitar errores por espacios o mayúsculas
-        const emailVal = email.toLowerCase().trim();
-        
-        // Verificación inteligente de roles
-        if (emailVal.includes("master")) {
-            router.push("/master"); 
-        } else if (emailVal.includes("admin")) {
-            router.push("/proyectar");
-        } else {
-            alert("Credenciales inválidas. Intenta con admin@... o master@...");
+        setError("");
+        setLoading(true);
+
+        try {
+            // Llamar al endpoint de autenticación
+            const response = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: email.toLowerCase().trim(),
+                    password,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!data.success) {
+                setError(data.error || "Credenciales inválidas");
+                setLoading(false);
+                return;
+            }
+
+            // Guardar información del usuario en sessionStorage
+            sessionStorage.setItem(
+                "user",
+                JSON.stringify({
+                    id: data.user.id,
+                    email: data.user.email,
+                    role: data.user.role,
+                })
+            );
+
+            // Redirigir según el rol
+            if (data.user.role === "MASTER") {
+                router.push("/master");
+            } else if (data.user.role === "ADMIN") {
+                router.push("/proyectar");
+            }
+        } catch (err) {
+            setError("Error al conectar con el servidor");
+            console.error(err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -38,25 +74,57 @@ export default function LoginPage() {
                     <h1 className="text-3xl font-black text-slate-800 mb-2 text-center tracking-tight">Iniciar Sesión</h1>
                     <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-8 text-center">Aura 2026</p>
 
+                    {error && (
+                        <div className="w-full mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm font-medium">
+                            {error}
+                        </div>
+                    )}
+
                     <form onSubmit={handleLogin} className="w-full space-y-5">
                         <div>
                             <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Correo Electrónico</label>
-                            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-white/60 border-2 border-white focus:border-blue-400 p-4 rounded-xl text-slate-800 font-medium outline-none transition-all shadow-inner placeholder-slate-400" placeholder="ejemplo@jardinesdelrenacer.co" required />
+                            <input 
+                                type="email" 
+                                value={email} 
+                                onChange={(e) => setEmail(e.target.value)} 
+                                className="w-full bg-white/60 border-2 border-white focus:border-blue-400 p-4 rounded-xl text-slate-800 font-medium outline-none transition-all shadow-inner placeholder-slate-400" 
+                                placeholder="ejemplo@jardinesdelrenacer.co" 
+                                required 
+                                disabled={loading}
+                            />
                         </div>
                         
                         <div>
                             <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Contraseña</label>
-                            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-white/60 border-2 border-white focus:border-blue-400 p-4 rounded-xl text-slate-800 font-medium outline-none transition-all shadow-inner placeholder-slate-400" placeholder="••••••••" required />
+                            <input 
+                                type="password" 
+                                value={password} 
+                                onChange={(e) => setPassword(e.target.value)} 
+                                className="w-full bg-white/60 border-2 border-white focus:border-blue-400 p-4 rounded-xl text-slate-800 font-medium outline-none transition-all shadow-inner placeholder-slate-400" 
+                                placeholder="••••••••" 
+                                required 
+                                disabled={loading}
+                            />
                         </div>
 
-                        <button type="submit" className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 uppercase tracking-widest text-sm">
-                            Ingresar al Sistema
+                        <button 
+                            type="submit" 
+                            className="w-full mt-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-black py-4 rounded-xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 uppercase tracking-widest text-sm"
+                            disabled={loading}
+                        >
+                            {loading ? "Validando..." : "Ingresar al Sistema"}
                         </button>
                     </form>
 
                     <div className="mt-8 text-center bg-white/50 p-4 rounded-xl border border-white/60 text-xs text-slate-500 font-medium">
-                        <p className="mb-1">Prueba con:</p>
-                        <p><strong className="text-blue-600">admin@jardines.co</strong> (Sede) o <strong className="text-blue-600">master@jardines.co</strong> (Control)</p>
+                        <p className="mb-2 font-bold text-slate-700">Credenciales de Prueba:</p>
+                        <div className="space-y-2">
+                            <div>
+                                <p className="text-slate-600"><strong className="text-blue-600">MASTER:</strong> master@jardines.co</p>
+                                <p className="text-slate-600"><strong className="text-blue-600">ADMIN:</strong> admin@jardines.co</p>
+                                <p className="text-slate-600 mt-1"><strong>Contraseña:</strong> 123456</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
