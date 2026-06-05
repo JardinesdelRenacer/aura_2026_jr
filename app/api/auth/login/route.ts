@@ -3,8 +3,23 @@ import { prisma } from "@/src/lib/prisma";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
+    console.log('[api/auth/login] request received');
     try {
-        const body = await req.json();
+        const contentType = req.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+            console.warn('[api/auth/login] unsupported content-type:', contentType);
+            return NextResponse.json({ success: false, error: 'Invalid content type' }, { status: 400 });
+        }
+
+        let body: any = null;
+        try {
+            body = await req.json();
+        } catch (parseErr) {
+            console.error('[api/auth/login] JSON parse error:', parseErr);
+            return NextResponse.json({ success: false, error: 'Invalid JSON body' }, { status: 400 });
+        }
+
+        console.log('[api/auth/login] body:', body);
         const { email, password } = body;
 
         // Validar que existan email y password
@@ -58,8 +73,8 @@ export async function POST(req: Request) {
             },
             { status: 200 }
         );
-    } catch (error) {
-        console.error("ERROR en autenticación:", error);
+    } catch (error: any) {
+        console.error("ERROR en autenticación:", error && error.stack ? error.stack : error);
 
         return NextResponse.json(
             {

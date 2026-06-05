@@ -28,10 +28,30 @@ export default function LoginPage() {
                 }),
             });
 
-            const data = await response.json();
+            // Manejo robusto: comprobar content-type antes de parsear JSON
+            const contentType = response.headers.get("content-type") || "";
+            let data: any = null;
 
-            if (!data.success) {
-                setError(data.error || "Credenciales inválidas");
+            if (contentType.includes("application/json")) {
+                try {
+                    data = await response.json();
+                } catch (err) {
+                    setError("Respuesta inválida del servidor");
+                    setLoading(false);
+                    console.error('Invalid JSON response', err);
+                    return;
+                }
+            } else {
+                // Si el servidor devolvió HTML (p. ej. página de error), leer como texto
+                const text = await response.text();
+                setError("Error del servidor: respuesta inesperada");
+                setLoading(false);
+                console.error('Non-JSON response from /api/auth/login:', text);
+                return;
+            }
+
+            if (!data || !data.success) {
+                setError((data && data.error) || "Credenciales inválidas");
                 setLoading(false);
                 return;
             }
