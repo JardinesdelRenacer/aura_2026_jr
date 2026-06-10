@@ -33,10 +33,16 @@ export async function POST(req: Request) {
             );
         }
 
-        // Buscar usuario por email
         const user = await prisma.user.findUnique({
-            where: { email: email.toLowerCase().trim() },
+            where: {
+                email: email.toLowerCase().trim(),
+            },
         });
+
+        console.log("================================");
+        console.log("USER ENCONTRADO:");
+        console.log(user);
+        console.log("================================");
 
         if (!user) {
             return NextResponse.json(
@@ -48,8 +54,14 @@ export async function POST(req: Request) {
             );
         }
 
-        // Comparar contraseña hasheada con la proporcionada
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = await bcrypt.compare(
+            password,
+            user.password
+        );
+
+        console.log("PASSWORD RECIBIDO:", password);
+        console.log("HASH GUARDADO:", user.password);
+        console.log("PASSWORD VALIDO:", isPasswordValid);
 
         if (!isPasswordValid) {
             return NextResponse.json(

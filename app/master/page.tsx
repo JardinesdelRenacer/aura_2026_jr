@@ -31,7 +31,18 @@ const PantallaEscalada = () => {
 
 export default function MasterDashboard() {
     const [activeTab, setActiveTab] = useState<string>("dashboard");
+    const [usuarios, setUsuarios] = useState<any[]>([]);
     const [expandedSede, setExpandedSede] = useState<any>(null);
+
+    // se agrega constantes para crear el administrador
+    const [showModalAdmin, setShowModalAdmin] = useState(false);
+   
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [departamento, setDepartamento] = useState("");
+    const [ciudad, setCiudad] = useState("");
+    const [nombreSede, setNombreSede] = useState("");
+
     const router = useRouter();
 
     const handleLogout = () => {
@@ -54,6 +65,48 @@ export default function MasterDashboard() {
         { id: "traslados", label: "Traslados y Control", icon: "M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" },
         { id: "configuracion", label: "Configuración", icon: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" }
     ], []);
+    const crearAdministrador = async () => {
+        try {
+            const response = await fetch("/api/master/users", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email,
+                    password,
+                    departamento,
+                    ciudad,
+                    nombreSede,
+                }),
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                alert("Administrador creado exitosamente");
+                setShowModalAdmin(false);
+                cargarUsuarios(); // Recargar usuarios
+            } else {
+                alert("Error al crear administrador: " + data.error);
+            }
+        } catch (error) {
+            console.error("Error creating administrator:", error);
+        }
+    };
+
+    const cargarUsuarios = async () => {
+        try {
+            const response = await fetch("/api/master/users");
+            const data = await response.json();
+            setUsuarios(data);
+        } catch (error) {
+            console.error("Error fetching users:", error);
+        }
+    };
+
+    useEffect(() => {
+        cargarUsuarios();
+    }, []);
 
     return (
         <div className="flex h-screen bg-[#EEF4FF] overflow-hidden font-sans text-slate-800">
@@ -269,7 +322,7 @@ export default function MasterDashboard() {
                                         <h3 className="text-xl font-bold text-slate-800">Usuarios y Accesos</h3>
                                         <p className="text-sm text-slate-500 mt-1">Administra las credenciales, sedes y roles del sistema.</p>
                                     </div>
-                                    <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all text-sm flex items-center gap-2">
+                                    <button onClick={() => setShowModalAdmin(true)} className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all text-sm flex items-center gap-2">
                                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
                                         Nuevo Usuario
                                     </button>
@@ -300,25 +353,25 @@ export default function MasterDashboard() {
                                                 </tr>
                                             </thead>
                                             <tbody className="text-sm">
-                                                {mockSedes.map((u, i) => (
-                                                    <tr key={i} className="border-b border-slate-100 hover:bg-blue-50/50 transition-colors group">
+                                            {usuarios.map((u, i) => (
+                                                <tr key={u.id || i} className="border-b border-slate-100 hover:bg-blue-50/50 transition-colors group">
                                                         <td className="p-4">
                                                             <div className="flex items-center gap-3">
                                                                 <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-black text-sm shadow-inner border border-blue-200">
-                                                                    {u.admin.charAt(0).toUpperCase()}
+                                                                {u.email ? u.email.charAt(0).toUpperCase() : "?"}
                                                                 </div>
                                                                 <div className="flex flex-col">
-                                                                    <span className="font-bold text-slate-700">{u.admin}</span>
+                                                                <span className="font-bold text-slate-700">{u.email}</span>
                                                                     <span className="text-xs text-slate-400 font-medium">Último acceso: Hace 2 horas</span>
                                                                 </div>
                                                             </div>
                                                         </td>
-                                                        <td className="p-4 text-slate-600 font-semibold">{u.nombre}</td>
+                                                    <td className="p-4 text-slate-600 font-semibold">{u.sede?.nombre || "Sin sede asignada"}</td>
                                                         <td className="p-4">
                                                             <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md text-[10px] font-bold tracking-widest border border-slate-200">ADMIN SEDE</span>
                                                         </td>
                                                         <td className="p-4">
-                                                            <span className="bg-green-50 text-green-600 text-[10px] font-black uppercase px-2.5 py-1 rounded-md border border-green-200">Activo</span>
+                                                        <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-md border ${u.sede?.estado === "ACTIVA" ? "bg-green-50 text-green-600 border-green-200" : "bg-red-50 text-red-600 border-red-200"}`}>{u.sede?.estado || "INACTIVA"}</span>
                                                         </td>
                                                         <td className="p-4 text-right">
                                                             <div className="flex justify-end gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
@@ -392,7 +445,6 @@ export default function MasterDashboard() {
                                         <p className="text-xs font-semibold text-slate-500 mt-2">Ocupación promedio</p>
                                     </div>
                                 </div>
-
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                     {/* Gráfico Placeholder */}
                                     <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col">
@@ -661,6 +713,27 @@ export default function MasterDashboard() {
                     </div>
                 </main>
             </div>
+            
+            { showModalAdmin && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded 3xl p-8 w-full max-w-lg shadow-2xl relative">
+                        <h2 className="text-2xl font-black text-slate-800 mb-6">Crear Nuevo Administrador</h2>
+                        <div className="space-y-4">
+                            <input type="email" placeholder="Correo electrónico" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-2 rounded-xl border border-white/80 bg-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                            <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-2 rounded-xl border border-white/80 bg-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                            <input type="text" placeholder="Departamento" value={departamento} onChange={(e) => setDepartamento(e.target.value)} className="w-full px-4 py-2 rounded-xl border border-white/80 bg-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                            <input type="text" placeholder="Ciudad" value={ciudad} onChange={(e) => setCiudad(e.target.value)} className="w-full px-4 py-2 rounded-xl border border-white/80 bg-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                            <input type="text" placeholder="Nombre de la Sede" value={nombreSede} onChange={(e) => setNombreSede(e.target.value)} className="w-full px-4 py-2 rounded-xl border border-white/80 bg-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                            <div className="text-sm text-slate-500">La contraseña se guardará de forma segura y encriptada.</div>
+                            <div className="flex gap-3 pt-4">
+                                <button onClick={() => setShowModalAdmin(false)} className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold px-4 py-2 rounded-xl transition-colors w-full">Cancelar</button>
+
+                                <button onClick={crearAdministrador} className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl transition-colors w-full">Crear Administrador</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* MODAL DE PANTALLA EXPANDIDA */}
             {expandedSede && (

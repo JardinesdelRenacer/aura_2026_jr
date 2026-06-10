@@ -127,6 +127,16 @@ export default function Proyectar() {
         setShowObituariesPreview(true);
     }, []);
 
+    // Toma los datos del usuario MASTER desde sessionStorage para mostrar su email en el header
+    const [user, setUser] = useState<any>(null);
+
+    useEffect(() => {
+        const userData = sessionStorage.getItem("user");
+        if (userData) {
+            setUser(JSON.parse(userData));
+        }
+    }, []);
+
     // Autoguardado en tiempo real de todos los cambios
     useEffect(() => {
         localStorage.setItem(
@@ -146,7 +156,7 @@ export default function Proyectar() {
                     <h1 className="text-2xl font-bold tracking-wider text-slate-800">Aura 2026 - Jardines del Renacer</h1>
                 </div>
                 <div className="flex items-center gap-4">
-                    <span className="text-sm text-slate-600 font-medium">admin@jardinesdelrenacer.co</span>
+                    <span className="text-sm text-slate-600 font-medium">{user?.email}</span>
                     <div className="w-10 h-10 bg-blue-100 rounded-full border-2 border-white shadow-sm overflow-hidden">
                         {/* Avatar dinámico temporal */}
                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" alt="Avatar" />

@@ -38,20 +38,23 @@ model User {
 }
 
 model Sede {
-  id      String      @id @default(cuid())
-  nombre  String
+  id      		String      @id @default(cuid())
 
-  estado  EstadoSede  @default(INACTIVA)
+  departamento  	String
+  ciudad        	String
+  nombre        	String
 
-  adminId String      @unique
-  admin   User        @relation(fields: [adminId], references: [id])
+  estado  		EstadoSede  @default(INACTIVA)
 
-  obituarios      Obituario[]
-  media           Media[]
-  configuracion   ConfiguracionPantalla?
+  adminId 		String      @unique
+  admin   		User        @relation(fields: [adminId], references: [id])
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  obituarios      	Obituario[]
+  media           	Media[]
+  configuracion   	ConfiguracionPantalla?
+
+  createdAt 		DateTime  @default(now())
+  updatedAt 		DateTime  @updatedAt
 }
 
 model Obituario {
