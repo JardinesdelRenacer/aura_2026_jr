@@ -45,3 +45,32 @@ export async function POST(req: Request) {
         );
     }
 }
+
+
+export async function GET() {
+    try {
+        const usuarios = await prisma.user.findMany({
+            include: {
+                sede: true,
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
+        });
+
+        return NextResponse.json(usuarios);
+
+    } catch (error) {
+
+        console.error("ERROR MASTER USERS:");
+        console.error(error);
+
+        return NextResponse.json(
+            {
+                success: false,
+                error: "Error al obtener usuarios: " + String(error),
+            },
+            { status: 500 }
+        );
+    }
+}

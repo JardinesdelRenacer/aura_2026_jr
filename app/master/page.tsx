@@ -29,6 +29,7 @@ const PantallaEscalada = () => {
 };
 
 export default function MasterDashboard() {
+    const [usuarios, setUsuarios] = useState<any[]>([]);
     const [activeTab, setActiveTab] = useState("monitoreo");
     const [expandedSede, setExpandedSede] = useState<any>(null);
 
@@ -82,6 +83,20 @@ export default function MasterDashboard() {
             console.error("Error creating administrator:", error);
         }
     };
+
+    const cargarUsuarios = async () => {
+        try {
+            const response = await fetch("/api/master/users");
+            const data = await response.json();
+            setUsuarios(data);
+        } catch (error) {
+            console.error("Error fetching users:", error);
+        }
+    };
+
+    useEffect(() => {
+        cargarUsuarios();
+    }, []);
 
     return (
         <div className="min-h-screen p-4 sm:p-8 flex flex-col items-center bg-blue-50 font-sans">
@@ -242,11 +257,11 @@ export default function MasterDashboard() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {mockSedes.map((u, i) => (
-                                            <tr key={i} className="border-b border-slate-100 hover:bg-white/50 transition-colors">
-                                                <td className="py-4 pl-2 font-bold text-slate-700">{u.admin}</td>
-                                                <td className="py-4 text-sm font-medium text-slate-500">{u.nombre}</td>
-                                                <td className="py-4"><span className="bg-green-100 text-green-700 text-[10px] font-black uppercase px-2 py-1 rounded-full">Activo</span></td>
+                                        {usuarios.map((u, i) => (
+                                            <tr key={u.id} className="border-b border-slate-100 hover:bg-white/50 transition-colors">
+                                                <td className="py-4 pl-2 font-bold text-slate-700">{u.email}</td>
+                                                <td className="py-4 text-sm font-medium text-slate-500">{u.sede?.nombre || "Sin sede asignada"}</td>
+                                                <td className="py-4"><span className={`text-[10px] font-black uppercase px-2 py-1 rounded-full ${u.sede?.estado === "ACTIVA" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>{u.sede?.estado || "INACTIVA"}</span></td>
                                                 <td className="py-4 text-right pr-2">
                                                     <button className="text-blue-500 hover:text-blue-700 text-sm font-bold mr-3">Editar</button>
                                                     <button className="text-red-500 hover:text-red-700 text-sm font-bold">Eliminar</button>
