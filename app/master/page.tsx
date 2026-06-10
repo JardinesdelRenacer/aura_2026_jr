@@ -3,6 +3,9 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 
+// Se importan ubicaciones para el formulario de creación de sedes
+import { ubicaciones } from "@/src/data/ubicaciones";
+
 // Componente para forzar la resolución Full HD (1920x1080) y escalarla a cualquier tamaño
 const PantallaEscalada = () => {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -107,6 +110,42 @@ export default function MasterDashboard() {
     useEffect(() => {
         cargarUsuarios();
     }, []);
+
+    const departamentos = Object.keys(ubicaciones);
+
+    const ciudadesDisponibles = departamento ? ubicaciones[departamento as keyof typeof ubicaciones] : [];
+
+    // Eliminar Usuario
+    const eliminarUsuario = async (userId: string) => {
+        const confirmDelete = confirm("¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.");
+        if (!confirmDelete) {
+            return;
+        }
+
+        const response = await fetch(`/api/master/users/${userId}`, {
+            method: "DELETE",
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert("Usuario eliminado exitosamente");
+            cargarUsuarios(); // Recargar usuarios después de eliminar
+        } else {
+            alert("Error al eliminar usuario: " + data.error);
+        }
+    };
+
+    const editarUsuario = (userId: string) => {
+        const newEmail = prompt("Ingrese el nuevo correo electrónico para este usuario:");
+        if (newEmail) {
+            // Aquí podrías agregar la lógica para actualizar el correo del usuario en la base de datos
+            alert("Correo actualizado a: " + newEmail);
+            cargarUsuarios(); // Recargar usuarios después de editar
+        } else {
+            alert("No se ingresó un correo válido. La actualización ha sido cancelada.");
+        }
+    };
 
     return (
         <div className="flex h-screen bg-[#EEF4FF] overflow-hidden font-sans text-slate-800">
@@ -375,10 +414,10 @@ export default function MasterDashboard() {
                                                         </td>
                                                         <td className="p-4 text-right">
                                                             <div className="flex justify-end gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                                                                <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Editar Credenciales">
+                                                                <button onClick={() => editarUsuario(u.id)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Editar Credenciales">
                                                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                                                                 </button>
-                                                                <button className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Suspender Usuario">
+                                                                <button onClick={() => eliminarUsuario (u.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Suspender Usuario">
                                                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                                                 </button>
                                                             </div>
@@ -714,6 +753,7 @@ export default function MasterDashboard() {
                 </main>
             </div>
             
+            // Crear Usuario(Administrador)
             { showModalAdmin && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white rounded 3xl p-8 w-full max-w-lg shadow-2xl relative">
@@ -721,8 +761,22 @@ export default function MasterDashboard() {
                         <div className="space-y-4">
                             <input type="email" placeholder="Correo electrónico" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-2 rounded-xl border border-white/80 bg-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
                             <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-2 rounded-xl border border-white/80 bg-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-                            <input type="text" placeholder="Departamento" value={departamento} onChange={(e) => setDepartamento(e.target.value)} className="w-full px-4 py-2 rounded-xl border border-white/80 bg-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-                            <input type="text" placeholder="Ciudad" value={ciudad} onChange={(e) => setCiudad(e.target.value)} className="w-full px-4 py-2 rounded-xl border border-white/80 bg-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                            <select value={departamento} onChange={(e) => setDepartamento(e.target.value)} className="w-full px-4 py-2 rounded-xl border border-white/80 bg-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                <option value="">Seleccionar Departamento</option>
+                                {departamentos.map((dept) => (
+                                    <option key={dept} value={dept}>
+                                        {dept}
+                                    </option>
+                                ))}
+                            </select>
+                            <select value={ciudad} onChange={(e) => setCiudad(e.target.value)} className="w-full px-4 py-2 rounded-xl border border-white/80 bg-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                <option value="">Seleccionar Ciudad</option>
+                                {ciudadesDisponibles.map((city) => (
+                                    <option key={city} value={city}>
+                                        {city}
+                                    </option>
+                                ))}
+                            </select>
                             <input type="text" placeholder="Nombre de la Sede" value={nombreSede} onChange={(e) => setNombreSede(e.target.value)} className="w-full px-4 py-2 rounded-xl border border-white/80 bg-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
                             <div className="text-sm text-slate-500">La contraseña se guardará de forma segura y encriptada.</div>
                             <div className="flex gap-3 pt-4">
