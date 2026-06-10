@@ -46,6 +46,15 @@ export default function MasterDashboard() {
     const [ciudad, setCiudad] = useState("");
     const [nombreSede, setNombreSede] = useState("");
 
+    const [user, setUser] = useState<any>(null);
+
+    useEffect(() => {
+        const userData = sessionStorage.getItem("user");
+        if (userData) {
+            setUser(JSON.parse(userData));
+        }
+    }, []);
+
     const router = useRouter();
 
     const handleLogout = () => {
@@ -186,7 +195,9 @@ export default function MasterDashboard() {
                             </div>
                             <div className="flex flex-col text-left">
                                 <span className="text-sm font-bold text-slate-800 leading-tight">Super Master</span>
-                                <span className="text-[10px] font-semibold text-slate-500">master@aura2026.co</span>
+                
+                                <span className="text-[10px] font-semibold text-slate-500">{user?.email ? user.email.charAt(0).toUpperCase() + user .email.slice(1) : "Correo no disponible"}</span>
+    
                             </div>
                         </div>
                         <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 py-2 rounded-lg transition-colors border border-red-100">
@@ -753,7 +764,7 @@ export default function MasterDashboard() {
                 </main>
             </div>
             
-            // Crear Usuario(Administrador)
+            {/* Crear Usuario(Administrador) */}
             { showModalAdmin && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white rounded 3xl p-8 w-full max-w-lg shadow-2xl relative">
