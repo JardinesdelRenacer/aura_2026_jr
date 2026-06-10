@@ -31,6 +31,16 @@ const PantallaEscalada = () => {
 export default function MasterDashboard() {
     const [activeTab, setActiveTab] = useState("monitoreo");
     const [expandedSede, setExpandedSede] = useState<any>(null);
+
+    // se agrega constantes para crear el administrador
+    const [showModalAdmin, setShowModalAdmin] = useState(false);
+   
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [departamento, setDepartamento] = useState("");
+    const [ciudad, setCiudad] = useState("");
+    const [nombreSede, setNombreSede] = useState("");
+
     const router = useRouter();
 
     const handleLogout = () => {
@@ -43,6 +53,35 @@ export default function MasterDashboard() {
         { id: 2, nombre: "Sede Norte", admin: "norte@jardinesdelrenacer.co", estado: "Transmitiendo", obituarios: 38, tendencia: "+5%" },
         { id: 3, nombre: "Sede Sur (VIP)", admin: "sur@jardinesdelrenacer.co", estado: "Inactiva", obituarios: 12, tendencia: "-2%" },
     ];
+
+    const crearAdministrador = async () => {
+        try {
+            const response = await fetch("/api/master/users", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email,
+                    password,
+                    departamento,
+                    ciudad,
+                    nombreSede,
+                }),
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                alert("Administrador creado exitosamente");
+                setShowModalAdmin(false);
+                // Aquí podrías agregar lógica para actualizar la lista de usuarios sin recargar la página
+            } else {
+                alert("Error al crear administrador: " + data.error);
+            }
+        } catch (error) {
+            console.error("Error creating administrator:", error);
+        }
+    };
 
     return (
         <div className="min-h-screen p-4 sm:p-8 flex flex-col items-center bg-blue-50 font-sans">
@@ -188,7 +227,7 @@ export default function MasterDashboard() {
                         <div className="space-y-6">
                             <div className="flex justify-between items-center border-b-2 border-slate-200/60 pb-4">
                                 <h2 className="text-2xl font-black text-slate-800">Gestión de Cuentas (Admins)</h2>
-                                <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl shadow-lg transition-colors text-sm">
+                                <button onClick={() => setShowModalAdmin(true)} className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl shadow-lg transition-colors text-sm">
                                     + Nuevo Administrador
                                 </button>
                             </div>
@@ -221,6 +260,27 @@ export default function MasterDashboard() {
                     )}
                 </div>
             </div>
+            
+            { showModalAdmin && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded 3xl p-8 w-full max-w-lg shadow-2xl relative">
+                        <h2 className="text-2xl font-black text-slate-800 mb-6">Crear Nuevo Administrador</h2>
+                        <div className="space-y-4">
+                            <input type="email" placeholder="Correo electrónico" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-2 rounded-xl border border-white/80 bg-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                            <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-2 rounded-xl border border-white/80 bg-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                            <input type="text" placeholder="Departamento" value={departamento} onChange={(e) => setDepartamento(e.target.value)} className="w-full px-4 py-2 rounded-xl border border-white/80 bg-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                            <input type="text" placeholder="Ciudad" value={ciudad} onChange={(e) => setCiudad(e.target.value)} className="w-full px-4 py-2 rounded-xl border border-white/80 bg-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                            <input type="text" placeholder="Nombre de la Sede" value={nombreSede} onChange={(e) => setNombreSede(e.target.value)} className="w-full px-4 py-2 rounded-xl border border-white/80 bg-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                            <div className="text-sm text-slate-500">La contraseña se guardará de forma segura y encriptada.</div>
+                            <div className="flex gap-3 pt-4">
+                                <button onClick={() => setShowModalAdmin(false)} className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold px-4 py-2 rounded-xl transition-colors w-full">Cancelar</button>
+
+                                <button onClick={crearAdministrador} className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl transition-colors w-full">Crear Administrador</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* MODAL DE PANTALLA EXPANDIDA */}
             {expandedSede && (
