@@ -1,4 +1,27 @@
 -- CreateTable
+CREATE TABLE "User" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "role" TEXT NOT NULL DEFAULT 'ADMIN',
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "Sede" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "departamento" TEXT NOT NULL,
+    "ciudad" TEXT NOT NULL,
+    "nombre" TEXT NOT NULL,
+    "estado" TEXT NOT NULL DEFAULT 'INACTIVA',
+    "adminId" TEXT NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "Sede_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateTable
 CREATE TABLE "Obituario" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "sedeId" TEXT NOT NULL,
@@ -54,24 +77,11 @@ CREATE TABLE "Presentacion" (
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- RedefineTables
-PRAGMA defer_foreign_keys=ON;
-PRAGMA foreign_keys=OFF;
-CREATE TABLE "new_Sede" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "nombre" TEXT NOT NULL,
-    "estado" TEXT NOT NULL DEFAULT 'INACTIVA',
-    "adminId" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "Sede_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
-);
-INSERT INTO "new_Sede" ("adminId", "createdAt", "estado", "id", "nombre", "updatedAt") SELECT "adminId", "createdAt", "estado", "id", "nombre", "updatedAt" FROM "Sede";
-DROP TABLE "Sede";
-ALTER TABLE "new_Sede" RENAME TO "Sede";
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Sede_adminId_key" ON "Sede"("adminId");
-PRAGMA foreign_keys=ON;
-PRAGMA defer_foreign_keys=OFF;
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Obituario_sedeId_sala_key" ON "Obituario"("sedeId", "sala");
