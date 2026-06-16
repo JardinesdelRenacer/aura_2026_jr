@@ -14,11 +14,11 @@ type Obituary = { name: string, surname: string, dob: string, dod: string, timeS
 export default function Proyectar() {
     
     const params = useParams();
-
-    const sedeId = params.id as string;
-
-    console.log("Sede:", sedeId)
     
+    const sedeId = params.id as string; 
+
+    console.log("Sede:", sedeId);
+
     const [ loading, setLoading ] = useState(true);
 
     const [files, setFiles] = useState<File[]>([]);
