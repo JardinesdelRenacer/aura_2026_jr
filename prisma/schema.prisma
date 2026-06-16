@@ -55,7 +55,7 @@ model Sede {
 
   numeroSalas       Int                      @default(1)
   salaVip           Boolean                  @default(false)
-  
+
   adminId 		      String?                  @unique
   admin   		      User?                    @relation(fields: [adminId], references: [id])
 
