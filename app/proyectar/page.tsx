@@ -138,7 +138,10 @@ export default function Proyectar() {
     }, []);
 
     // Toma los datos del usuario MASTER desde sessionStorage para mostrar su email en el header
-    const [user, setUser] = useState<any>(null);
+    interface User{
+        email: string;
+    }
+    const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
         const userData = sessionStorage.getItem("user");
@@ -154,38 +157,30 @@ export default function Proyectar() {
         );
     }, [mediaItems, autoPlay, seconds, selectedImage, obituaries, transitionEffect, projectionMode]);
 
-    const [sede, setSede] = useState<any>(null);
+    interface Sede {
+        id: number,
+        nombre: string;
+    }
+
+    const [sede, setSede] = useState<Sede | null>(null);
 
     useEffect(() => {
         if (!sedeId) return;
 
         const cargarSede = async () => {
-            const res = await fetch(`/app/api/sedes/${sedeId}`);
-            const data = await res.json();
+            try{
+                const resp = await fetch(`/api/master/sedes/${sedeId}`);
+                const data = await resp.json();
 
-            setSede(data);
-
-            console.log(data);
+                setSede(data);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setLoading(false);
+            }
         };
-
         cargarSede();
     }, [sedeId]);
-
-    const cargarSede = async () => {
-        try {
-            const resp = await fetch(`/api/sedes/${sedeId}`);
-
-            const data = await resp.json();
-
-            if (data.ok) {
-                setSede(data.sede);
-            }
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     if (loading) {
         return <div>Cargando sede...</div>
@@ -195,14 +190,7 @@ export default function Proyectar() {
         
 
         <div className="min-h-screen p-8 flex flex-col items-center">
-            <div>
-            <h1>{sede?.nombre}</h1>
-            <p>{sede?.ciudad}</p>
-            <p>{sede?.departamento}</p>
-            <p>{sede?.numeroSalas}</p>
-        </div>
-
-        
+   
             {/* Header del Dashboard - Estilo Glassmorphism */}
             <header className="w-full max-w-7xl flex justify-between items-center mb-8 p-4 bg-white/40 backdrop-blur-lg border border-white/60 shadow-xl rounded-2xl">
                 <div className="flex items-center gap-4">

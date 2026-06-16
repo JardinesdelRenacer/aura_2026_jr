@@ -33,23 +33,27 @@ export async function POST (request: Request) {
             }
         });
 
-        const salas = [];
+        const obituarios = [];
 
         for (let i = 1; i <= numeroSalas; i++) {
-            salas.push({
-                nombre: `Sala $(i)`,
+            obituarios.push({
+                sala: `SALA_${i}`,
                 sedeId: nuevaSede.id,
+                name: "",
+                surname: ""
             });
         }
         if (salaVip) {
-            salas.push({
-                nombre: "VIP",
+            obituarios.push({
+                sala: "VIP",
                 sedeId: nuevaSede.id,
+                name: "",
+                surname: ""
             });
         }
 
-        await prisma.sala.createMany({
-            data: salas,
+        await prisma.obituario.createMany({
+            data: obituarios,
         });
 
         return NextResponse.json({ success: true, data: nuevaSede });

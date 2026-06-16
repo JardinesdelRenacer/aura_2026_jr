@@ -217,7 +217,7 @@ export default function Pantalla() {
                         })
                         .sort((a, b) => Number(b.isActive) - Number(a.isActive))
                         .map(({ roomKey, ob, isActive }) => (
-                        <div key={roomKey} className="bg-[url('/imagenes/fondo_obituarios.png')] bg-size-[100%_100%] bg-no-repeat border border-white/20 rounded-2xl sm:rounded-3xl lg:rounded-4xl p-3 sm:p-4 md:p-6 lg:p-8 flex flex-col justify-start items-center text-center shadow-2xl relative overflow-hidden">
+                        <div key={roomKey} className="bg-[url('/imagenes/fondo.png')] bg-size-[100%_100%] bg-no-repeat border border-white/20 rounded-2xl sm:rounded-3xl lg:rounded-4xl p-3 sm:p-4 md:p-6 lg:p-8 flex flex-col justify-start items-center text-center shadow-2xl relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-16 sm:w-24 md:w-32 lg:w-48 h-16 sm:h-24 md:h-32 lg:h-48 bg-white/30 rounded-bl-full blur-3xl"></div>
                             <div className="absolute bottom-0 left-0 w-16 sm:w-24 md:w-32 lg:w-48 h-16 sm:h-24 md:h-32 lg:h-48 bg-white/30 rounded-tr-full blur-3xl"></div>
 
