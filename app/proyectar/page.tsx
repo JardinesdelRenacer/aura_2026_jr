@@ -1,15 +1,25 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
-
+import { useParams } from "next/navigation";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import UploadMedia from "@/components/UploadMedia";
 import Slideshow from "@/components/Slideshow";
 
+
+
 // Tipos para los obituarios (se usarán en la Fase 2)
 type Obituary = { name: string, surname: string, dob: string, dod: string, timeStart: string, timeEnd: string, cemetery: string, endTime?: string, endDate?: string, massTime?: string, massChurch?: string, massChurchType?: string, massAddress?: string };
 
 export default function Proyectar() {
+    
+    const params = useParams();
+
+    const sedeId = params.id as string;
+
+    console.log("Sede:", sedeId)
+    
+    const [ loading, setLoading ] = useState(true);
 
     const [files, setFiles] = useState<File[]>([]);
 
@@ -144,9 +154,55 @@ export default function Proyectar() {
         );
     }, [mediaItems, autoPlay, seconds, selectedImage, obituaries, transitionEffect, projectionMode]);
 
-    return (
-        <div className="min-h-screen p-8 flex flex-col items-center">
+    const [sede, setSede] = useState<any>(null);
 
+    useEffect(() => {
+        if (!sedeId) return;
+
+        const cargarSede = async () => {
+            const res = await fetch(`/app/api/sedes/${sedeId}`);
+            const data = await res.json();
+
+            setSede(data);
+
+            console.log(data);
+        };
+
+        cargarSede();
+    }, [sedeId]);
+
+    const cargarSede = async () => {
+        try {
+            const resp = await fetch(`/api/sedes/${sedeId}`);
+
+            const data = await resp.json();
+
+            if (data.ok) {
+                setSede(data.sede);
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return <div>Cargando sede...</div>
+    }
+
+    return (
+        
+
+        <div className="min-h-screen p-8 flex flex-col items-center">
+            <div>
+            <h1>{sede?.nombre}</h1>
+            <p>{sede?.ciudad}</p>
+            <p>{sede?.departamento}</p>
+            <p>{sede?.numeroSalas}</p>
+        </div>
+
+        
             {/* Header del Dashboard - Estilo Glassmorphism */}
             <header className="w-full max-w-7xl flex justify-between items-center mb-8 p-4 bg-white/40 backdrop-blur-lg border border-white/60 shadow-xl rounded-2xl">
                 <div className="flex items-center gap-4">

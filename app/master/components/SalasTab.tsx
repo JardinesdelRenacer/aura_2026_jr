@@ -69,7 +69,7 @@ export function SalasTab({ sedes, setShowModalSede }: SalasTabProps) {
                                 </td>
                                 <td className="p-4 text-right">
                                     <div className="flex justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => router.push('/proyectar')} className="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg transition-all shadow-sm border border-blue-100 text-xs font-bold" title="Administrar Sede">
+                                        <button onClick={() => router.push(`/proyectar/${sede.id}`)} className="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg transition-all shadow-sm border border-blue-100 text-xs font-bold" title="Administrar Sede">
                                             Administrar Sede
                                         </button>
                                         <button className="px-3 py-1.5 bg-slate-50 text-slate-600 hover:bg-slate-200 rounded-lg transition-all shadow-sm border border-slate-200 text-xs font-bold" title="Configuración">

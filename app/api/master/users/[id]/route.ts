@@ -1,57 +1,54 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma";
+import bcrypt from "bcryptjs";
 
-export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
     try {
-        const { id } = await params;
-        await prisma.sede.deleteMany({ where: { adminId: id, }, });
+        const userId = params.id;
+        const body = await request.json();
+        
+        // Extraemos los datos que nos envía el frontend
+        const { nombres, apellidos, cedula, telefono, email, password, departamento, ciudad, nombreSede, estado } = body;
 
-        await prisma.user.delete({ where: { id }, });
-    
-        return NextResponse.json({
-            success: true,
-            message: "Usuario eliminado correctamente"
+        // Preparamos el objeto de actualización
+        const updateData: any = {
+            nombres, apellidos, cedula, telefono, email, departamento, ciudad, estado
+        };
+
+        // Si el frontend envió una nueva contraseña (no está en blanco), la encriptamos y la guardamos
+        if (password && password.trim() !== "") {
+            updateData.password = await bcrypt.hash(password, 10);
+        }
+
+        // Si el frontend envió el nombre de una Sede a conectar, la buscamos y conectamos
+        if (nombreSede) {
+            const sedeEncontrada = await prisma.sede.findFirst({ where: { nombre: nombreSede } });
+            if (sedeEncontrada) {
+                updateData.sede = { connect: { id: sedeEncontrada.id } };
+            }
+        } else {
+            // Si viene vacío, lo desconectamos de su sede actual
+            updateData.sede = { disconnect: true };
+        }
+
+        const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: updateData
         });
 
-    } catch (error) {
-        console.error("ERROR AL ELIMINAR USUARIO:", error);
-        return NextResponse.json(
-            {   
-                success: false,
-                error: "Error al eliminar usuario: " + String(error),
-            },
-            { status: 500 }
-        );
+        return NextResponse.json({ success: true, data: updatedUser });
+    } catch (error: any) {
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }
 
-export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
     try {
-        const { id } = await params;
-        const body = await req.json();
-
-        const usuario = await prisma.user.update({
-            where: { id },
-            data: { email: body.email,  },
+        await prisma.user.delete({
+            where: { id: params.id }
         });
-
-        await prisma.sede.update({
-            where: { adminId: id },
-            data: { nombre: body.sedeNombre, ubicacion: body.sedeUbicacion, },
-        });
-        return NextResponse.json({
-            success: true,
-            message: "Usuario actualizado correctamente",
-            user: { id: usuario.id, email: usuario.email },
-        });
-    } catch (error) {
-        console.error("ERROR AL ACTUALIZAR USUARIO:", error);
-        return NextResponse.json(
-            {   
-                success: false,
-                error: "Error al actualizar usuario: " + String(error),
-            },
-            { status: 500 }
-        );
+        return NextResponse.json({ success: true });
+    } catch (error: any) {
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }

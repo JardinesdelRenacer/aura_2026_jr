@@ -3,6 +3,13 @@ CREATE TABLE "User" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
+    "nombres" TEXT,
+    "apellidos" TEXT,
+    "cedula" TEXT,
+    "telefono" TEXT,
+    "departamento" TEXT,
+    "ciudad" TEXT,
+    "estado" TEXT DEFAULT 'ACITVO',
     "role" TEXT NOT NULL DEFAULT 'ADMIN',
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
@@ -14,11 +21,13 @@ CREATE TABLE "Sede" (
     "departamento" TEXT NOT NULL,
     "ciudad" TEXT NOT NULL,
     "nombre" TEXT NOT NULL,
-    "estado" TEXT NOT NULL DEFAULT 'INACTIVA',
-    "adminId" TEXT NOT NULL,
+    "EstadoSede" TEXT NOT NULL DEFAULT 'INACTIVA',
+    "numeroSalas" INTEGER NOT NULL DEFAULT 1,
+    "salaVip" BOOLEAN NOT NULL DEFAULT false,
+    "adminId" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "Sede_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "Sede_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "User" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateTable

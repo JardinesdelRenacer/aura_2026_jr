@@ -26,35 +26,45 @@ enum EstadoSede {
 
 // Usuarios
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  role      Role     @default(ADMIN)
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String
 
-  sede      Sede?
+  nombres       String?
+  apellidos     String?
+  cedula        String?
+  telefono      String?
+  departamento  String?
+  ciudad        String?
+  estado        String?  @default("ACITVO")
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  role          Role     @default(ADMIN)
+  sede          Sede?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model Sede {
-  id      		String      @id @default(cuid())
+  id      		      String                  @id @default(cuid())
 
-  departamento  	String
-  ciudad        	String
-  nombre        	String
+  departamento  	  String
+  ciudad        	  String
+  nombre        	  String  		    
+  EstadoSede        String                   @default("INACTIVA")
 
-  estado  		EstadoSede  @default(INACTIVA)
+  numeroSalas       Int                      @default(1)
+  salaVip           Boolean                  @default(false)
 
-  adminId 		String      @unique
-  admin   		User        @relation(fields: [adminId], references: [id])
+  adminId 		      String?                  @unique
+  admin   		      User?                    @relation(fields: [adminId], references: [id])
 
   obituarios      	Obituario[]
   media           	Media[]
   configuracion   	ConfiguracionPantalla?
 
-  createdAt 		DateTime  @default(now())
-  updatedAt 		DateTime  @updatedAt
+  createdAt 		    DateTime                  @default(now())
+  updatedAt 		    DateTime                  @updatedAt
 }
 
 model Obituario {
