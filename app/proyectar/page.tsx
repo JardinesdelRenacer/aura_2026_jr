@@ -5,8 +5,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import UploadMedia from "@/components/UploadMedia";
 import Slideshow from "@/components/Slideshow";
-
-
+import VistaPreviaTab from "@/app/proyectar/components/VistaPreviaTab";
 
 // Tipos para los obituarios (se usarán en la Fase 2)
 type Obituary = { name: string, surname: string, dob: string, dod: string, timeStart: string, timeEnd: string, cemetery: string, endTime?: string, endDate?: string, massTime?: string, massChurch?: string, massChurchType?: string, massAddress?: string };
@@ -39,6 +38,10 @@ export default function Proyectar() {
 
     const router = useRouter();
 
+    const [sede, setSede] = useState<Sede | null>(null);
+
+    const [activeTab, setActiveTab] = useState<'administrar' | 'configuracion' | 'vista-previa'>('administrar');
+    
     const handleLogout = () => {
         router.push("/login");
     };
@@ -153,18 +156,128 @@ export default function Proyectar() {
     // Autoguardado en tiempo real de todos los cambios
     useEffect(() => {
         localStorage.setItem(
-            "presentacion", JSON.stringify({ media: mediaItems, autoPlay, seconds, selectedImage, obituaries, transitionEffect, projectionMode })
+            "presentacion", JSON.stringify({ autoPlay, seconds, selectedImage, obituaries, transitionEffect, projectionMode })
         );
-    }, [mediaItems, autoPlay, seconds, selectedImage, obituaries, transitionEffect, projectionMode]);
+    }, [autoPlay, seconds, selectedImage, obituaries, transitionEffect, projectionMode]);
 
     interface Sede {
-        id: number,
+        id: string, //el campo estaba en number, si algo.. se cambia nuevamente
         nombre: string;
     }
+  
+    const cargarSede = async () => {
+        try{
+            const resp = await fetch(`/api/master/sedes/${sedeId}`);
+            const data = await resp.json();
 
-    const [sede, setSede] = useState<Sede | null>(null);
+            if (!data.ok) return;
+            
+            const sedeData = data.sede;
 
-    const [activeTab, setActiveTab] = useState<'administrar' | 'configuracion' | 'vista-previa'>('administrar');
+            setSede(sedeData);
+
+            //Configuración
+            if (sedeData.configuracion) {
+                setAutoplay(sedeData.configuracion.autoplay);
+                setSeconds(sedeData.configuracion.seconds);
+                setTransitionEffect(
+                    sedeData.configuracion.transitionEffect
+                );
+            }
+
+            //Obituarios
+            if (sedeData.obituarios?.length) {
+                const nuevosObituarios = {
+                    VIP: {
+                        name: "",
+                        surname: "",
+                        dob: "",
+                        dod: "",
+                        timeStart: "",
+                        timeEnd: "",
+                        cemetery: "",
+                        endTime: "",
+                        endDate: "",
+                        massTime: "",
+                        massChurch: "",
+                        massChurchType: "Parroquia",
+                        massAddress: "",
+                    },
+                    SALA_1: {
+                        name: "",
+                        surname: "",
+                        dob: "",
+                        dod: "",
+                        timeStart: "",
+                        timeEnd: "",
+                        cemetery: "",
+                        endTime: "",
+                        endDate: "",
+                        massTime: "",
+                        massChurch: "",
+                        massChurchType: "Parroquia",
+                        massAddress: "",
+                    },
+                    SALA_2: {
+                        name: "",
+                        surname: "",
+                        dob: "",
+                        dod: "",
+                        timeStart: "",
+                        timeEnd: "",
+                        cemetery: "",
+                        endTime: "",
+                        endDate: "",
+                        massTime: "",
+                        massChurch: "",
+                        massChurchType: "Parroquia",
+                        massAddress: "",
+                    },
+                    SALA_3: {
+                        name: "",
+                        surname: "",
+                        dob: "",
+                        dod: "",
+                        timeStart: "",
+                        timeEnd: "",
+                        cemetery: "",
+                        endTime: "",
+                        endDate: "",
+                        massTime: "",
+                        massChurch: "",
+                        massChurchType: "Parroquia",
+                        massAddress: "",
+                    },
+                };
+
+                sedeData.obituarios.forEach((ob: any) => {
+                    nuevosObituarios[ob.sala as keyof typeof nuevosObituarios] = {
+                        name: ob.name ?? "",
+                        surname: ob.surname ?? "",
+                        dob: ob.dob ?? "",
+                        dod: ob.dod ?? "", 
+                        timeStart: ob.timeStart ?? "",
+                        timeEnd: ob.timeEnd ?? "",
+                        cemetery: ob.cemetery ?? "",
+                        endTime: ob.endTime ?? "",
+                        endDate: ob.endDate ?? "",
+                        massTime: ob.massTime ?? "",
+                        massChurch: ob.massChurch ?? "",
+                        massChurchType:
+                            ob.massChurchType ?? "Parroquia",
+                        massAddress: ob.massAddress ?? "",
+                    };
+                });
+
+                setObituaries(nuevosObituarios);
+            }
+
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         if (!sedeId) {
@@ -172,18 +285,6 @@ export default function Proyectar() {
             return;
         }
 
-        const cargarSede = async () => {
-            try{
-                const resp = await fetch(`/api/master/sedes/${sedeId}`);
-                const data = await resp.json();
-
-                setSede(data);
-            } catch (error) {
-                console.error(error);
-            } finally {
-                setLoading(false);
-            }
-        };
         cargarSede();
     }, [sedeId]);
 
@@ -199,6 +300,9 @@ export default function Proyectar() {
             </div>
         );
     }
+
+    type RoomKeys = | "VIP" | "SALA_1" | "SALA_2" | "SALA_3";
+
 
     return (
         
@@ -446,7 +550,7 @@ export default function Proyectar() {
                     </div>
                         </>
                     )}
-
+                    
                     {/* VISTA: VISTA PREVIA */}
                     {activeTab === 'vista-previa' && (
                     <VistaPreviaTab
