@@ -37,6 +37,9 @@ export async function POST(req: Request) {
             where: {
                 email: email.toLowerCase().trim(),
             },
+            include: {
+                sede: true,
+            },
         });
 
         console.log("================================");
@@ -44,6 +47,11 @@ export async function POST(req: Request) {
         console.log(user);
         console.log("================================");
 
+
+        console.log("================================");
+        console.log(" SEDE: ")
+        console.log(user?.sede);
+        
         if (!user) {
             return NextResponse.json(
                 {
@@ -81,13 +89,14 @@ export async function POST(req: Request) {
                     id: user.id,
                     email: user.email,
                     role: user.role,
+                    sedeId: user.sede?.id ?? null,
                 },
             },
             { status: 200 }
         );
     } catch (error: any) {
         console.error("ERROR en autenticación:", error && error.stack ? error.stack : error);
-
+        
         return NextResponse.json(
             {
                 success: false,

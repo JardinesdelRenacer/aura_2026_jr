@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { userAgent } from "next/server";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -63,6 +64,7 @@ export default function LoginPage() {
                     id: data.user.id,
                     email: data.user.email,
                     role: data.user.role,
+                    sedeId: data.user.sedeId,
                 })
             );
 
@@ -70,7 +72,7 @@ export default function LoginPage() {
             if (data.user.role === "MASTER") {
                 router.push("/master");
             } else if (data.user.role === "ADMIN") {
-                router.push("/proyectar");
+                router.push("/proyectar/${data.user.sedeId}");
             }
         } catch (err) {
             setError("Error al conectar con el servidor");
