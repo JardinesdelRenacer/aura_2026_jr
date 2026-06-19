@@ -1,9 +1,9 @@
-
 "use client";
 
 
 import { useEffect, useState, useCallback } from "react";
 import Slideshow from "@/components/Slideshow";
+import { parse } from "path";
 
 type Obituary = { name: string, surname: string, dob: string, dod: string, timeStart: string, timeEnd: string, cemetery: string, endTime?: string, endDate?: string, massTime?: string, massChurch?: string, massChurchType?: string, massAddress?: string };
 type ObituariesData = {
@@ -13,7 +13,13 @@ type ObituariesData = {
     SALA_3: Obituary;
 };
 
-export default function Pantalla() {
+interface PantallaViewProps {
+    presentacionId?: string;
+}
+
+export default function PantallaView({
+    presentacionId,
+}: PantallaViewProps) {
 
     const [media, setMedia] = useState<{url: string, type: string}[]>([]);
 
@@ -28,9 +34,16 @@ export default function Pantalla() {
     const [projectionMode, setProjectionMode] = useState("classic");
 
     const [obituaries, setObituaries] = useState<ObituariesData | null>(null);
+
     const [showObituaries, setShowObituaries] = useState(true);
 
     const [currentTime, setCurrentTime] = useState(() => new Date());
+
+    const [roomsToShow, setRoomsToShow] = useState<string[]>([]);
+
+    // const [roomsToShow, setRoomsToShow] = useState<RoomKeys[]>([]);
+    
+    type RoomKeys = | "VIP" | "SALA_1" | "SALA_2" | "SALA_3";
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 10000); // Revisa cada 10 segundos
@@ -38,8 +51,12 @@ export default function Pantalla() {
     }, []);
 
     useEffect(() => {
+        const storageKey =
+            presentacionId ? `presentacion-${presentacionId}` : "presentacion";
+
         const loadData = () => {
-            const data = localStorage.getItem("presentacion-${id}");
+            const data = localStorage.getItem(storageKey);
+
             if (!data) return;
             
             const parsed = JSON.parse(data);
@@ -51,6 +68,12 @@ export default function Pantalla() {
             setProjectionMode(parsed.projectionMode || "classic");
             setObituaries(parsed.obituaries || null);
             setRoomsToShow(parsed.roomsToShow || []);
+
+            console.log("PRESENTACIÓN ID: ", presentacionId);
+            console.log("DATA: ", parsed);
+            console.log("OBITUARIOS: ", parsed.obituaries);
+
+            console.log("LOCALSTORAGE: ", localStorage.getItem(`presentacion-${presentacionId}`));
         };
 
         // Carga inicial
@@ -58,14 +81,14 @@ export default function Pantalla() {
 
         // Escuchar cambios en tiempo real desde el Dashboard
         const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === "presentacion-${id}") {
+            if (e.key === storageKey) {
                 loadData();
             }
         };
 
         window.addEventListener("storage", handleStorageChange);
         return () => window.removeEventListener("storage", handleStorageChange);
-    }, []);
+    }, [presentacionId]);
 
     // Lógica para alternar entre los Obituarios y las Imágenes a Pantalla Completa
     useEffect(() => {
@@ -213,8 +236,10 @@ export default function Pantalla() {
         <div className="w-screen h-screen bg-blue-50 overflow-hidden relative font-sans">
             {isShowingObituaries ? (
                 <div className="w-full h-full grid grid-cols-2 grid-rows-2 gap-3 sm:gap-4 md:gap-5 lg:gap-6 p-3 sm:p-4 md:p-5 lg:p-6 bg-linear-to-br from-white/60 via-blue-50/50 to-white/40 backdrop-blur-2xl border border-white/80 shadow-[inset_0_0_20px_rgba(255,255,255,0.9),0_8px_32px_rgba(0,0,0,0.1)]">
-                    {Object.entries(obituaries)
-                        .map(([roomKey, ob]) => {
+                    {roomsToShow
+                        .map((roomKey) => {
+                            const ob = obituaries[roomKey];
+
                             const expired = checkIsExpired(ob.endTime, ob.endDate);
                             const isActive = Boolean((ob.name || ob.surname) && !expired);
                             return { roomKey, ob, isActive };

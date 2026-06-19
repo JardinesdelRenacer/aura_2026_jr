@@ -72,7 +72,7 @@ export default function LoginPage() {
             if (data.user.role === "MASTER") {
                 router.push("/master");
             } else if (data.user.role === "ADMIN") {
-                router.push("/proyectar/${data.user.sedeId}");
+                router.push(`/proyectar/${data.user.sedeId}`);
             }
         } catch (err) {
             setError("Error al conectar con el servidor");

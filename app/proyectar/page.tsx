@@ -42,6 +42,8 @@ export default function Proyectar() {
     const [sede, setSede] = useState<Sede | null>(null);
 
     const [activeTab, setActiveTab] = useState<'administrar' | 'configuracion' | 'vista-previa'>('administrar');
+
+    const [presentacionId] = useState(() => Math.floor(100000000 + Math.random() * 900000000 ).toString());
     
     const handleLogout = () => {
         router.push("/login");
@@ -157,7 +159,7 @@ export default function Proyectar() {
     // Autoguardado en tiempo real de todos los cambios
     useEffect(() => {
         localStorage.setItem(
-            "presentacion", JSON.stringify({ autoPlay, seconds, selectedImage, obituaries, transitionEffect, projectionMode })
+            `presentacion-${presentacionId}`, JSON.stringify({ autoPlay, seconds, selectedImage, obituaries, transitionEffect, projectionMode, roomsToShow })
         );
     }, [autoPlay, seconds, selectedImage, obituaries, transitionEffect, projectionMode]);
 
@@ -442,6 +444,7 @@ export default function Proyectar() {
                         projectionMode={projectionMode} autoPlay={autoPlay} seconds={seconds}
                         selectedImage={selectedImage} transitionEffect={transitionEffect}
                         mediaItems={mediaItems} obituaries={obituaries as Record<RoomKeys, Obituary>}
+                        roomsToShow={roomsToShow}
                         isShowingObituariesPreview={isShowingObituariesPreview}
                         checkIsExpired={checkIsExpired} formatDate={formatDate}
                         formatTime={formatTime} handleCompleteCycle={handleCompleteCycle}
@@ -456,7 +459,7 @@ export default function Proyectar() {
                 <div className="mt-10 pt-6 border-t border-slate-300 flex justify-end">
                     <button
                         onClick={() => {
-                            window.open("/Pantalla", "_blank");
+                            window.open(`/Pantalla/${presentacionId}`, "_blank");
                         }}
                         className="bg-linear-to-r from-blue-500 to-blue-700 hover:from-blue-400 hover:to-blue-600 text-white font-bold px-8 py-4 rounded-xl shadow-lg shadow-blue-500/30 transform hover:-translate-y-1 transition-all"
                     >

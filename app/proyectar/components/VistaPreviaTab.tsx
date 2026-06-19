@@ -10,6 +10,7 @@ interface VistaPreviaTabProps {
     transitionEffect: string;
     mediaItems: { url: string; type: string }[];
     obituaries: Record<RoomKeys, Obituary>;
+    roomsToShow: RoomKeys[];
     isShowingObituariesPreview: boolean;
     checkIsExpired: (endTime?: string, endDate?: string) => boolean;
     formatDate: (dateString: string) => string;
@@ -19,7 +20,7 @@ interface VistaPreviaTabProps {
 
 export default function VistaPreviaTab({
     projectionMode, autoPlay, seconds, selectedImage, transitionEffect,
-    mediaItems, obituaries, isShowingObituariesPreview,
+    mediaItems, obituaries, roomsToShow, isShowingObituariesPreview,
     checkIsExpired, formatDate, formatTime, handleCompleteCycle
 }: VistaPreviaTabProps) {
     return (
@@ -42,8 +43,10 @@ export default function VistaPreviaTab({
                             </div>
 
                             {/* Obituarios en Forma de L */}
-                            {Object.entries(obituaries)
-                                .map(([roomKey, ob]) => {
+                            {roomsToShow
+                                .map((roomKey) => {
+                                    const ob = obituaries[roomKey];
+
                                     const expired = checkIsExpired(ob.endTime, ob.endDate);
                                     const isActive = Boolean((ob.name || ob.surname) && !expired);
                                     return { roomKey, ob, isActive };
@@ -111,8 +114,10 @@ export default function VistaPreviaTab({
                     </div>
                 ) : isShowingObituariesPreview ? (
                     <div className="w-full h-full grid grid-cols-2 grid-rows-2 gap-4 p-4 bg-linear-to-br from-white/60 via-blue-50/50 to-white/40 backdrop-blur-2xl border border-white/80 shadow-[inset_0_0_20px_rgba(255,255,255,0.9),0_8px_32px_rgba(0,0,0,0.1)]">
-                        {Object.entries(obituaries)
-                            .map(([roomKey, ob]) => {
+                        {roomsToShow
+                            .map((roomKey) => {
+                                const ob = obituaries[roomKey];
+
                                 const expired = checkIsExpired(ob.endTime, ob.endDate);
                                 const isActive = Boolean((ob.name || ob.surname) && !expired);
                                 return { roomKey, ob, isActive };
