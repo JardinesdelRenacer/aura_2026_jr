@@ -9,10 +9,11 @@ interface AdministrarTabProps {
     removeImage: (index: number) => void;
     obituaries: Record<RoomKeys, Obituary>;
     handleObituaryChange: (room: RoomKeys, field: keyof Obituary, value: string) => void;
+    roomsToShow: RoomKeys[];
 }
 
 export default function AdministrarTab({
-    files, setFiles, mediaItems, removeImage, obituaries, handleObituaryChange
+    files, setFiles, mediaItems, removeImage, obituaries, handleObituaryChange, roomsToShow
 }: AdministrarTabProps) {
     return (
         <>
@@ -66,7 +67,7 @@ export default function AdministrarTab({
                 </div>
 
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mt-4">
-                    {(Object.keys(obituaries) as Array<RoomKeys>).map((room) => (
+                    {roomsToShow.map((room) => (
                         <div key={room} className="p-6 bg-white/60 rounded-2xl border border-white/60 shadow-md flex flex-col gap-4">
                             <h3 className="text-xl font-bold text-blue-700 border-b border-slate-200 pb-2">
                                 {room === "VIP" ? "Sala VIP" : room.replace("_", " ")}
