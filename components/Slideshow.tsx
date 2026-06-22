@@ -51,13 +51,13 @@ export default function Slideshow({
         let timeout: NodeJS.Timeout;
 
         const handleNext = () => {
-            setCurrent((prev) => {
-                const next = (prev + 1) % media.length;
-                if (next === 0 && onCompleteCycle) {
-                    onCompleteCycle();
-                }
-                return next;
-            });
+            const completesCycle = current === media.length - 1;
+
+            if (completesCycle) {
+                onCompleteCycle?.();
+            }
+
+            setCurrent((prev) => (prev + 1) % media.length);
         };
 
         if (currentMedia?.type !== 'video') {
@@ -90,40 +90,53 @@ export default function Slideshow({
 
     if (currentItem.type === 'video') {
         return (
-            <>
+            <div key={autoPlay ? current : selectedImage} className={`relative h-full w-full overflow-hidden bg-linear-to-br from-slate-900 via-blue-950 to-slate-900 ${getAnimationClass()}`}>
                 {ANIMATION_STYLES}
-            <video 
-                key={autoPlay ? current : selectedImage} 
-                src={currentItem.url} 
-                autoPlay={autoPlay} 
-                muted 
-                playsInline
-                controls={!autoPlay}
-                onEnded={(e) => {
-                    if (autoPlay) {
-                        if (current === media.length - 1 && onCompleteCycle) {
-                            onCompleteCycle();
+                <video
+                    src={currentItem.url}
+                    autoPlay={autoPlay}
+                    muted
+                    playsInline
+                    loop
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover opacity-60 blur-2xl"
+                />
+                <div className="absolute inset-0 bg-black/15" />
+                <video
+                    src={currentItem.url}
+                    autoPlay={autoPlay}
+                    muted
+                    playsInline
+                    controls={!autoPlay}
+                    onEnded={(e) => {
+                        if (autoPlay) {
+                            const completesCycle = current === media.length - 1;
+
+                            if (completesCycle) {
+                                onCompleteCycle?.();
+                            }
+
+                            if (media.length > 1) {
+                                setCurrent((prev) => (prev + 1) % media.length);
+                            } else if (media.length === 1) {
+                                // Forzar repetición en bucle infinito para 1 solo video
+                                e.currentTarget.currentTime = 0;
+                                e.currentTarget.play();
+                            }
                         }
-                        if (media.length > 1) {
-                            setCurrent((prev) => (prev + 1) % media.length);
-                        } else if (media.length === 1) {
-                            if (onCompleteCycle) onCompleteCycle();
-                            // Forzar repetición en bucle infinito para 1 solo video
-                            e.currentTarget.currentTime = 0;
-                            e.currentTarget.play();
-                        }
-                    }
-                }}
-                className={`w-full h-full object-contain bg-transparent ${getAnimationClass()}`}
-            />
-            </>
+                    }}
+                    className="relative z-10 h-full w-full object-contain"
+                />
+            </div>
         );
     }
 
     return (
-        <>
+        <div key={autoPlay ? current : selectedImage} className={`relative h-full w-full overflow-hidden bg-linear-to-br from-slate-900 via-blue-950 to-slate-900 ${getAnimationClass()}`}>
             {ANIMATION_STYLES}
-            <img key={autoPlay ? current : selectedImage} src={currentItem.url} alt="slide" className={`w-full h-full object-contain bg-transparent ${getAnimationClass()}`}></img>
-        </>
+            <img src={currentItem.url} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full scale-110 object-cover opacity-60 blur-2xl" />
+            <div className="absolute inset-0 bg-black/15" />
+            <img src={currentItem.url} alt="slide" className="relative z-10 h-full w-full object-contain" />
+        </div>
     );
 }

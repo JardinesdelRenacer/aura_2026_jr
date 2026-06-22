@@ -41,9 +41,9 @@ export default function AdministrarTab({
                             }}
                         >
                             {item.type === "video" ? (
-                                <video src={item.url} className="w-full h-32 object-cover rounded-lg border border-white/20 shadow-md group-hover:scale-105 transition-transform" />
+                                <video src={item.url} className="w-full h-32 object-contain rounded-lg bg-slate-800 border border-white/20 shadow-md" />
                             ) : (
-                                <img src={item.url} alt={`media-${index}`} className="w-full h-32 object-cover rounded-lg border border-white/20 shadow-md group-hover:scale-105 transition-transform" />
+                                <img src={item.url} alt={`media-${index}`} className="w-full h-32 object-contain rounded-lg bg-slate-800 border border-white/20 shadow-md" />
                             )}
                             <div className="absolute top-2 left-2 bg-white/80 backdrop-blur-sm text-blue-800 text-xs font-bold px-2 py-1 rounded shadow-md border border-white">
                                 #{index + 1}

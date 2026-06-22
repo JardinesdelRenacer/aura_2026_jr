@@ -15,6 +15,7 @@ import { ModalsManager } from "./components/ModalsManager";
 import { ReportesTab } from "./components/ReportesTab";
 import { TrasladosTab } from "./components/TrasladosTab";
 import { ConfiguracionTab } from "./components/ConfiguracionTab";
+import EditSedeForm from "./components/EditSedeForm";
 
 
 
@@ -45,6 +46,7 @@ export default function MasterDashboard() {
     const [nuevaSedeAdminId, setNuevaSedeAdminId] = useState("");
     const [nuevaSedeNumeroSalas, setNuevaSedeNumeroSalas] = useState("1");
     const [nuevaSedeVip, setNuevaSedeVip] = useState(false);
+    const [sedeToEdit, setSedeToEdit] = useState<any | null>(null);
 
     const [user, setUser] = useState<any>(null);
 
@@ -286,6 +288,33 @@ export default function MasterDashboard() {
         }
     };
 
+    const handleEditSede = async (sedeData: any) => {
+        if (!sedeData || !sedeData.id) {
+            showToast("No se ha seleccionado una sede para editar.", "error");
+            return;
+        }
+        setIsLoading(true);
+        try {
+            const response = await fetch(`/api/master/sedes/${sedeData.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(sedeData),
+            });
+            const data = await response.json();
+            if (data.success || response.ok) {
+                setSuccessMessage("Sede actualizada correctamente.");
+                await cargarSedes();
+            } else {
+                showToast("Error al actualizar la sede: " + (data.error || "Error desconocido"), "error");
+            }
+        } catch (error) {
+            showToast("Error de conexión al actualizar la sede.", "error");
+        } finally {
+            setIsLoading(false);
+            setSedeToEdit(null); // Cierra el modal
+        }
+    };
+
     return (
         <div className="flex h-screen bg-[#EEF4FF] overflow-hidden font-sans text-slate-800">
             
@@ -304,7 +333,7 @@ export default function MasterDashboard() {
                         {activeTab === "dashboard" && <DashboardTab mockSedes={mockSedes} setExpandedSede={setExpandedSede} />}
 
                         {/* MÓDULO 2: GESTIÓN DE SALAS */}
-                        {activeTab === "salas" && <SalasTab sedes={sedes} setShowModalSede={setShowModalSede} />}
+                        {activeTab === "salas" && <SalasTab sedes={sedes} setShowModalSede={setShowModalSede} setSedeToEdit={setSedeToEdit} />}
 
                         {/* MÓDULO 3: GESTIÓN DE USUARIOS */}
                         {activeTab === "usuarios" && <UsuariosTab usuarios={usuarios} setShowModalAdmin={setShowModalAdmin} setUserToEdit={setUserToEdit} setUserToSuspend={setUserToSuspend} setUserToDelete={setUserToDelete} />}
@@ -344,6 +373,14 @@ export default function MasterDashboard() {
                 successMessage={successMessage} setSuccessMessage={setSuccessMessage}
                 notification={notification} setNotification={setNotification} isLoading={isLoading}
             />
+
+            {sedeToEdit && (
+                <EditSedeForm
+                    sede={sedeToEdit}
+                    usuarios={usuarios}
+                    onSave={handleEditSede}
+                    onClose={() => setSedeToEdit(null)} />
+            )}
         </div>
     );
 }

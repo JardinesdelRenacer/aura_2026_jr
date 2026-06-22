@@ -1,9 +1,11 @@
 import React from "react";
 import Slideshow from "@/components/Slideshow";
-import { Obituary, RoomKeys } from "../page";
+import type { Obituary, RoomKeys } from "@/app/proyectar/page";
+import ObituarioVertical from "../ObituarioVertical";
 
 interface VistaPreviaTabProps {
     projectionMode: string;
+    fullScreen?: boolean;
     autoPlay: boolean;
     seconds: number;
     selectedImage: number;
@@ -19,24 +21,51 @@ interface VistaPreviaTabProps {
 }
 
 export default function VistaPreviaTab({
-    projectionMode, autoPlay, seconds, selectedImage, transitionEffect,
+    projectionMode, fullScreen = false, autoPlay, seconds, selectedImage, transitionEffect,
     mediaItems, obituaries, roomsToShow, isShowingObituariesPreview,
     checkIsExpired, formatDate, formatTime, handleCompleteCycle
 }: VistaPreviaTabProps) {
+    const isVertical = projectionMode === "vertical";
+    const containerClassName = fullScreen
+        ? "w-full h-full flex items-center justify-center overflow-hidden bg-black"
+        : "w-full h-full space-y-6 bg-white/50 p-6 rounded-2xl border border-white/60 shadow-sm animate-in fade-in duration-500";
+    const screenClassName = isVertical
+        ? fullScreen
+            ? "h-full max-w-full aspect-[9/16] bg-black overflow-hidden relative"
+            : "w-full max-w-md mx-auto aspect-[9/16] bg-black rounded-3xl overflow-hidden relative border-4 border-white shadow-2xl"
+        : "w-full aspect-video bg-white/80 rounded-3xl overflow-hidden relative border-4 border-white shadow-2xl scale-100 transform origin-top";
+
     return (
-        <div className="space-y-6 bg-white/50 p-6 rounded-2xl border border-white/60 shadow-sm animate-in fade-in duration-500">
-            <div className="flex flex-col md:flex-row md:justify-between md:items-center border-b border-slate-200 pb-4 gap-2">
-                <h2 className="text-2xl font-bold text-slate-800">👁️ Vista Previa en Vivo</h2>
-                <p className="text-sm text-blue-800 bg-blue-100/80 px-3 py-1 rounded-full shadow-inner border border-blue-200">Simulación a escala (Ciclo 30s)</p>
-            </div>
+        <div className={containerClassName}>
+            {!isVertical && (
+                <div className="flex flex-col md:flex-row md:justify-between md:items-center border-b border-slate-200 pb-4 gap-2">
+                    <h2 className="text-2xl font-bold text-slate-800">👁️ Vista Previa en Vivo</h2>
+                    <p className="text-sm text-blue-800 bg-blue-100/80 px-3 py-1 rounded-full shadow-inner border border-blue-200">Simulación a escala (Ciclo 30s)</p>
+                </div>
+            )}
 
             {/* Contenedor que simula la pantalla de proyección a escala */}
-            <div className="w-full aspect-video bg-white/80 rounded-3xl overflow-hidden relative border-4 border-white shadow-2xl scale-100 transform origin-top">
-                {projectionMode === "split" ? (
-                    <div className="w-full h-full p-2 sm:p-4 bg-linear-to-br from-white/60 via-blue-50/50 to-white/40 backdrop-blur-2xl">
-                        <div className="w-full h-full grid grid-cols-3 grid-rows-2 gap-2 sm:gap-4">
+            <div className={screenClassName}>
+                {isVertical ? (
+                    (() => {
+                        const roomKey = roomsToShow[0];
+                        const obituary = obituaries[roomKey];
+                        return (
+                            <div className="flex h-full w-full flex-col gap-3 bg-slate-950 p-3">
+                                <div className="relative h-3/5 flex-grow overflow-hidden rounded-[1.75rem] border border-white/20 shadow-2xl">
+                                    <Slideshow media={mediaItems} autoPlay={autoPlay} seconds={seconds} selectedImage={selectedImage} transitionEffect={transitionEffect} onCompleteCycle={handleCompleteCycle} />
+                                </div>
+                                <div className="h-2/5 flex-shrink-0 overflow-hidden rounded-[1.75rem] border-2 border-white/70 shadow-2xl ring-1 ring-blue-200/30">
+                                    <ObituarioVertical obituary={obituary} formatDate={formatDate} formatTime={formatTime} />
+                                </div>
+                            </div>
+                        );
+                    })()
+                ) : projectionMode === "split" ? (
+                    <div className="h-full w-full bg-linear-to-br from-white/60 via-blue-50/50 to-white/40 p-1.5 backdrop-blur-2xl sm:p-2">
+                        <div className="grid h-full w-full grid-cols-3 grid-rows-2 gap-1.5 sm:gap-2">
                             {/* Media Slider en Top Right */}
-                            <div className="col-start-2 col-span-2 row-start-1 min-h-0 min-w-0 h-full w-full rounded-xl sm:rounded-2xl overflow-hidden relative shadow-xl border border-white/80 bg-white/40">
+                            <div className="relative col-span-2 col-start-2 row-start-1 h-full min-h-0 w-full min-w-0 overflow-hidden rounded-xl border border-white/80 bg-[url('/imagenes/fondo_obituarios.png')] bg-cover bg-center shadow-xl sm:rounded-2xl">
                                 <div className="absolute inset-0">
                                     <Slideshow media={mediaItems} autoPlay={autoPlay} seconds={seconds} selectedImage={selectedImage} transitionEffect={transitionEffect} />
                                 </div>
@@ -55,16 +84,16 @@ export default function VistaPreviaTab({
                                 .map(({ roomKey, ob, isActive }, index) => {
                                     const slotClasses = ["col-start-1 row-start-1", "col-start-1 row-start-2", "col-start-2 row-start-2", "col-start-3 row-start-2"];
                                     return (
-                                        <div key={roomKey} className={`${slotClasses[index]} min-h-0 min-w-0 h-full w-full bg-[url('/imagenes/fondo_obituarios.png')] bg-size-[100%_100%] bg-no-repeat border border-white/20 rounded-xl sm:rounded-2xl p-2 sm:p-4 flex flex-col justify-start items-center text-center shadow-lg relative overflow-hidden`}>
-                                            <div className="absolute inset-0 p-2 sm:p-4 flex flex-col justify-start items-center text-center">
-                                                <h2 className="text-[0.6rem] sm:text-xs font-bold text-black mb-2 tracking-widest uppercase border-b border-black/20 pb-1 w-3/4 [text-shadow:0_1px_2px_rgb(255_255_255)]">
+                                        <div key={roomKey} className={`${slotClasses[index]} relative flex h-full min-h-0 w-full min-w-0 flex-col items-center justify-start overflow-hidden rounded-lg border border-white/30 bg-[url('/imagenes/fondo_obituarios.png')] bg-size-[100%_100%] bg-no-repeat text-center shadow-lg sm:rounded-xl`}>
+                                            <div className="absolute inset-0 flex flex-col items-center justify-start p-2 text-center sm:p-3">
+                                                <h2 className="mb-1.5 w-4/5 border-b border-black/20 pb-1 text-xs font-bold uppercase tracking-widest text-black [text-shadow:0_1px_2px_rgb(255_255_255)] sm:text-base">
                                                     {roomKey === "VIP" ? "Sala VIP" : roomKey.replace("_", " ")}
                                                 </h2>
 
                                                 {isActive ? (
                                                     <div className="flex flex-col grow w-full justify-center items-center z-10 overflow-hidden">
-                                                        <h3 className="text-xs sm:text-sm font-extrabold text-black mb-1 truncate w-full px-1 [text-shadow:0_1px_2px_rgb(255_255_255)]">{ob.name}</h3>
-                                                        <h3 className="text-[0.65rem] sm:text-xs font-bold text-black/90 mb-1 sm:mb-2 truncate w-full px-1 [text-shadow:0_1px_2px_rgb(255_255_255)]">{ob.surname}</h3>
+                                                        <h3 className="mb-1 w-full truncate px-1 text-base font-extrabold text-black [text-shadow:0_1px_2px_rgb(255_255_255)] sm:text-2xl">{ob.name}</h3>
+                                                        <h3 className="mb-1.5 w-full truncate px-1 text-sm font-bold text-black/90 [text-shadow:0_1px_2px_rgb(255_255_255)] sm:text-xl">{ob.surname}</h3>
 
                                                         {(ob.dob || ob.dod) && (
                                                             <div className="flex items-center gap-1 sm:gap-2 text-[0.45rem] sm:text-[0.55rem] font-medium text-black mb-1 sm:mb-2 bg-white/40 px-2 py-1 rounded-full border border-black/10 shadow-sm backdrop-blur-sm whitespace-nowrap overflow-hidden">
@@ -103,7 +132,7 @@ export default function VistaPreviaTab({
                                                     </div>
                                                 ) : (
                                                     <div className="grow flex items-center justify-center z-10">
-                                                        <p className="text-xs font-bold text-black/40 tracking-widest uppercase [text-shadow:0_1px_2px_rgb(255_255_255)] truncate">Disponible</p>
+                                                        <p className="truncate text-sm font-bold uppercase tracking-widest text-black/40 [text-shadow:0_1px_2px_rgb(255_255_255)] sm:text-xl">Sala Disponible</p>
                                                     </div>
                                                 )}
                                             </div>

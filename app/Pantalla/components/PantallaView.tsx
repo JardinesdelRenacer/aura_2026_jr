@@ -3,15 +3,10 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Slideshow from "@/components/Slideshow";
-import { parse } from "path";
 
 type Obituary = { name: string, surname: string, dob: string, dod: string, timeStart: string, timeEnd: string, cemetery: string, endTime?: string, endDate?: string, massTime?: string, massChurch?: string, massChurchType?: string, massAddress?: string };
-type ObituariesData = {
-    VIP: Obituary;
-    SALA_1: Obituary;
-    SALA_2: Obituary;
-    SALA_3: Obituary;
-};
+type RoomKeys = "VIP" | "SALA_1" | "SALA_2" | "SALA_3";
+type ObituariesData = Record<RoomKeys, Obituary>;
 
 interface PantallaViewProps {
     presentacionId?: string;
@@ -39,11 +34,7 @@ export default function PantallaView({
 
     const [currentTime, setCurrentTime] = useState(() => new Date());
 
-    const [roomsToShow, setRoomsToShow] = useState<string[]>([]);
-
-    // const [roomsToShow, setRoomsToShow] = useState<RoomKeys[]>([]);
-    
-    type RoomKeys = | "VIP" | "SALA_1" | "SALA_2" | "SALA_3";
+    const [roomsToShow, setRoomsToShow] = useState<RoomKeys[]>([]);
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 10000); // Revisa cada 10 segundos
@@ -149,10 +140,10 @@ export default function PantallaView({
     if (projectionMode === "split") {
         return (
             <div className="w-screen h-screen bg-blue-50 overflow-hidden relative font-sans">
-                <div className="w-full h-full p-4 sm:p-6 lg:p-8 bg-linear-to-br from-white/60 via-blue-50/50 to-white/40 backdrop-blur-2xl border border-white/80 shadow-[inset_0_0_20px_rgba(255,255,255,0.9),0_8px_32px_rgba(0,0,0,0.1)]">
-                    <div className="w-full h-full grid grid-cols-3 grid-rows-2 gap-4 sm:gap-6 lg:gap-8">
+                <div className="h-full w-full bg-linear-to-br from-white/60 via-blue-50/50 to-white/40 p-2 shadow-[inset_0_0_20px_rgba(255,255,255,0.9),0_8px_32px_rgba(0,0,0,0.1)] backdrop-blur-2xl sm:p-3 lg:p-4">
+                    <div className="grid h-full w-full grid-cols-3 grid-rows-2 gap-2 sm:gap-3 lg:gap-4">
                         {/* Media Slider en Top Right */}
-                        <div className="col-start-2 col-span-2 row-start-1 min-h-0 min-w-0 h-full w-full rounded-4xl overflow-hidden relative shadow-2xl border border-white/80 bg-white/40">
+                        <div className="relative col-span-2 col-start-2 row-start-1 h-full min-h-0 w-full min-w-0 overflow-hidden rounded-2xl border border-white/80 bg-[url('/imagenes/fondo_obituarios.png')] bg-cover bg-center shadow-2xl lg:rounded-3xl">
                             <div className="absolute inset-0">
                                 <Slideshow media={media} autoPlay={autoPlay} seconds={seconds} selectedImage={selectedImage} transitionEffect={transitionEffect} />
                             </div>
@@ -171,17 +162,17 @@ export default function PantallaView({
                             .map(({ roomKey, ob, isActive }, index) => {
                                 const slotClasses = ["col-start-1 row-start-1", "col-start-1 row-start-2", "col-start-2 row-start-2", "col-start-3 row-start-2"];
                                 return (
-                                    <div key={roomKey} className={`${slotClasses[index]} min-h-0 min-w-0 h-full w-full bg-[url('/imagenes/fondo_obituarios.png')] bg-size-[100%_100%] bg-no-repeat border border-white/20 rounded-4xl shadow-2xl relative overflow-hidden`}>
-                                        <div className="absolute inset-0 p-4 sm:p-6 lg:p-8 flex flex-col justify-start items-center text-center">
+                                    <div key={roomKey} className={`${slotClasses[index]} relative h-full min-h-0 w-full min-w-0 overflow-hidden rounded-2xl border border-white/40 bg-[url('/imagenes/fondo_obituarios.png')] bg-size-[100%_100%] bg-no-repeat shadow-xl lg:rounded-3xl`}>
+                                        <div className="absolute inset-0 flex flex-col items-center justify-start p-3 text-center sm:p-4 lg:p-5">
                                             <div className="absolute top-0 right-0 w-20 sm:w-32 lg:w-40 h-20 sm:h-32 lg:h-40 bg-white/30 rounded-bl-full blur-3xl"></div>
                                             <div className="absolute bottom-0 left-0 w-20 sm:w-32 lg:w-40 h-20 sm:h-32 lg:h-40 bg-white/30 rounded-tr-full blur-3xl"></div>
-                                            <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold text-black mb-3 sm:mb-4 tracking-[0.2em] uppercase border-b border-black/20 pb-2 w-3/4 [text-shadow:0_1px_5px_rgb(255_255_255)]">
+                                            <h2 className="mb-2 w-4/5 border-b border-black/20 pb-2 text-xl font-bold uppercase tracking-[0.18em] text-black [text-shadow:0_1px_5px_rgb(255_255_255)] sm:text-2xl lg:text-3xl">
                                                 {roomKey === "VIP" ? "Sala VIP" : roomKey.replace("_", " ")}
                                             </h2>
                                             {isActive ? (
                                                 <div className="flex flex-col grow w-full justify-center items-center z-10 overflow-hidden">
-                                                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-black mb-1 sm:mb-2 truncate w-full px-2 [text-shadow:0_1px_5px_rgb(255_255_255)]">{ob.name}</h3>
-                                                    <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-black/90 mb-2 sm:mb-4 truncate w-full px-2 [text-shadow:0_1px_5px_rgb(255_255_255)]">{ob.surname}</h3>
+                                                    <h3 className="mb-1 w-full truncate px-2 text-2xl font-extrabold text-black [text-shadow:0_1px_5px_rgb(255_255_255)] sm:text-3xl lg:text-4xl">{ob.name}</h3>
+                                                    <h3 className="mb-2 w-full truncate px-2 text-xl font-bold text-black/90 [text-shadow:0_1px_5px_rgb(255_255_255)] sm:text-2xl lg:text-3xl">{ob.surname}</h3>
                                                     {(ob.dob || ob.dod) && (
                                                         <div className="flex items-center gap-1 sm:gap-3 lg:gap-4 text-sm sm:text-base lg:text-lg font-medium text-black mb-2 sm:mb-4 bg-white/40 px-3 sm:px-5 lg:px-6 py-1 sm:py-2 rounded-full border border-black/10 shadow-lg backdrop-blur-sm whitespace-nowrap overflow-hidden">
                                                             <span className="truncate">Nacimiento: {formatDate(ob.dob)}</span>
@@ -219,7 +210,7 @@ export default function PantallaView({
                                                 </div>
                                             ) : (
                                                 <div className="grow flex items-center justify-center z-10">
-                                                    <p className="text-base sm:text-xl lg:text-2xl font-bold text-black/40 tracking-widest uppercase [text-shadow:0_1px_5px_rgb(255_255_255)] truncate">Sala Disponible</p>
+                                                        <p className="truncate text-xl font-bold uppercase tracking-widest text-black/40 [text-shadow:0_1px_5px_rgb(255_255_255)] sm:text-2xl lg:text-3xl">Sala Disponible</p>
                                                 </div>
                                             )}
                                         </div>

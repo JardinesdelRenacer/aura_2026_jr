@@ -3,25 +3,36 @@
 import { useParams } from "next/navigation";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import UploadMedia from "@/components/UploadMedia";
-import Slideshow from "@/components/Slideshow";
 import VistaPreviaTab from "@/app/proyectar/components/VistaPreviaTab";
 import AdministrarTab from "./components/AdministrarTab";
+import { isVerticalProjectionSede } from "./projection-config";
 
 // Tipos para los obituarios (se usarán en la Fase 2)
-type Obituary = { name: string, surname: string, dob: string, dod: string, timeStart: string, timeEnd: string, cemetery: string, endTime?: string, endDate?: string, massTime?: string, massChurch?: string, massChurchType?: string, massAddress?: string };
+export type Obituary = { name: string, surname: string, dob: string, dod: string, timeStart: string, timeEnd: string, cemetery: string, endTime?: string, endDate?: string, massTime?: string, massChurch?: string, massChurchType?: string, massAddress?: string };
+
+export type RoomKeys = "VIP" | "SALA_1" | "SALA_2" | "SALA_3";
+type MediaItem = { url: string; type: string };
+
+interface StoredPresentation {
+    media?: MediaItem[];
+    autoPlay?: boolean;
+    seconds?: number;
+    selectedImage?: number;
+    obituaries?: Record<RoomKeys, Obituary>;
+    transitionEffect?: string;
+}
 
 export default function Proyectar() {
-    
     const params = useParams();
-    
-    const sedeId = params.id as string; 
 
-    console.log("Sede:", sedeId);
+    const slug = Array.isArray(params.slug) ? params.slug : [];
+    const sedeId = typeof params.id === "string" ? params.id : slug[0];
+    const sala = typeof params.room === "string" ? params.room : slug[1];
 
-    const [ loading, setLoading ] = useState(true);
+    const [loading, setLoading] = useState(Boolean(sedeId));
 
     const [files, setFiles] = useState<File[]>([]);
+    const [projectionMediaItems, setProjectionMediaItems] = useState<MediaItem[]>([]);
 
     const [autoPlay, setAutoplay] = useState(true);
 
@@ -40,8 +51,9 @@ export default function Proyectar() {
     const router = useRouter();
 
     const [sede, setSede] = useState<Sede | null>(null);
+    const usesVerticalProjection = isVerticalProjectionSede(sede?.nombre);
 
-    const [activeTab, setActiveTab] = useState<'administrar' | 'configuracion' | 'vista-previa'>('administrar');
+    const [activeTab, setActiveTab] = useState<'administrar' | 'configuracion' | 'vista-previa'>(sala ? 'vista-previa' : 'administrar');
 
     const [presentacionId] = useState(() => Math.floor(100000000 + Math.random() * 900000000 ).toString());
     
@@ -54,7 +66,7 @@ export default function Proyectar() {
         return () => clearInterval(timer);
     }, []);
 
-    const [obituaries, setObituaries] = useState({
+    const [obituaries, setObituaries] = useState<Record<RoomKeys, Obituary>>({
         VIP: { name: "", surname: "", dob: "", dod: "", timeStart: "", timeEnd: "", cemetery: "", endTime: "", endDate: "", massTime: "", massChurch: "", massChurchType: "Parroquia", massAddress: "" },
         SALA_1: { name: "", surname: "", dob: "", dod: "", timeStart: "", timeEnd: "", cemetery: "", endTime: "", endDate: "", massTime: "", massChurch: "", massChurchType: "Parroquia", massAddress: "" },
         SALA_2: { name: "", surname: "", dob: "", dod: "", timeStart: "", timeEnd: "", cemetery: "", endTime: "", endDate: "", massTime: "", massChurch: "", massChurchType: "Parroquia", massAddress: "" },
@@ -82,17 +94,19 @@ export default function Proyectar() {
         }
     };
 
-    const mediaItems = useMemo(() => {
+    const dashboardMediaItems = useMemo(() => {
         return files.map((file) => ({
             url: URL.createObjectURL(file),
             type: file.type.startsWith("video/") ? "video" : "image"
         }));
     }, [files]);
 
+    const mediaItems = sala ? projectionMediaItems : dashboardMediaItems;
+
     useEffect(() => {
         // Limpieza de memoria (muy importante para evitar memory leaks)
-        return () => mediaItems.forEach((item) => URL.revokeObjectURL(item.url));
-    }, [mediaItems]);
+        return () => dashboardMediaItems.forEach((item) => URL.revokeObjectURL(item.url));
+    }, [dashboardMediaItems]);
 
     const shouldForceObituariesPreview = !autoPlay || mediaItems.length === 0;
     const isShowingObituariesPreview = shouldForceObituariesPreview || showObituariesPreview;
@@ -143,6 +157,20 @@ export default function Proyectar() {
         setShowObituariesPreview(true);
     }, []);
 
+    const roomsToShow = useMemo(() => {
+        const rooms: RoomKeys[] = [];
+
+        for (let i = 1; i <= (sede?.numeroSalas ?? 0); i++) {
+            rooms.push(`SALA_${i}` as RoomKeys);
+        }
+
+        if (sede?.salaVip) {
+            rooms.push("VIP");
+        }
+
+        return rooms;
+    }, [sede?.numeroSalas, sede?.salaVip]);
+
     // Toma los datos del usuario MASTER desde sessionStorage para mostrar su email en el header
     interface User{
         email: string;
@@ -150,25 +178,55 @@ export default function Proyectar() {
     const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
-        const userData = sessionStorage.getItem("user");
-        if (userData) {
-            setUser(JSON.parse(userData));
-        }
+        const timeoutId = window.setTimeout(() => {
+            const userData = sessionStorage.getItem("user");
+            if (userData) {
+                setUser(JSON.parse(userData));
+            }
+        }, 0);
+
+        return () => window.clearTimeout(timeoutId);
     }, []);
+
+    const syncPresentation = useCallback(() => {
+        if (!sedeId) return;
+
+        const presentation = JSON.stringify({
+            media: dashboardMediaItems,
+            autoPlay,
+            seconds,
+            selectedImage,
+            obituaries,
+            transitionEffect,
+            projectionMode,
+            roomsToShow,
+            sedeId,
+        });
+
+        localStorage.setItem(`presentacion-${presentacionId}`, presentation);
+        localStorage.setItem(`proyeccion-sede-${sedeId}`, presentation);
+    }, [autoPlay, dashboardMediaItems, seconds, selectedImage, obituaries, transitionEffect, projectionMode, roomsToShow, presentacionId, sedeId]);
 
     // Autoguardado en tiempo real de todos los cambios
     useEffect(() => {
-        localStorage.setItem(
-            `presentacion-${presentacionId}`, JSON.stringify({ autoPlay, seconds, selectedImage, obituaries, transitionEffect, projectionMode, roomsToShow })
-        );
-    }, [autoPlay, seconds, selectedImage, obituaries, transitionEffect, projectionMode]);
+        if (sala || loading || !sedeId) return;
+
+        syncPresentation();
+    }, [loading, sala, sedeId, syncPresentation]);
+
+    const openVerticalProjection = useCallback((roomKey: RoomKeys) => {
+        syncPresentation();
+        window.open(`/proyectar/${sedeId}/${roomKey}`, "_blank");
+    }, [sedeId, syncPresentation]);
 
     interface Sede {
         id: string, //el campo estaba en number, si algo.. se cambia nuevamente
         nombre: string;
+        numeroSalas: number;
+        salaVip: boolean;
     }
   
-    const cargarSede = async () => {
+    const cargarSede = useCallback(async () => {
         try{
             const resp = await fetch(`/api/master/sedes/${sedeId}`);
             const data = await resp.json();
@@ -253,7 +311,7 @@ export default function Proyectar() {
                     },
                 };
 
-                sedeData.obituarios.forEach((ob: any) => {
+                sedeData.obituarios.forEach((ob: Obituary & { sala: RoomKeys }) => {
                     nuevosObituarios[ob.sala as keyof typeof nuevosObituarios] = {
                         name: ob.name ?? "",
                         surname: ob.surname ?? "",
@@ -280,32 +338,66 @@ export default function Proyectar() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [sedeId]);
 
     useEffect(() => {
-        if (!sedeId) {
-            setLoading(false);
-            return;
-        }
+        if (!sedeId) return;
 
-        cargarSede();
-    }, [sedeId]);
-    
-    type RoomKeys = | "VIP" | "SALA_1" | "SALA_2" | "SALA_3";
+        const timeoutId = window.setTimeout(() => {
+            void cargarSede();
+        }, 0);
 
-    const roomsToShow = useMemo(() => {
-        const rooms: RoomKeys[] = [];
+        return () => window.clearTimeout(timeoutId);
+    }, [cargarSede, sedeId]);
 
-        for (let i = 1; i <= (sede?.numeroSalas ?? 0); i++) {
-            rooms.push(`SALA_${i}` as RoomKeys);
-        }
+    useEffect(() => {
+        if (!sala || !sedeId || loading) return;
 
-        if (sede?.salaVip) {
-            rooms.push("VIP");
-        }
+        const storageKey = `proyeccion-sede-${sedeId}`;
+        const loadPresentation = (raw: string | null) => {
+            if (!raw) return;
 
-        return rooms;
-    }, [sede]);
+            try {
+                const presentation = JSON.parse(raw) as StoredPresentation;
+
+                if (Array.isArray(presentation.media)) {
+                    setProjectionMediaItems(presentation.media);
+                }
+                if (presentation.obituaries) {
+                    setObituaries(presentation.obituaries);
+                }
+                if (typeof presentation.autoPlay === "boolean") {
+                    setAutoplay(presentation.autoPlay);
+                }
+                if (typeof presentation.seconds === "number") {
+                    setSeconds(presentation.seconds);
+                }
+                if (typeof presentation.selectedImage === "number") {
+                    setSelectedImage(presentation.selectedImage);
+                }
+                if (presentation.transitionEffect) {
+                    setTransitionEffect(presentation.transitionEffect);
+                }
+            } catch (error) {
+                console.error("No se pudo cargar la presentación vertical:", error);
+            }
+        };
+
+        const timeoutId = window.setTimeout(() => {
+            loadPresentation(localStorage.getItem(storageKey));
+        }, 0);
+        const handleStorageChange = (event: StorageEvent) => {
+            if (event.key === storageKey) {
+                loadPresentation(event.newValue);
+            }
+        };
+
+        window.addEventListener("storage", handleStorageChange);
+        return () => {
+            window.clearTimeout(timeoutId);
+            window.removeEventListener("storage", handleStorageChange);
+        };
+    }, [loading, sala, sedeId]);
 
     if (loading) {
         return <div>Cargando sede...</div>
@@ -316,6 +408,37 @@ export default function Proyectar() {
             <div className="min-h-screen flex items-center justify-center flex-col gap-4 bg-slate-50">
                 <h2 className="text-2xl font-bold text-red-600">⚠️ No se especificó ninguna Sede</h2>
                 <p className="text-slate-600">Tu URL actual no tiene ID. Debería ser algo como: <b>/proyectar/ID_DE_LA_SEDE</b></p>
+            </div>
+        );
+    }
+
+    // Las rutas por sala son exclusivas de las sedes habilitadas para proyección vertical.
+    if (sala) {
+        if (!usesVerticalProjection) {
+            return (
+                <div className="min-h-screen flex items-center justify-center bg-slate-950 p-6 text-center text-white">
+                    <div>
+                        <h1 className="text-2xl font-bold">Proyección vertical no habilitada</h1>
+                        <p className="mt-2 text-slate-300">Esta sede utiliza el formato horizontal.</p>
+                    </div>
+                </div>
+            );
+        }
+
+        const roomKey = sala.toUpperCase() as RoomKeys;
+
+        return (
+            <div className="h-screen w-screen overflow-hidden bg-black">
+                <VistaPreviaTab
+                    projectionMode="vertical"
+                    fullScreen
+                    autoPlay={autoPlay} seconds={seconds}
+                    selectedImage={selectedImage} transitionEffect={transitionEffect}
+                    mediaItems={mediaItems} obituaries={obituaries as Record<RoomKeys, Obituary>}
+                    roomsToShow={[roomKey]}
+                    isShowingObituariesPreview={isShowingObituariesPreview}
+                    checkIsExpired={checkIsExpired} formatDate={formatDate}
+                    formatTime={formatTime} handleCompleteCycle={handleCompleteCycle} />
             </div>
         );
     }
@@ -331,7 +454,10 @@ export default function Proyectar() {
                     <div className="w-12 h-12 bg-blue-950 rounded-full flex items-center justify-center border border-white/60 shadow-sm p-1.5">
                         <img src="/imagenes/logo-oficial.webp" alt="JR Logo" className="w-full h-full object-contain" />
                     </div>
-                    <h1 className="text-2xl font-bold tracking-wider text-slate-800">Aura 2026 - Jardines del Renacer</h1>
+                    <div>
+                        <h1 className="text-2xl font-bold tracking-wider text-slate-800">Aura 2026 - Jardines del Renacer</h1>
+                        {sede && <p className="text-sm font-bold text-blue-600 uppercase tracking-widest">{sede.nombre}</p>}
+                    </div>
                 </div>
                 <div className="flex items-center gap-4">
                     <span className="text-sm text-slate-600 font-medium">{user?.email}</span>
@@ -382,6 +508,9 @@ export default function Proyectar() {
                                 <label className="block font-extrabold mb-3 text-slate-400 group-hover:text-blue-600 text-[10px] sm:text-xs uppercase tracking-[0.2em] text-center transition-colors">Diseño Pantalla</label>
                                 <select value={projectionMode} onChange={(e) => setProjectionMode(e.target.value)} className="w-full bg-slate-50 hover:bg-white border-2 border-slate-100 hover:border-blue-300 p-3 rounded-2xl text-slate-800 font-bold outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer text-center text-sm shadow-inner">
                                     <option value="classic" className="text-black font-medium">Clásico (Alternado)</option>
+                                    {usesVerticalProjection && (
+                                        <option value="vertical" className="text-black font-medium">Vertical (Por Sala)</option>
+                                    )}
                                     <option value="split" className="text-black font-medium">Dividida (L + Publ.)</option>
                                 </select>
                             </div>
@@ -457,14 +586,33 @@ export default function Proyectar() {
                 </div>
 
                 <div className="mt-10 pt-6 border-t border-slate-300 flex justify-end">
-                    <button
-                        onClick={() => {
-                            window.open(`/Pantalla/${presentacionId}`, "_blank");
-                        }}
-                        className="bg-linear-to-r from-blue-500 to-blue-700 hover:from-blue-400 hover:to-blue-600 text-white font-bold px-8 py-4 rounded-xl shadow-lg shadow-blue-500/30 transform hover:-translate-y-1 transition-all"
-                    >
-                        Abrir Pantalla de Proyección
-                    </button>
+                    {usesVerticalProjection ? (
+                        <div className="flex flex-wrap gap-4 justify-end">
+                            {roomsToShow.map(roomKey => (
+                                <button
+                                    key={roomKey}
+                                    onClick={() => openVerticalProjection(roomKey)}
+                                    className="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-green-500/30 transform hover:-translate-y-1 transition-all disabled:bg-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
+                                    disabled={!obituaries[roomKey]?.name && !obituaries[roomKey]?.surname}
+                                    title={!obituaries[roomKey]?.name && !obituaries[roomKey]?.surname ? "Debe ingresar datos en el obituario para activar esta sala" : `Proyectar ${roomKey.replace('_', ' ')}`}
+                                >
+                                    Proyectar {roomKey.replace('_', ' ')}
+                                </button>
+                            ))}
+                            <p className="w-full text-right text-xs text-slate-500 mt-2">
+                                Para sedes con proyección vertical, cada sala se abre en una ventana individual.
+                                <br/>
+                                Los botones de sala se activan al ingresar datos en el obituario correspondiente.
+                            </p>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={() => window.open(`/Pantalla/${presentacionId}`, "_blank")}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg shadow-blue-500/30 transform hover:-translate-y-1 transition-all"
+                        >
+                            Abrir Pantalla de Proyección
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
