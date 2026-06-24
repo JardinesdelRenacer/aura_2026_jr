@@ -4,10 +4,9 @@ import { useRouter } from "next/navigation";
 interface SalasTabProps {
     sedes: any[];
     setShowModalSede: (show: boolean) => void;
-    setSedeToEdit: (sede: any) => void;
 }
 
-export function SalasTab({ sedes, setShowModalSede, setSedeToEdit }: SalasTabProps) {
+export function SalasTab({ sedes, setShowModalSede }: SalasTabProps) {
     const router = useRouter();
 
     return (
@@ -70,11 +69,11 @@ export function SalasTab({ sedes, setShowModalSede, setSedeToEdit }: SalasTabPro
                                 </td>
                                 <td className="p-4 text-right">
                                     <div className="flex justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => router.push(`/proyectar/${sede.id}`)} className="px-3 py-1.5 bg-green-50 text-green-600 hover:bg-green-600 hover:text-white rounded-lg transition-all shadow-sm border border-green-100 text-xs font-bold" title="Administrar Proyección">
+                                        <button onClick={() => router.push(`/proyectar/${sede.id}`  )} className="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg transition-all shadow-sm border border-blue-100 text-xs font-bold" title="Administrar Sede">
                                             Administrar Sede
                                         </button>
-                                        <button onClick={() => setSedeToEdit(sede)} className="px-3 py-1.5 bg-slate-50 text-slate-600 hover:bg-slate-200 rounded-lg transition-all shadow-sm border border-slate-200 text-xs font-bold" title="Editar Sede">
-                                            Editar
+                                        <button className="px-3 py-1.5 bg-slate-50 text-slate-600 hover:bg-slate-200 rounded-lg transition-all shadow-sm border border-slate-200 text-xs font-bold" title="Configuración">
+                                            Configuración
                                         </button>
                                     </div>
                                 </td>

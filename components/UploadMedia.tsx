@@ -1,30 +1,73 @@
 "use client";
 
+import { supabase } from "@/src/lib/supabase";
+
+
 interface Props {
+    sedeId: string;
+
     setFiles: React.Dispatch<
         React.SetStateAction<File[]>
+
     >;
 }
 
 export default function UploadMedia({
-    setFiles,
+    sedeId, setFiles,
 }: Props) {
     
-    const handleChange = (
+    const handleChange =  async(
         e: React.ChangeEvent<HTMLInputElement>
     ) => {
 
         if (!e.target.files) return
 
-        // Tomamos los archivos nuevos seleccionados
-        const newFiles = Array.from(e.target.files);
-        // Los añadimos al final de la lista que ya existía (en lugar de borrarlos)
-        setFiles((prevFiles) => [...prevFiles, ...newFiles]);
-        
+        const nuevosArchivos = Array.from(e.target.files);
+
+        for (const file of nuevosArchivos) {
+            const fileName = `${sedeId}/${Date.now()}-${file.name}`;
+
+            const { error } = await supabase.storage.from("media").upload(fileName, file, { upsert: false, });
+
+            if (error) {
+                console.log(error);
+                continue;
+            }
+
+            const  { data } = supabase.storage.from("media").getPublicUrl(fileName);
+
+            const response = await fetch("/api/master/media", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json", 
+                },
+                body: JSON.stringify({
+                    sedeId,
+                    url: data.publicUrl,
+                    type: file.type.startsWith("video/") ? "video" : "image", fileName: file.name,
+                }),
+            }); 
+
+            const result = await response.json();
+
+            console.log("MEDIA GUARDADA:");
+            console.log(result);
+        }
+
+        setFiles((prev) => [
+            ...prev,
+            ...nuevosArchivos,
+        ]);
+
         // Limpiamos el input para que te permita subir la misma foto/video más de una vez si lo necesitas
         e.target.value = "";
     };
 
+        // Tomamos los archivos nuevos seleccionados
+        //const newFiles = Array.from(e.target.files);
+        // Los añadimos al final de la lista que ya existía (en lugar de borrarlos)
+        //setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+        
     return(
         <div className="w-full flex justify-center md:justify-start">
             {/* Ocultamos el input nativo que dice "Ningún archivo seleccionado" y usamos un label estilizado */}

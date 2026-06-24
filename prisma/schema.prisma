@@ -36,7 +36,7 @@ model User {
   telefono      String?
   departamento  String?
   ciudad        String?
-  estado        String?  @default("ACITVO")
+  estado        String?  @default("ACTIVO")
 
   role          Role     @default(ADMIN)
   sede          Sede?
@@ -55,13 +55,15 @@ model Sede {
 
   numeroSalas       Int                      @default(1)
   salaVip           Boolean                  @default(false)
-
+  
   adminId 		      String?                  @unique
   admin   		      User?                    @relation(fields: [adminId], references: [id])
 
   obituarios      	Obituario[]
   media           	Media[]
   configuracion   	ConfiguracionPantalla?
+
+  presentaciones    Presentacion[]      
 
   createdAt 		    DateTime                  @default(now())
   updatedAt 		    DateTime                  @updatedAt
@@ -123,6 +125,8 @@ model Media {
 
   url       String
 
+  fileName  String
+  
   type      String
 
   orden     Int
@@ -131,10 +135,18 @@ model Media {
 }
 
 model Presentacion {
-  id        String   @id @default(cuid())
-  nombre    String
-  images    String
-  autoPlay  Boolean
-  seconds   Int
-  createdAt DateTime @default(now())
+  id                  String    @id @default(cuid())
+  nombre              String
+
+  projectionMode      String    @default("classic")
+  selectedImage       Int       @default(0)
+
+  roomsToShow         Json?
+  obituaries          Json?
+
+  sedeId              String
+  sede                Sede      @relation(fields: [sedeId], references: [id])
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 }

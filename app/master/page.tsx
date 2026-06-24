@@ -240,8 +240,16 @@ export default function MasterDashboard() {
         setIsLoading(true);
         try {
             // Lógica pendiente para suspender el usuario en la base de datos (Ej: cambiar estado a INACTIVO)
-            await new Promise(resolve => setTimeout(resolve, 800)); // Simulación de carga
-            setSuccessMessage("Usuario suspendido exitosamente.");
+            const response = await fetch(`/api/master/users/${userToSuspend}`,
+                { method: "PATCH",}
+            );
+            
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(data.error || "Error al suspender usuario");
+            }
+            setSuccessMessage("Usuario suspendido exitosamente");
             await cargarUsuarios();
         } catch (error) {
             console.error("Error suspending user:", error);

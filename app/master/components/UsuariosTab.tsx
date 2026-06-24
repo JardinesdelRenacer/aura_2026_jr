@@ -71,7 +71,7 @@ export function UsuariosTab({
                                         <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md text-[10px] font-bold tracking-widest border border-slate-200">ADMIN SEDE</span>
                                     </td>
                                     <td className="p-4">
-                                    <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-md border ${u.sede?.estado === "ACTIVA" ? "bg-green-50 text-green-600 border-green-200" : "bg-red-50 text-red-600 border-red-200"}`}>{u.sede?.estado || "INACTIVA"}</span>
+                                    <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-md border  ${u.estado === "ACTIVA" ? "bg-green-50 text-green-600 border-green-200" : u.estado === "SUSPENDIDO" ? "bg-amber-50 text-amber-600 border-amber-200" : "bg-red-50 text-red-600 border-red-200"}`}>{u.estado || "INACTIVA"} </span>
                                     </td>
                                     <td className="p-4 text-right">
                                         <div className="flex justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
@@ -83,7 +83,7 @@ export function UsuariosTab({
                                                 telefono: u.telefono || "",
                                                 email: u.email,
                                                 password: "",
-                                                estado: u.sede?.estado || "ACTIVA",
+                                                estado: u.estado || "ACTIVA", 
                                                 departamento: u.departamento || u.sede?.departamento || "",
                                                 ciudad: u.ciudad || u.sede?.ciudad || "",
                                                 nombreSede: u.sede?.nombre || ""

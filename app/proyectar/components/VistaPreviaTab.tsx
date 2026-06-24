@@ -65,7 +65,7 @@ export default function VistaPreviaTab({
                     <div className="h-full w-full bg-linear-to-br from-white/60 via-blue-50/50 to-white/40 p-1.5 backdrop-blur-2xl sm:p-2">
                         <div className="grid h-full w-full grid-cols-3 grid-rows-2 gap-1.5 sm:gap-2">
                             {/* Media Slider en Top Right */}
-                            <div className="relative col-span-2 col-start-2 row-start-1 h-full min-h-0 w-full min-w-0 overflow-hidden rounded-xl border border-white/80 bg-[url('/imagenes/fondo_obituarios.png')] bg-cover bg-center shadow-xl sm:rounded-2xl">
+                            <div className="relative col-span-2 col-start-2 row-start-1 h-full min-h-0 w-full min-w-0 overflow-hidden rounded-xl border border-white/80 bg-[url('/imagenes/New_wallpaper.png')] bg-cover bg-center shadow-xl sm:rounded-2xl">
                                 <div className="absolute inset-0">
                                     <Slideshow media={mediaItems} autoPlay={autoPlay} seconds={seconds} selectedImage={selectedImage} transitionEffect={transitionEffect} />
                                 </div>
@@ -84,7 +84,7 @@ export default function VistaPreviaTab({
                                 .map(({ roomKey, ob, isActive }, index) => {
                                     const slotClasses = ["col-start-1 row-start-1", "col-start-1 row-start-2", "col-start-2 row-start-2", "col-start-3 row-start-2"];
                                     return (
-                                        <div key={roomKey} className={`${slotClasses[index]} relative flex h-full min-h-0 w-full min-w-0 flex-col items-center justify-start overflow-hidden rounded-lg border border-white/30 bg-[url('/imagenes/fondo_obituarios.png')] bg-size-[100%_100%] bg-no-repeat text-center shadow-lg sm:rounded-xl`}>
+                                        <div key={roomKey} className={`${slotClasses[index]} relative flex h-full min-h-0 w-full min-w-0 flex-col items-center justify-start overflow-hidden rounded-lg border border-white/30 bg-[url('/imagenes/New_wallpaper.png')] bg-size-[100%_100%] bg-no-repeat text-center shadow-lg sm:rounded-xl`}>
                                             <div className="absolute inset-0 flex flex-col items-center justify-start p-2 text-center sm:p-3">
                                                 <h2 className="mb-1.5 w-4/5 border-b border-black/20 pb-1 text-xs font-bold uppercase tracking-widest text-black [text-shadow:0_1px_2px_rgb(255_255_255)] sm:text-base">
                                                     {roomKey === "VIP" ? "Sala VIP" : roomKey.replace("_", " ")}
@@ -153,7 +153,7 @@ export default function VistaPreviaTab({
                             })
                             .sort((a, b) => Number(b.isActive) - Number(a.isActive))
                             .map(({ roomKey, ob, isActive }) => (
-                                <div key={roomKey} className="bg-[url('/imagenes/fondo_obituarios.png')] bg-size-[100%_100%] bg-no-repeat border border-white/20 rounded-2xl p-6 flex flex-col justify-start items-center text-center shadow-xl relative overflow-hidden">
+                                <div key={roomKey} className="bg-[url('/imagenes/New_wallpaper1.png')] bg-size-[100%_100%] bg-no-repeat border border-white/20 rounded-2xl p-6 flex flex-col justify-start items-center text-center shadow-xl relative overflow-hidden">
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/30 rounded-bl-full blur-2xl"></div>
                                     <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/30 rounded-tr-full blur-2xl"></div>
 

@@ -3,6 +3,7 @@ import UploadMedia from "@/components/UploadMedia";
 import { Obituary, RoomKeys } from "../page";
 
 interface AdministrarTabProps {
+    sedeId: string;
     files: File[];
     setFiles: React.Dispatch<React.SetStateAction<File[]>>;
     mediaItems: { url: string; type: string }[];
@@ -13,13 +14,13 @@ interface AdministrarTabProps {
 }
 
 export default function AdministrarTab({
-    files, setFiles, mediaItems, removeImage, obituaries, handleObituaryChange, roomsToShow
+    sedeId, files, setFiles, mediaItems, removeImage, obituaries, handleObituaryChange, roomsToShow
 }: AdministrarTabProps) {
     return (
         <>
             <div className="p-6 md:p-8 bg-white/50 rounded-[2rem] border border-white/60 shadow-lg animate-in fade-in duration-500">
                 <h2 className="text-2xl font-black border-b-2 border-slate-200/60 pb-4 text-slate-800 text-center tracking-wide mb-6">📸 Carga de Archivos Multimedia</h2>
-                <UploadMedia setFiles={setFiles} />
+                <UploadMedia sedeId={sedeId} setFiles={setFiles} />
                 <p className="mt-4 text-slate-600">Archivos listos para proyectar: <span className="font-bold text-blue-600">{files.length}</span></p>
                 <div className="grid grid-cols-3 gap-4 mt-5">
                     {mediaItems.map((item, index) => (
@@ -67,7 +68,7 @@ export default function AdministrarTab({
                 </div>
 
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mt-4">
-                    {roomsToShow.map((room) => (
+                    {(roomsToShow ?? []).map((room) => (
                         <div key={room} className="p-6 bg-white/60 rounded-2xl border border-white/60 shadow-md flex flex-col gap-4">
                             <h3 className="text-xl font-bold text-blue-700 border-b border-slate-200 pb-2">
                                 {room === "VIP" ? "Sala VIP" : room.replace("_", " ")}

@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
     try {
-        const userId = params.id;
+        const { id: userId } = await params;
         const body = await request.json();
         
         // Extraemos los datos que nos envía el frontend
@@ -38,17 +38,44 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
         return NextResponse.json({ success: true, data: updatedUser });
     } catch (error: any) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        console.error(error);
+        return NextResponse.json({ success: false, error: "Error actualizando usuario" }, { status: 500 });
     }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
+        const { id } = await params;
+
         await prisma.user.delete({
-            where: { id: params.id }
+            where: { id }
         });
         return NextResponse.json({ success: true });
+    
     } catch (error: any) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return NextResponse.json({ success: false, error: "Error al eliminar usuario " }, { status: 500 });
+    }
+}
+
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+    try{
+        const { id } = await params;
+
+        const user = await prisma.user.update({ where: {id}, data: { estado: "SUSPENDIDO"},});
+
+        return NextResponse.json({
+            success: true,
+            data: user,
+        });
+    } catch (error: any) {
+        console.error(error);
+        
+        return NextResponse.json(
+            {
+                success: false,
+                error: "error al suspender al usuario",            
+            },
+            { status: 500, }
+        );
     }
 }
