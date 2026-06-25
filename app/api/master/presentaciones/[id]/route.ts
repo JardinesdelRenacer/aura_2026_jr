@@ -1,18 +1,28 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma";
 
-export async function GET(request: Request, { params }: { params: { id: string }}) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }>}) {
     try {
-        const { id } = params;
+        const { id } = await params;
 
         const presentacion = await prisma.presentacion.findUnique({
             where: { id },
+
+            include: {
+                sede: {
+                    include: {
+                        media: true,
+                        obituarios: true,
+                        configuracion: true,
+                    },
+                },
+            },
         });
 
         if (!presentacion) {
             return NextResponse.json(
                 { success: false, error: " Presentación no encontrada "},
-                { status: 400 }
+                { status: 404 }
             );
         }
 

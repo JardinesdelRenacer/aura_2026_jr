@@ -39,6 +39,7 @@ export default function MasterDashboard() {
 
     // Estados para Gestión de Sedes
     const [sedes, setSedes] = useState<any[]>([]);
+
     const [showModalSede, setShowModalSede] = useState(false);
     const [nuevaSedeNombre, setNuevaSedeNombre] = useState("");
     const [nuevaSedeDepartamento, setNuevaSedeDepartamento] = useState("");
@@ -84,13 +85,6 @@ export default function MasterDashboard() {
     const handleLogout = () => {
         router.push("/login");
     };
-
-    // Datos simulados para el mockup
-    const mockSedes = [
-        { id: 1, nombre: "Sede Centro", admin: "centro@jardinesdelrenacer.co", estado: "Transmitiendo", obituarios: 45, tendencia: "+12%" },
-        { id: 2, nombre: "Sede Norte", admin: "norte@jardinesdelrenacer.co", estado: "Transmitiendo", obituarios: 38, tendencia: "+5%" },
-        { id: 3, nombre: "Sede Sur (VIP)", admin: "sur@jardinesdelrenacer.co", estado: "Inactiva", obituarios: 12, tendencia: "-2%" },
-    ];
 
     // Menú de navegación Enterprise
     const menuItems = useMemo(() => [
@@ -153,18 +147,29 @@ export default function MasterDashboard() {
     const cargarSedes = async () => {
         try {
             const response = await fetch("/api/master/sedes");
-            const data = await response.json();
-            if(data.success || response.ok) {
-                setSedes(data);
-            }
+
+            const result = await response.json();
+
+            if (!result.success) return;
+
+            setSedes(result.data);
         } catch (error) {
-            console.error("Error fetching sedes:", error);
+            console.error(error);
         }
     };
 
     useEffect(() => {
         cargarUsuarios();
         cargarSedes();
+    }, []);
+
+    useEffect(() => {
+        cargarSedes();
+
+        const interval = setInterval(() => {
+            cargarSedes();
+        }, 5000);
+        return () => clearInterval(interval);
     }, []);
 
     const departamentos = Object.keys(ubicaciones);
@@ -338,7 +343,7 @@ export default function MasterDashboard() {
                     <div className="max-w-7xl mx-auto w-full">
 
                         {/* MÓDULO 1: DASHBOARD MASTER */}
-                        {activeTab === "dashboard" && <DashboardTab mockSedes={mockSedes} setExpandedSede={setExpandedSede} />}
+                        {activeTab === "dashboard" && <DashboardTab mockSedes={sedes} setExpandedSede={setExpandedSede} />}
 
                         {/* MÓDULO 2: GESTIÓN DE SALAS */}
                         {activeTab === "salas" && <SalasTab sedes={sedes} setShowModalSede={setShowModalSede} setSedeToEdit={setSedeToEdit} />}
@@ -347,7 +352,7 @@ export default function MasterDashboard() {
                         {activeTab === "usuarios" && <UsuariosTab usuarios={usuarios} setShowModalAdmin={setShowModalAdmin} setUserToEdit={setUserToEdit} setUserToSuspend={setUserToSuspend} setUserToDelete={setUserToDelete} />}
 
                         {/* MÓDULO 4: REPORTES Y ANALÍTICAS */}
-                        {activeTab === "reportes" && <ReportesTab mockSedes={mockSedes} />}
+                        {activeTab === "reportes" && <ReportesTab mockSedes={sedes} />}
 
                         {/* MÓDULO 5: TRASLADOS Y CONTROL */}
                         {activeTab === "traslados" && <TrasladosTab />}

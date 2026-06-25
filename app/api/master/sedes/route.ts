@@ -6,12 +6,22 @@ export async function GET() {
         const sedes = await prisma.sede.findMany({
             include: {
                 admin: {
-                    select: { email: true, nombres: true, apellidos: true }
-                }
+                    select: { email: true, nombres: true, apellidos: true },
+                },
+
+                presentaciones: true,
+                configuracion: true,
+                media: true,
+                obituarios: true,
+
+                pantallaCliente: true,
             },
             orderBy: { createdAt: 'desc'}
         });
-        return NextResponse.json(sedes);
+        return NextResponse.json({
+            success: true,
+            data: sedes,
+        });
     } catch (error: any) {
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }

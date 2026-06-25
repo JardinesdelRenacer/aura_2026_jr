@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Slideshow from "@/components/Slideshow";
-import { parse } from "path";
+import { userAgent } from "next/server";
 
 type Obituary = { name: string, surname: string, dob: string, dod: string, timeStart: string, timeEnd: string, cemetery: string, endTime?: string, endDate?: string, massTime?: string, massChurch?: string, massChurchType?: string, massAddress?: string };
 type ObituariesData = {
@@ -40,6 +40,8 @@ export default function PantallaView({
     const [currentTime, setCurrentTime] = useState(() => new Date());
 
     const [roomsToShow, setRoomsToShow] = useState<string[]>([]);
+
+    const [sedeId, setSedeId] = useState("");
 
     type RoomKeys = | "VIP" | "SALA_1" | "SALA_2" | "SALA_3";
 
@@ -114,7 +116,13 @@ export default function PantallaView({
 
             const presentacion = result.data;
 
-            const sede = presentacion.sede;
+            console.log("PRESENTACIÓN COMPLETA");
+
+            console.log(result.data);
+
+            const sede = presentacion.sede ?? {};
+
+            setSedeId(sede.id ?? "");
 
             console.log( "PRESENTACIÓN BACKEND: ", presentacion);
 
@@ -158,6 +166,60 @@ export default function PantallaView({
         if (presentacionId) {
             cargarPresentacion();
         }
+    }, [presentacionId]);
+
+    useEffect(() => {
+        if (!sedeId) return;
+
+        const enviarHeartbeat = async () => {
+            try {
+                await fetch("/api/pantalla/heartbeat", {
+                    method: "PUT",
+
+                    headers: {
+                        "Content-type": "application/json",
+                    },
+
+                    body: JSON.stringify({ 
+                        sedeId,
+
+                        screen: {
+                            width: window.screen.width,
+                            height: window.screen.height,
+                        },
+
+                        viewport: {
+                            width: window.innerWidth,
+                            height: window.innerHeight,
+                        },
+
+                        userAgent: navigator.userAgent,
+
+                        language: navigator.language,
+
+                        online: navigator.onLine,
+                    }),
+                });
+            } catch (error) {
+                console.error("Heartbeat:", error);
+            }
+        };
+
+        enviarHeartbeat();
+
+        const interval = setInterval(enviarHeartbeat, 5000);
+
+        return () => clearInterval(interval);
+    }, [sedeId]);
+
+    useEffect(() => {
+        if (!presentacionId) return;
+
+        const interval = setInterval(() => {
+            cargarPresentacion();
+        }, 5000);
+
+        return () => clearInterval(interval);
     }, [presentacionId]);
 
     // Lógica para alternar entre los Obituarios y las Imágenes a Pantalla Completa
@@ -212,6 +274,7 @@ export default function PantallaView({
     const handleCompleteCycle = useCallback(() => {
         setShowObituaries(true);
     }, []);
+
 
     if (!obituaries) return <div className="w-screen h-screen bg-blue-50 flex items-center justify-center text-blue-800 font-bold text-2xl">Cargando presentación...</div>;
 

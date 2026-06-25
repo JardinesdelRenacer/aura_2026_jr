@@ -153,7 +153,7 @@ export default function VistaPreviaTab({
                             })
                             .sort((a, b) => Number(b.isActive) - Number(a.isActive))
                             .map(({ roomKey, ob, isActive }) => (
-                                <div key={roomKey} className="bg-[url('/imagenes/New_wallpaper1.png')] bg-size-[100%_100%] bg-no-repeat border border-white/20 rounded-2xl p-6 flex flex-col justify-start items-center text-center shadow-xl relative overflow-hidden">
+                                <div key={roomKey} className="bg-[url('/imagenes/Fondo_c4r0.jpeg')] bg-size-[100%_100%] bg-no-repeat border border-white/20 rounded-2xl p-6 flex flex-col justify-start items-center text-center shadow-xl relative overflow-hidden">
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/30 rounded-bl-full blur-2xl"></div>
                                     <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/30 rounded-tr-full blur-2xl"></div>
 
