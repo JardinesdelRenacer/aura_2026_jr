@@ -61,8 +61,22 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     try{
         const { id } = await params;
 
-        const user = await prisma.user.update({ where: {id}, data: { estado: "SUSPENDIDO"},});
+        // Busca al usario actual
+        const ussuario = await prisma.user.findUnique({ where: {id},});
 
+        if (!usuario) {
+            return NextResponse.json({ success: false, error: "Usuario no encontrado" }, { status: 404 });
+        }
+
+        // Alternar estado
+
+        const nuevoEstado = UsuariosTab.estado === "SUSPENDIDO" ? "ACTIVO" : "SUSPENDIDO";
+
+        const user = await prisma.user.update({
+            where: { id },
+            data: { estado: nuevoEstado },
+        });
+        
         return NextResponse.json({
             success: true,
             data: user,

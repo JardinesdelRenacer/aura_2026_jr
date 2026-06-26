@@ -38,6 +38,8 @@ model User {
   ciudad        String?
   estado        String?  @default("ACTIVO")
 
+  lastSeen      DateTime?
+
   role          Role     @default(ADMIN)
   sede          Sede?
 

@@ -51,7 +51,17 @@ export async function POST(req: Request) {
         console.log("================================");
         console.log(" SEDE: ")
         console.log(user?.sede);
-        
+        if (user.estado === "SUSPENDIDO") {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: "Tu cuenta ha sido suspendida. Contacta al administrador." 
+            
+                },
+                { status: 403 }
+            );
+        }
+
         if (!user) {
             return NextResponse.json(
                 {
@@ -80,6 +90,12 @@ export async function POST(req: Request) {
                 { status: 401 }
             );
         }
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { lastSeen: new Date() },
+        });
+
 
         // Autenticación exitosa - retornar datos del usuario
         return NextResponse.json(

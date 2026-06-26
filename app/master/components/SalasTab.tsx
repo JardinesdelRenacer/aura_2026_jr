@@ -32,59 +32,79 @@ export function SalasTab({ sedes, setShowModalSede }: SalasTabProps) {
                                 <th className="p-4 font-bold text-right">Acciones</th>
                             </tr>
                         </thead>
+
                         <tbody className="text-sm">
-                        {sedes.length > 0 ? sedes.map((sede, i) => (
-                            <tr key={sede.id || i} className="border-b border-slate-100 hover:bg-blue-50/50 transition-colors group">
-                                <td className="p-4">
-                                    <div className="flex flex-col">
-                                        <span className="font-bold text-slate-800">{sede.nombre}</span>
-                                        <span className="text-xs text-slate-500">{sede.ciudad}, {sede.departamento}</span>
-                                    </div>
-                                </td>
-                                <td className="p-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs shadow-inner">
-                                            {sede.admin?.email?.charAt(0).toUpperCase() || "?"}
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className="font-semibold text-slate-700">{sede.admin?.nombres ? `${sede.admin.nombres} ${sede.admin.apellidos}` : sede.admin?.email || "Sin asignar"}</span>
-                                            <span className="text-[10px] text-slate-400">Rol: ADMIN</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="p-4">
-                                    <div className="flex gap-2">
-                                        <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[10px] font-bold border border-slate-200">Salas Habilitadas</span>
-                                        <span className="px-2 py-1 bg-amber-50 text-amber-600 rounded text-[10px] font-bold border border-amber-200">Módulo VIP</span>
-                                    </div>
-                                </td>
-                                <td className="p-4">
-                                    <div className="flex flex-col">
-                                        <span className="font-bold text-slate-700">{sede.obituarios?.length || 0} Obituarios</span>
-                                        <span className="text-[10px] font-bold text-emerald-500">+ Monitoreo Activo</span>
-                                    </div>
-                                </td>
-                                <td className="p-4">
-                                    <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-md border ${sede.estado === "ACTIVA" ? "bg-green-50 text-green-600 border-green-200" : "bg-red-50 text-red-600 border-red-200"}`}>{sede.estado || "INACTIVA"}</span>
-                                </td>
-                                <td className="p-4 text-right">
-                                    <div className="flex justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => router.push(`/proyectar/${sede.id}`  )} className="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg transition-all shadow-sm border border-blue-100 text-xs font-bold" title="Administrar Sede">
-                                            Administrar Sede
-                                        </button>
-                                        <button className="px-3 py-1.5 bg-slate-50 text-slate-600 hover:bg-slate-200 rounded-lg transition-all shadow-sm border border-slate-200 text-xs font-bold" title="Configuración">
-                                            Configuración
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        )) : (
+                            {sedes.length > 0 ? sedes.map((sede, i) => {
+
+                                const ultimaConexion = sede.lastSeen ? new Date(sede.lastSeen) : null;
+
+                                const transmitiendo = Boolean(ultimaConexion) && Date.now() - ultimaConexion.getTime() < 15000;
+
+                                return (
+                                    <tr key={sede.id || i} className="border-b border-slate-100 hover:bg-blue-50/50 transition-colors group">
+
+                                        <td className="p-4">
+                                            <div className="flex flex-col">
+                                                <span className="font-bold text-slate-800">{sede.nombre}</span>
+                                                <span className="text-xs text-slate-500">{sede.ciudad}, {sede.departamento}</span>
+                                            </div>
+                                        </td>
+
+                                        <td className="p-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs shadow-inner">
+                                                    {sede.admin?.email?.charAt(0).toUpperCase() || "?"}
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="font-semibold text-slate-700">{sede.admin?.nombres ? `${sede.admin.nombres} ${sede.admin.apellidos}` : sede.admin?.email || "Sin asignar"}</span>
+                                                    <span className="text-[10px] text-slate-400">Rol: ADMIN</span>
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                        <td className="p-4">
+                                            <div className="flex flex-wrap gap-2">
+                                                <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[10px] font-bold border border-slate-200">
+                                                    {sede.numeroSalas} Sala{sede.numeroSalas > 1 ? "s" : ""}
+                                                </span>
+
+                                                {sede.salaVip && (
+                                                    <span className="px-2 py-1 bg-amber-50 text-amber-600 rounded text-[10px] font-bold border border-amber-200">Módulo VIP</span>
+                                                )}
+                                            </div>
+                                        </td>
+
+                                        <td className="p-4">
+                                            <div className="flex flex-col">
+                                                <span className="font-bold text-slate-700">{sede.obituarios?.length || 0} Obituarios</span>
+                                                <span className="text-[10px] font-bold text-emerald-500">+ Monitoreo Activo</span>
+                                            </div>
+                                        </td>
+
+                                        <td className="p-4">
+                                            <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-md border ${transmitiendo ? "bg-green-50 text-green-600 border-green-200" : "bg-red-50 text-red-600 border-red-200"}`}>{transmitiendo ? "TRANSMITIENDO" : "INACTIVA"}</span>
+                                        </td>
+
+                                        <td className="p-4 text-right">
+                                            <div className="flex justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                                <button onClick={() => router.push(`/proyectar/${sede.id}`  )} className="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg transition-all shadow-sm border border-blue-100 text-xs font-bold" title="Administrar Sede">
+                                                    Administrar Sede
+                                                </button>
+                                                <button className="px-3 py-1.5 bg-slate-50 text-slate-600 hover:bg-slate-200 rounded-lg transition-all shadow-sm border border-slate-200 text-xs font-bold" title="Configuración">
+                                                    Configuración
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            }) 
+                         : (
                             <tr>
                                 <td colSpan={6} className="p-8 text-center text-slate-500 text-sm">
-                                    No hay sedes registradas en la base de datos. Haga clic en &quot;Crear Nueva Sede&quot; para empezar.
+                                   No hay sedes registradas en la base de datos. Haga clic en &quot;Crear Nueva Sede&quot; para empezar.
                                 </td>
                             </tr>
-                        )}
+                        )}   
                         </tbody>
                     </table>
                 </div>

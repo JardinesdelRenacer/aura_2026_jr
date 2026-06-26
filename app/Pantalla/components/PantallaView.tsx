@@ -21,7 +21,7 @@ export default function PantallaView({
     presentacionId,
 }: PantallaViewProps) {
 
-    console.log("PRESENTACION ID:, presentacionId");
+    console.log("PRESENTACION ID:", presentacionId);
 
     const [media, setMedia] = useState<{url: string, type: string}[]>([]);
 

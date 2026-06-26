@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import PantallaView from "@/app/Pantalla/components/PantallaView";
 
+
 export default function PantallaById() {
     const params = useParams();
 

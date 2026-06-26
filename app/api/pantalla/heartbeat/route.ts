@@ -61,33 +61,3 @@ export async function PUT(request:Request) {
         return NextResponse.json({ success: false }, { status: 500 });
     }
 }
-
-export async function POST(request: Request) {
-    try {
-        const body = await request.json();
-
-        if (!body.sedeId) {
-            return NextResponse.json({ success: false, error: "sedeId requerido" }, { status: 400 });
-        }
-
-        await prisma.sede.update({
-            where: {
-                id: body.sedeId,
-            },
-            data: {
-                lastSeen: new Date(),
-            },
-        })
-
-        await prisma.pantallaCliente.upsert({
-            where: { sedeId: body.sedeId },
-            
-        })
-
-
-        return NextResponse.json({ success: true });
-    } catch (error) {
-        console.error(error);
-        return NextResponse.json({ success: false }, { status: 500 });
-    }
-}

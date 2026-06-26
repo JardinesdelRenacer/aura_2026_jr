@@ -59,6 +59,32 @@ export default function MasterDashboard() {
         }
     }, []);
 
+    useEffect(() => {
+        if (!user?.id) return;
+
+        const enviarHeartbeat = async () => {
+            try {
+                await fetch("/api/auth/heartbeat", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type" : "application/json",
+                    },
+                    body: JSON.stringify({
+                        userId: user.id,
+                    }),
+                });
+            } catch (error) {
+                console.error("Heartbeat usuario: ", error);
+            }
+        };
+
+        enviarHeartbeat();
+
+        const interval = setInterval(enviarHeartbeat, 5000);
+
+        return () => clearInterval(interval);
+    }, [user]);
+
     // Estado para confirmación de eliminación de usuario
     const [userToDelete, setUserToDelete] = useState<string | null>(null);
 
@@ -86,7 +112,17 @@ export default function MasterDashboard() {
 
     const router = useRouter();
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        if (user?.id) {
+            await fetch("/api/auth/logout", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ userId: user.id })
+            });
+        }
+        
+        sessionStorage.removeItem("user");
+
         router.push("/login");
     };
 

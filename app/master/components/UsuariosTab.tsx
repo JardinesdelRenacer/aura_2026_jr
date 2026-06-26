@@ -53,53 +53,65 @@ export function UsuariosTab({
                             </tr>
                         </thead>
                         <tbody className="text-sm">
-                        {usuarios.map((u, i) => (
-                            <tr key={u.id || i} className="border-b border-slate-100 hover:bg-blue-50/50 transition-colors group">
-                                    <td className="p-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-black text-sm shadow-inner border border-blue-200">
-                                            {u.email ? u.email.charAt(0).toUpperCase() : "?"}
+                            {usuarios.map((u, i) => {
+                                const ultimaConexion = u.lastSeen ? new Date(u.lastSeen) : null;
+                                const activo = Boolean(ultimaConexion) && Date.now() - ultimaConexion.getTime() < 15000;
+
+                                return(
+                                    <tr key={u.id || i} className="border-b border-slate-100 hover:bg-blue-50/50 transition-colors group">
+                                        <td className="p-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-black text-sm shadow-inner border border-blue-200">
+                                                    {u.email ? u.email.charAt(0).toUpperCase() : "?"}
+                                                </div>
+                                                <div className="flex flex-col">
+                                                <span className="font-bold text-slate-700">{u.email}</span>
+                                                    <span className="text-xs text-slate-400 font-medium">
+                                                        Último acceso: {" "}
+                                                        {ultimaConexion ? ultimaConexion.toDateString("es-CO") : "Nunca"}
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <div className="flex flex-col">
-                                            <span className="font-bold text-slate-700">{u.email}</span>
-                                                <span className="text-xs text-slate-400 font-medium">Último acceso: Hace 2 horas</span>
+                                        </td>
+
+                                        <td className="p-4 text-slate-600 font-semibold">{u.sede?.nombre || "Sin sede asignada"}</td>
+
+                                        <td className="p-4">
+                                            <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md text-[10px] font-bold tracking-widest border border-slate-200">ADMIN SEDE</span>
+                                        </td>
+                                        <td className="p-4">
+                                            <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-md border ${u.estado === "SUSPENDIDO" ? "bg-amber-50 text-amber-600 border-amber-200" : activo ? "bg-green-50 text-green-600 border-green-200" : "bg-red-50 text-red-600 border-red-200"}`}> 
+                                                {u.estado === "SUSPENDIDO" ? "SUSPENDIDO" : activo ? "ACTIVO" : "INACTIVO"}
+                                            </span>
+                                        </td>
+                                        <td className="p-4 text-right">
+                                            <div className="flex justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                                <button onClick={() => setUserToEdit({
+                                                    id: u.id,
+                                                    nombres: u.nombres || "",
+                                                    apellidos: u.apellidos || "",
+                                                    cedula: u.cedula || "",
+                                                    telefono: u.telefono || "",
+                                                    email: u.email,
+                                                    password: "",
+                                                    estado: u.estado || "ACTIVA", 
+                                                    departamento: u.departamento || u.sede?.departamento || "",
+                                                    ciudad: u.ciudad || u.sede?.ciudad || "",
+                                                    nombreSede: u.sede?.nombre || ""
+                                                })} className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-700 rounded-lg transition-all shadow-sm border border-emerald-100" title="Editar Credenciales">
+                                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                                </button>
+                                                <button onClick={() => setUserToSuspend(u.id)} className="p-2 text-amber-500 bg-amber-50 hover:bg-amber-100 hover:text-amber-600 rounded-lg transition-all shadow-sm border border-amber-100" title="Suspender Usuario">
+                                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                </button>
+                                                <button onClick={() => setUserToDelete(u.id)} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 hover:text-red-700 rounded-lg transition-all shadow-sm border border-red-100" title="Eliminar Usuario">
+                                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                </button>
                                             </div>
-                                        </div>
-                                    </td>
-                                <td className="p-4 text-slate-600 font-semibold">{u.sede?.nombre || "Sin sede asignada"}</td>
-                                    <td className="p-4">
-                                        <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md text-[10px] font-bold tracking-widest border border-slate-200">ADMIN SEDE</span>
-                                    </td>
-                                    <td className="p-4">
-                                    <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-md border  ${u.estado === "ACTIVA" ? "bg-green-50 text-green-600 border-green-200" : u.estado === "SUSPENDIDO" ? "bg-amber-50 text-amber-600 border-amber-200" : "bg-red-50 text-red-600 border-red-200"}`}>{u.estado || "INACTIVA"} </span>
-                                    </td>
-                                    <td className="p-4 text-right">
-                                        <div className="flex justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                                            <button onClick={() => setUserToEdit({
-                                                id: u.id,
-                                                nombres: u.nombres || "",
-                                                apellidos: u.apellidos || "",
-                                                cedula: u.cedula || "",
-                                                telefono: u.telefono || "",
-                                                email: u.email,
-                                                password: "",
-                                                estado: u.estado || "ACTIVA", 
-                                                departamento: u.departamento || u.sede?.departamento || "",
-                                                ciudad: u.ciudad || u.sede?.ciudad || "",
-                                                nombreSede: u.sede?.nombre || ""
-                                            })} className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-700 rounded-lg transition-all shadow-sm border border-emerald-100" title="Editar Credenciales">
-                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                                            </button>
-                                            <button onClick={() => setUserToSuspend(u.id)} className="p-2 text-amber-500 bg-amber-50 hover:bg-amber-100 hover:text-amber-600 rounded-lg transition-all shadow-sm border border-amber-100" title="Suspender Usuario">
-                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                            </button>
-                                            <button onClick={() => setUserToDelete(u.id)} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 hover:text-red-700 rounded-lg transition-all shadow-sm border border-red-100" title="Eliminar Usuario">
-                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                                        </td>  
+                                    </tr>
+                                );   
+                            })}   
                         </tbody>
                     </table>
                 </div>

@@ -61,7 +61,17 @@ export default function Proyectar() {
 
     const createdRef = useRef(false);
     
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        if (user?.id) {
+            await fetch("/api/auth/logout", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId: user.id }),
+            });
+        }
+
+        sessionStorage.removeItem("user");
+        
         router.push("/login");
     };
 
