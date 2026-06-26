@@ -67,7 +67,7 @@ model Sede {
 
   lastSeen          DateTime?     
 
-  PantallaCliente   PantallaCliente?
+  pantallaCliente   PantallaCliente?
 
   createdAt 		    DateTime                  @default(now())
   updatedAt 		    DateTime                  @updatedAt

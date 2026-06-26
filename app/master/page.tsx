@@ -16,6 +16,7 @@ import { ReportesTab } from "./components/ReportesTab";
 import { TrasladosTab } from "./components/TrasladosTab";
 import { ConfiguracionTab } from "./components/ConfiguracionTab";
 import EditSedeForm from "./components/EditSedeForm";
+import DetallePantallaModal from "./components/DetallePantallaModal";
 
 
 
@@ -64,6 +65,9 @@ export default function MasterDashboard() {
     // Estados nuevos para edición y suspensión
     const [userToEdit, setUserToEdit] = useState<any>(null);
     const [userToSuspend, setUserToSuspend] = useState<string | null>(null);
+
+    //Nuevo modelo DetallePantalla en Dashboard
+    const [pantallaDetalle, setPantallaDetalle] = useState<any | null>(null);    
 
     // Estado para modal de éxito
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -328,6 +332,7 @@ export default function MasterDashboard() {
         }
     };
 
+
     return (
         <div className="flex h-screen bg-[#EEF4FF] overflow-hidden font-sans text-slate-800">
             
@@ -343,7 +348,7 @@ export default function MasterDashboard() {
                     <div className="max-w-7xl mx-auto w-full">
 
                         {/* MÓDULO 1: DASHBOARD MASTER */}
-                        {activeTab === "dashboard" && <DashboardTab mockSedes={sedes} setExpandedSede={setExpandedSede} />}
+                        {activeTab === "dashboard" && <DashboardTab mockSedes={sedes} setExpandedSede={setExpandedSede} setPantallaDetalle={setPantallaDetalle} />}
 
                         {/* MÓDULO 2: GESTIÓN DE SALAS */}
                         {activeTab === "salas" && <SalasTab sedes={sedes} setShowModalSede={setShowModalSede} setSedeToEdit={setSedeToEdit} />}
@@ -394,6 +399,13 @@ export default function MasterDashboard() {
                     onSave={handleEditSede}
                     onClose={() => setSedeToEdit(null)} />
             )}
+
+            {pantallaDetalle && (
+                <DetallePantallaModal
+                    sede={pantallaDetalle}
+                    onClose={() => setPantallaDetalle(null)}
+                />
+            )};
         </div>
     );
 }

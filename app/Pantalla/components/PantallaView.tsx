@@ -21,6 +21,8 @@ export default function PantallaView({
     presentacionId,
 }: PantallaViewProps) {
 
+    console.log("PRESENTACION ID:, presentacionId");
+
     const [media, setMedia] = useState<{url: string, type: string}[]>([]);
 
     const [autoPlay, setAutoplay] = useState(true);
@@ -304,7 +306,7 @@ export default function PantallaView({
                             .map(({ roomKey, ob, isActive }, index) => {
                                 const slotClasses = ["col-start-1 row-start-1", "col-start-1 row-start-2", "col-start-2 row-start-2", "col-start-3 row-start-2"];
                                 return (
-                                    <div key={roomKey} className={`${slotClasses[index]} min-h-0 min-w-0 h-full w-full bg-[url('/imagenes/New_wallpaper.png')] bg-size-[100%_100%] bg-no-repeat border border-white/20 rounded-4xl shadow-2xl relative overflow-hidden`}>
+                                    <div key={roomKey} className={`${slotClasses[index]} min-h-0 min-w-0 h-full w-full bg-[url('/imagenes/35.png')] bg-size-[100%_100%] bg-no-repeat border border-white/20 rounded-4xl shadow-2xl relative overflow-hidden`}>
                                         <div className="absolute inset-0 p-4 sm:p-6 lg:p-8 flex flex-col justify-start items-center text-center">
                                             <div className="absolute top-0 right-0 w-20 sm:w-32 lg:w-40 h-20 sm:h-32 lg:h-40 bg-white/30 rounded-bl-full blur-3xl"></div>
                                             <div className="absolute bottom-0 left-0 w-20 sm:w-32 lg:w-40 h-20 sm:h-32 lg:h-40 bg-white/30 rounded-tr-full blur-3xl"></div>
@@ -379,7 +381,7 @@ export default function PantallaView({
                         })
                         .sort((a, b) => Number(b.isActive) - Number(a.isActive))
                         .map(({ roomKey, ob, isActive }) => (
-                        <div key={roomKey} className="bg-[url('/imagenes/New_wallpaper.png')] bg-size-[100%_100%] bg-no-repeat border border-white/20 rounded-2xl sm:rounded-3xl lg:rounded-4xl p-3 sm:p-4 md:p-6 lg:p-8 flex flex-col justify-start items-center text-center shadow-2xl relative overflow-hidden">
+                        <div key={roomKey} className="bg-[url('/imagenes/35.png')] bg-size-[100%_100%] bg-no-repeat border border-white/20 rounded-2xl sm:rounded-3xl lg:rounded-4xl p-3 sm:p-4 md:p-6 lg:p-8 flex flex-col justify-start items-center text-center shadow-2xl relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-16 sm:w-24 md:w-32 lg:w-48 h-16 sm:h-24 md:h-32 lg:h-48 bg-white/30 rounded-bl-full blur-3xl"></div>
                             <div className="absolute bottom-0 left-0 w-16 sm:w-24 md:w-32 lg:w-48 h-16 sm:h-24 md:h-32 lg:h-48 bg-white/30 rounded-tr-full blur-3xl"></div>
 

@@ -4,9 +4,10 @@ import { PantallaEscalada } from "./PantallaEscalada";
 interface DashboardTabProps {
     mockSedes: any[];
     setExpandedSede: (sede: any) => void;
+    setPantallaDetalle: (sede:any) => void;
 }
 
-export function DashboardTab({ mockSedes, setExpandedSede }: DashboardTabProps) {
+export function DashboardTab({ mockSedes, setExpandedSede, setPantallaDetalle }: DashboardTabProps) {
     const sedesActivas = mockSedes.filter((sede) => {
 
         if (!sede.lastSeen) return false;
@@ -62,6 +63,7 @@ export function DashboardTab({ mockSedes, setExpandedSede }: DashboardTabProps) 
 
                     const presentacion = sede.presentaciones?.[0];
                     const puedeTransmitir = estaTransmitiendo && !!presentacion;
+
                     
                     return(
                         <div key={sede.id} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col group hover:-translate-y-1 hover:shadow-md transition-all">
@@ -91,7 +93,7 @@ export function DashboardTab({ mockSedes, setExpandedSede }: DashboardTabProps) 
                                     <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest">Pantalla Offline</p>
                                 )}
                             </div>
-                            <button className="mt-4 bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold py-2 rounded-lg text-xs transition-colors border border-slate-200 shadow-sm w-full">
+                            <button onClick={() => setPantallaDetalle(sede)} className="mt-4 bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold py-2 rounded-lg text-xs transition-colors border border-slate-200 shadow-sm w-full">
                                 Ver Detalles
                             </button>
                         </div>

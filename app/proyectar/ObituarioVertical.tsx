@@ -10,7 +10,7 @@ export default function ObituarioVertical({ obituary, formatDate, formatTime }: 
     const isActive = Boolean(obituary && (obituary.name || obituary.surname));
 
     return (
-        <div className="relative flex h-full w-full flex-col items-center justify-start overflow-hidden rounded-[1.6rem] bg-[url('/imagenes/New_wallpaper.png')] bg-size-[100%_100%] bg-no-repeat p-5 text-center text-black sm:p-8">
+        <div className="relative flex h-full w-full flex-col items-center justify-start overflow-hidden rounded-[1.6rem] bg-[url('/imagenes/35.png')] bg-size-[100%_100%] bg-no-repeat p-5 text-center text-black sm:p-8">
             <div className="absolute right-0 top-0 h-32 w-32 rounded-bl-full bg-white/30 blur-2xl" />
             <div className="absolute bottom-0 left-0 h-32 w-32 rounded-tr-full bg-white/30 blur-2xl" />
 

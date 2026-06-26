@@ -31,13 +31,14 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             ok: true,
             sede,
         });
-    } catch (error) {
+    } catch (error: any) {
+        console.error("ERROR SEDES: ");
         console.error(error);
 
         return NextResponse.json(
             {
                 ok: false,
-                message: "Error en route/proyectar",
+                message: String(error),
             },
             {
                 status: 500,
