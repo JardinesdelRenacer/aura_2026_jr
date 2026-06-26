@@ -2,6 +2,7 @@
 // Para habilitar otra sede en el futuro, agrega aquí el nombre guardado en la base de datos.
 const VERTICAL_PROJECTION_SEDE_NAMES = [
     "Zaragoza",
+    "Cartago",
     "Parque Conmemorativo",
     "Parque Conmemorativo Cartago",
     "Parque Conmemorativo de Cartago",

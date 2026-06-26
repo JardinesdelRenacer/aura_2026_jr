@@ -130,12 +130,14 @@ model Media {
   url       String
 
   fileName  String
-  
+
   type      String
 
   orden     Int
 
-  createdAt DateTime  @default(now())  
+  room      String?
+
+  createdAt DateTime  @default(now())
 }
 
 model Presentacion {
