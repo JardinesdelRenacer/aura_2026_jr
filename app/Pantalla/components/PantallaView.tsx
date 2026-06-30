@@ -6,6 +6,7 @@ import { useEffect, useState, useCallback } from "react";
 import Slideshow from "@/components/Slideshow";
 import ObituarioVertical from "@/app/proyectar/ObituarioVertical";
 import { userAgent } from "next/server";
+import { promiseHooks } from "v8";
 
 type Obituary = { name: string, surname: string, dob: string, dod: string, timeStart: string, timeEnd: string, cemetery: string, endTime?: string, endDate?: string, massTime?: string, massChurch?: string, massChurchType?: string, massAddress?: string };
 type ObituariesData = {
@@ -48,6 +49,10 @@ export default function PantallaView({
     const [roomsToShow, setRoomsToShow] = useState<string[]>([]);
 
     const [sedeId, setSedeId] = useState("");
+
+    const searchParams = useSearchParams();
+
+    const roomParam = searchParams.get("room") as RoomKeys | null;
 
     type RoomKeys = | "VIP" | "SALA_1" | "SALA_2" | "SALA_3";
 
@@ -137,26 +142,31 @@ export default function PantallaView({
             setVerticalRoom(presentacion.verticalRoom || '');
 
             setSelectedImage(presentacion.selectedImage ?? 0);
-
-            setRoomsToShow(
+            
+            const rooms =
                 Array.isArray(presentacion?.roomsToShow)
-                    ? presentacion.roomsToShow : []);
+                    ? presentacion.roomsToShow : [];
+            
+            setRoomsToShow(rooms);
 
             const mediaList = sede.media || [];
 
-            if (projectionMode === "vertical" || singleRoomMode) {
-                const roomKey = singleRoomMode || verticalRoom;
-                const roomMedia = mediaList.filter(m => m.room === roomKey);
+            if (presentacion.projectionMode === "vertical") {
+            
+                const roomKey = presentacion.verticalRoom || roomParam || (rooms[0] as RoomKeys);
 
-                if (roomMedia.length > 0) {
-                    setMedia(roomMedia);
+                const roomMedia = mediaList.filter(m => m.room === roomKey);
+                
+                console.log("MEDIA: ", mediaList);
+
+                console.log("MEDIA FILTRADA: ", roomMedia);
+
+                setMedia(roomMedia.length > 0 ? roomMedia : mediaList.filter(m => !m.room));
+
                 } else {
-                    // Fallback a la multimedia general si no hay multimedia específica para la sala
-                    setMedia(mediaList.filter(m => !m.room));
+                    // Classic y Split utilizan toda la multimedia
+                    setMedia(mediaList);
                 }
-            } else {
-                setMedia(mediaList.filter(m => !m.room));
-            }
 
             setObituaries(convertirObituarios(sede.obituarios || []));
 
@@ -304,10 +314,10 @@ export default function PantallaView({
 
     if (!obituaries) return <div className="w-screen h-screen bg-blue-50 flex items-center justify-center text-blue-800 font-bold text-2xl">Cargando presentación...</div>;
 
-    if (projectionMode === "vertical" || singleRoomMode) {
-        const roomKey = singleRoomMode || verticalRoom || (roomsToShow[0] as RoomKeys);
+    if (projectionMode === "vertical" ) {
+        const roomKey = roomParam || verticalRoom || (roomsToShow[0] as RoomKeys);
         const obituary = roomKey ? obituaries[roomKey] : null;
-
+        console.log("MEDIA STATE:", media);
         return (
             <div className="w-screen h-screen flex items-center justify-center overflow-hidden bg-black">
                 <div className="h-full max-w-full aspect-[9/16] bg-black overflow-hidden relative">

@@ -94,14 +94,27 @@ export function UsuariosTab({
                                                     telefono: u.telefono || "",
                                                     email: u.email,
                                                     password: "",
-                                                    estado: u.estado || "ACTIVA", 
+                                                    estado: u.estado ?? "ACTIVO", 
                                                     departamento: u.departamento || u.sede?.departamento || "",
                                                     ciudad: u.ciudad || u.sede?.ciudad || "",
                                                     nombreSede: u.sede?.nombre || ""
                                                 })} className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-700 rounded-lg transition-all shadow-sm border border-emerald-100" title="Editar Credenciales">
                                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                                                 </button>
-                                                <button onClick={() => setUserToSuspend(u.id)} className="p-2 text-amber-500 bg-amber-50 hover:bg-amber-100 hover:text-amber-600 rounded-lg transition-all shadow-sm border border-amber-100" title="Suspender Usuario">
+                                                <button 
+                                                    onClick={() => {
+                                                        if (u.estado === "SUSPENDIDO") {
+                                                            return;
+                                                        }
+                                                        setUserToSuspend(u.id);
+                                                    }}
+                                                    disabled={u.estado === "SUSPENDIDO"}
+                                                    title={
+                                                        u.estado === "SUSPENDIDO" ? "Usuario suspendido" : "Suspender usuairo"
+                                                    }
+                                                    className={`p-2 text-amber-500 bg-amber-50 hover:bg-amber-100 hover:text-amber-600 rounded-lg transition-all shadow-sm border border-amber-100" ${
+                                                        u.estado === "SUSPENDIDO" ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60" : "text-amber-500 bg-amber-50 hover:bg-amber-100 hover:text-amber-600 border-amber-100"
+                                                    }`}>
                                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                                 </button>
                                                 <button onClick={() => setUserToDelete(u.id)} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 hover:text-red-700 rounded-lg transition-all shadow-sm border border-red-100" title="Eliminar Usuario">

@@ -9,6 +9,7 @@ import VistaPreviaTab from "@/app/proyectar/components/VistaPreviaTab";
 import AdministrarTab from "./components/AdministrarTab";
 import { isVerticalProjectionSede } from "./projection-config";
 import { RootOptions } from "react-dom/client";
+import CompartirLinkModal from "./components/CompartirLinkModal";
 
 
 // Tipos para los obituarios (se usarán en la Fase 2)
@@ -57,6 +58,8 @@ export default function Proyectar() {
     const [roomsToShow, setRoomsToShow] = useState<RoomKeys[]>([]);
 
     const [presentacionId, setPresentacionId] = useState("");
+
+    const [showCompartir,setShowCompartir]=useState(false);
 
     const [loaded, setLoaded] = useState(false);
 
@@ -528,6 +531,7 @@ export default function Proyectar() {
         return false;
     }, [projectionMode, verticalRoom, obituaries]);
 
+
     if (loading) {
         return <div>Cargando sede...</div>
     }
@@ -676,6 +680,7 @@ export default function Proyectar() {
                             onUploadComplete={cargarSede}
                             handleObituaryChange={handleObituaryChange}
                             roomsToShow={roomsToShow}
+                            showCompartir={() => setShowCompartir(true)}
                         />
                     )}
 
@@ -697,6 +702,13 @@ export default function Proyectar() {
                     
 
                 </div>
+
+                {showCompartir && (
+                    <CompartirLinkModal
+                        presentacionId={presentacionId} 
+                        onClose={()=>setShowCompartir(false)}
+                    />
+                )}
 
                 <div className="mt-10 pt-6 border-t border-slate-300 flex justify-end">
                     <button

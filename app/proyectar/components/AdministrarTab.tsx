@@ -16,10 +16,11 @@ interface AdministrarTabProps {
     obituaries: Record<RoomKeys, Obituary>;
     handleObituaryChange: (room: RoomKeys, field: keyof Obituary, value: string) => void;
     roomsToShow: RoomKeys[];
+    showCompartir: () => void;
 }
 
 export default function AdministrarTab({
-    sedeId, sede, presentacionId, files, setFiles, mediaItems, removeImage, onUploadComplete, setMediaOrder, obituaries, handleObituaryChange, roomsToShow
+    sedeId, sede, presentacionId, files, setFiles, mediaItems, removeImage, onUploadComplete, setMediaOrder, obituaries, handleObituaryChange, roomsToShow, showCompartir
 }: AdministrarTabProps) {
     const esSedeVertical = isVerticalProjectionSede(sede?.nombre);
     const [notificacionesLimpieza, setNotificacionesLimpieza] = useState<Record<string, boolean>>({});
@@ -265,6 +266,12 @@ export default function AdministrarTab({
                                                 Limpiar Horarios / Datos
                                             </button>
                                         )}
+                                        <button
+                                            onClick={showCompartir}
+                                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl font-bold shadow-md transition"
+                                        >
+                                            🔗 Compartir Link
+                                        </button>
                                     </div>
                                 </div>
                             </div>

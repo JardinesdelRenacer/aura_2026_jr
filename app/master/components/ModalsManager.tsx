@@ -305,9 +305,9 @@ export function ModalsManager({
                                 <div>
                                     <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">Estado de la Cuenta</label>
                                     <div className="relative">
-                                        <select value={userToEdit.estado || "ACTIVA"} onChange={(e) => setUserToEdit({...userToEdit, estado: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-slate-700 font-medium shadow-sm appearance-none cursor-pointer">
-                                            <option value="ACTIVA">Activa</option>
-                                            <option value="INACTIVA">Inactiva / Suspendida</option>
+                                        <select value={userToEdit.estado} onChange={(e) => setUserToEdit({...userToEdit, estado: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-slate-700 font-medium shadow-sm appearance-none cursor-pointer">
+                                            <option value="ACTIVO">Activo</option>
+                                            <option value="SUSPENDIDO">Suspendido</option>
                                         </select>
                                         <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400">
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
