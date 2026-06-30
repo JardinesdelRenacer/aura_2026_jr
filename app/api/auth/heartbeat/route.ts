@@ -19,6 +19,10 @@ export async function POST(request: Request) {
             where: { id: body.userId },
             data: { lastSeen: new Date() },
         });
+
+        return NextResponse.json({
+            success: true,
+        });
     } catch (error) {
         console.error(error);
 

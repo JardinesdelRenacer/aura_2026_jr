@@ -12,6 +12,7 @@ interface VistaPreviaTabProps {
     transitionEffect: string;
     mediaItems: { url: string; type: string }[];
     obituaries: Record<RoomKeys, Obituary>;
+    verticalRoom: RoomKeys | '';
     roomsToShow: RoomKeys[];
     isShowingObituariesPreview: boolean;
     checkIsExpired: (endTime?: string, endDate?: string) => boolean;
@@ -22,7 +23,7 @@ interface VistaPreviaTabProps {
 
 export default function VistaPreviaTab({
     projectionMode, fullScreen = false, autoPlay, seconds, selectedImage, transitionEffect,
-    mediaItems, obituaries, roomsToShow, isShowingObituariesPreview,
+    mediaItems, obituaries, verticalRoom, roomsToShow, isShowingObituariesPreview,
     checkIsExpired, formatDate, formatTime, handleCompleteCycle
 }: VistaPreviaTabProps) {
     const isVertical = projectionMode === "vertical";
@@ -48,15 +49,22 @@ export default function VistaPreviaTab({
             <div className={screenClassName}>
                 {isVertical ? (
                     (() => {
-                        const roomKey = roomsToShow[0];
-                        const obituary = obituaries[roomKey];
+                        const roomKey = verticalRoom || roomsToShow[0];
+                        const roomMedia = mediaItems.filter(item => item.room === roomKey);
+                        const generalMedia = mediaItems.filter(item => !item.room);
+
+                        const finalMedia = roomMedia.length > 0 ? roomMedia : generalMedia;
+
+                        const obituary = roomKey ? obituaries[roomKey] : null;
                         return (
                             <div className="flex h-full w-full flex-col gap-3 bg-slate-950 p-3">
                                 <div className="relative h-3/5 flex-grow overflow-hidden rounded-[1.75rem] border border-white/20 shadow-2xl">
-                                    <Slideshow media={mediaItems} autoPlay={autoPlay} seconds={seconds} selectedImage={selectedImage} transitionEffect={transitionEffect} onCompleteCycle={handleCompleteCycle} />
+                                    <Slideshow media={finalMedia} autoPlay={autoPlay} seconds={seconds} selectedImage={selectedImage} transitionEffect={transitionEffect} onCompleteCycle={handleCompleteCycle} />
                                 </div>
                                 <div className="h-2/5 flex-shrink-0 overflow-hidden rounded-[1.75rem] border-2 border-white/70 shadow-2xl ring-1 ring-blue-200/30">
-                                    <ObituarioVertical obituary={obituary} formatDate={formatDate} formatTime={formatTime} />
+                                    {obituary ? (
+                                        <ObituarioVertical obituary={obituary} formatDate={formatDate} formatTime={formatTime} />
+                                    ) : <div className="flex h-full w-full items-center justify-center bg-slate-800 text-white/50">Seleccione una sala</div>}
                                 </div>
                             </div>
                         );

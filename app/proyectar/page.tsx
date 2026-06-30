@@ -7,11 +7,14 @@ import UploadMedia from "@/components/UploadMedia";
 import Slideshow from "@/components/Slideshow";
 import VistaPreviaTab from "@/app/proyectar/components/VistaPreviaTab";
 import AdministrarTab from "./components/AdministrarTab";
+import { isVerticalProjectionSede } from "./projection-config";
 import { RootOptions } from "react-dom/client";
 
 
 // Tipos para los obituarios (se usarán en la Fase 2)
 type Obituary = { name: string, surname: string, dob: string, dod: string, timeStart: string, timeEnd: string, cemetery: string, endTime?: string, endDate?: string, massTime?: string, massChurch?: string, massChurchType?: string, massAddress?: string };
+export type RoomKeys = "VIP" | "SALA_1" | "SALA_2" | "SALA_3";
+export type MediaItem = { id: string; url: string; type: string; room: RoomKeys | null; file?: File };
 
 export default function Proyectar() {
     
@@ -25,7 +28,7 @@ export default function Proyectar() {
 
     const [files, setFiles] = useState<File[]>([]);
 
-    const [savedMedia, setSavedMedia] = useState<any[]>([]);
+    const [savedMedia, setSavedMedia] = useState<MediaItem[]>([]);
 
    
 
@@ -38,6 +41,8 @@ export default function Proyectar() {
     const [transitionEffect, setTransitionEffect] = useState("fade");
 
     const [projectionMode, setProjectionMode] = useState("classic");
+
+    const [verticalRoom, setVerticalRoom] = useState<RoomKeys | ''>('');
 
     const [showObituariesPreview, setShowObituariesPreview] = useState(true);
 
@@ -130,27 +135,42 @@ export default function Proyectar() {
     };
 
     // Función para eliminar una imagen específica
-    const removeImage = (indexToRemove: number) => {
-        setFiles((prev) => prev.filter((_, i) => i !== indexToRemove));
-        // Ajusta la imagen seleccionada si eliminamos la que estaba en vista fija o una anterior
-        if (selectedImage === indexToRemove) {
-            setSelectedImage(0);
-        } else if (selectedImage > indexToRemove) {
-            setSelectedImage((prev) => prev - 1);
+    const removeImage = async (indexToRemove: number) => {
+        const allMedia = [...savedMedia, ...mediaItems];
+        const itemToRemove = allMedia[indexToRemove];
+
+        if (!itemToRemove) return;
+
+        // Si es un archivo guardado (tiene un id que no es un nombre de archivo temporal)
+        if (itemToRemove.id && !itemToRemove.file) {
+            const response = await fetch(`/api/master/media/${itemToRemove.id}`, {
+                method: 'DELETE',
+            });
+            if (response.ok) {
+                setSavedMedia(prev => prev.filter(item => item.id !== itemToRemove.id));
+            }
+        } else {
+            // Si es un archivo nuevo (aún no guardado, identificado por su objeto File)
+            setFiles(prev => prev.filter(file => file !== itemToRemove.file));
         }
     };
 
+    const setMediaOrder = (newOrder: MediaItem[]) => {
+        // Esta función recibirá el nuevo orden y deberá actualizar el estado.
+        // Por ahora, asumimos que la lógica de guardado del orden se manejará
+        // en un efecto o al guardar la presentación.
+        setSavedMedia(newOrder);
+    };
+
     const mediaItems = useMemo(() => {
-        return files.map((file) => ({
+        return files.map((file, index) => ({
+            id: file.name, // Usamos el nombre como ID temporal
             url: URL.createObjectURL(file),
-            type: file.type.startsWith("video/") ? "video" : "image"
+            type: file.type.startsWith("video/") ? "video" : "image",
+            room: (file as any).room || null, // Leemos el room que asignamos en UploadMedia
+            file: file
         }));
     }, [files]);
-
-    const persisteMediaItems = savedMedia.map((item) => ({
-        url: item.url,
-        type: item.type
-    }));
 
     useEffect(() => {
         // Limpieza de memoria (muy importante para evitar memory leaks)
@@ -243,6 +263,7 @@ export default function Proyectar() {
 
             if (mediaData.success) {
                 setSavedMedia(mediaData.data);
+                setFiles([]); // Limpiamos los archivos locales ya que ahora vienen de la BD
             }
 
             console.log("SEDE ID URL:", sedeId);
@@ -378,9 +399,6 @@ export default function Proyectar() {
         setRoomsToShow(rooms);
     }, [sede]);
 
-    type RoomKeys = | "VIP" | "SALA_1" | "SALA_2" | "SALA_3";
-
-
     // Autoguardado en tiempo real de todos los cambios
     useEffect(() => {
         if (!loaded) return;
@@ -403,8 +421,12 @@ export default function Proyectar() {
                 obituaries,
                 transitionEffect,
                 projectionMode,
+                verticalRoom,
                 roomsToShow,
-            })
+            }),
+        }).then(() => {
+            // Notificar a otras pestañas (la pantalla de proyección) que los datos han cambiado.
+            localStorage.setItem(`presentacion-update-${presentacionId}`, Date.now().toString());
         });
     }, [
         presentacionId,
@@ -414,6 +436,7 @@ export default function Proyectar() {
         obituaries,
         transitionEffect,
         projectionMode,
+        verticalRoom,
         roomsToShow
     ]);
     
@@ -482,12 +505,28 @@ export default function Proyectar() {
         if (data.success && data.data) {
             setPresentacionId(data.data.id);
             setProjectionMode(data.data.projectionMode ?? "classic");
+            setVerticalRoom(data.data.verticalRoom ?? (roomsToShow.length > 0 ? roomsToShow[0] : ''));
             setRoomsToShow(data.data.roomsToShow ?? []);
             return;
         }
     }
 
-    const allMedia = [...savedMedia, ...mediaItems,];
+    const allMedia: MediaItem[] = [...savedMedia, ...mediaItems];
+
+    const isBotonProyectarDisabled = useMemo(() => {
+        if (projectionMode === 'vertical') {
+            // Si no se ha seleccionado una sala en modo vertical, deshabilita el botón.
+            if (!verticalRoom || !roomsToShow.includes(verticalRoom)) {
+                return true;
+            }
+            const obituarySeleccionado = obituaries[verticalRoom];
+            // Si la sala seleccionada no tiene ni nombre ni apellido, deshabilita el botón.
+            if (!obituarySeleccionado || (!obituarySeleccionado.name?.trim() && !obituarySeleccionado.surname?.trim())) {
+                return true;
+            }
+        }
+        return false;
+    }, [projectionMode, verticalRoom, obituaries]);
 
     if (loading) {
         return <div>Cargando sede...</div>
@@ -564,9 +603,24 @@ export default function Proyectar() {
                                 <label className="block font-extrabold mb-3 text-slate-400 group-hover:text-blue-600 text-[10px] sm:text-xs uppercase tracking-[0.2em] text-center transition-colors">Diseño Pantalla</label>
                                 <select value={projectionMode} onChange={(e) => setProjectionMode(e.target.value)} className="w-full bg-slate-50 hover:bg-white border-2 border-slate-100 hover:border-blue-300 p-3 rounded-2xl text-slate-800 font-bold outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer text-center text-sm shadow-inner">
                                     <option value="classic" className="text-black font-medium">Clásico (Alternado)</option>
+                                    {isVerticalProjectionSede(sede?.nombre) && (
+                                        <option value="vertical" className="text-black font-medium">Vertical (Sala Única)</option>
+                                    )}
                                     <option value="split" className="text-black font-medium">Dividida (L + Publ.)</option>
                                 </select>
                             </div>
+
+                            {projectionMode === 'vertical' && (
+                                <div className="p-5 bg-white/80 backdrop-blur-xl rounded-3xl border-2 border-white shadow-xl hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col items-center w-full sm:w-[220px] group animate-in fade-in duration-300">
+                                    <label className="block font-extrabold mb-3 text-slate-400 group-hover:text-blue-600 text-[10px] sm:text-xs uppercase tracking-[0.2em] text-center transition-colors">Sala a Proyectar</label>
+                                    <select value={verticalRoom} onChange={(e) => setVerticalRoom(e.target.value as RoomKeys)} className="w-full bg-slate-50 hover:bg-white border-2 border-slate-100 hover:border-blue-300 p-3 rounded-2xl text-slate-800 font-bold outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer text-center text-sm shadow-inner">
+                                        <option value="" disabled>-- Seleccione una sala --</option>
+                                        {roomsToShow.map(room => (
+                                            <option key={room} value={room} className="text-black font-medium">{room === "VIP" ? "Sala VIP" : room.replace("_", " ")}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
 
                             <div className="p-5 bg-white/80 backdrop-blur-xl rounded-3xl border-2 border-white shadow-xl hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col items-center w-full sm:w-[220px] group">
                                 <label className="block font-extrabold mb-3 text-slate-400 group-hover:text-blue-600 text-[10px] sm:text-xs uppercase tracking-[0.2em] text-center transition-colors">Visualización</label>
@@ -611,11 +665,15 @@ export default function Proyectar() {
                     {activeTab === "administrar" && (
                         <AdministrarTab
                             sedeId={sedeId}
+                            sede={sede}
+                            presentacionId={presentacionId}
                             files={files}
                             setFiles={setFiles}
                             mediaItems={allMedia}
                             removeImage={removeImage}
+                            setMediaOrder={setMediaOrder}
                             obituaries={obituaries}
+                            onUploadComplete={cargarSede}
                             handleObituaryChange={handleObituaryChange}
                             roomsToShow={roomsToShow}
                         />
@@ -627,6 +685,7 @@ export default function Proyectar() {
                         projectionMode={projectionMode} autoPlay={autoPlay} seconds={seconds}
                         selectedImage={selectedImage} transitionEffect={transitionEffect}
                         mediaItems={allMedia} obituaries={obituaries as Record<RoomKeys, Obituary>}
+                        verticalRoom={verticalRoom}
                         roomsToShow={roomsToShow}
                         isShowingObituariesPreview={isShowingObituariesPreview}
                         checkIsExpired={checkIsExpired} formatDate={formatDate}
@@ -642,9 +701,16 @@ export default function Proyectar() {
                 <div className="mt-10 pt-6 border-t border-slate-300 flex justify-end">
                     <button
                         onClick={() => {
+                            if (isBotonProyectarDisabled) return;
                             window.open(`/Pantalla/${presentacionId}`, "_blank");
                         }}
-                        className="bg-linear-to-r from-blue-500 to-blue-700 hover:from-blue-400 hover:to-blue-600 text-white font-bold px-8 py-4 rounded-xl shadow-lg shadow-blue-500/30 transform hover:-translate-y-1 transition-all"
+                        disabled={isBotonProyectarDisabled}
+                        className={`font-bold px-8 py-4 rounded-xl transition-all ${
+                            isBotonProyectarDisabled
+                                ? "bg-slate-300 text-slate-500 cursor-not-allowed"
+                                : "bg-linear-to-r from-blue-500 to-blue-700 hover:from-blue-400 hover:to-blue-600 text-white shadow-lg shadow-blue-500/30 transform hover:-translate-y-1"
+                        }`}
+                        title={isBotonProyectarDisabled ? "Debe seleccionar una sala y completar el obituario para proyectar en modo vertical" : "Abrir en una nueva ventana"}
                     >
                         Abrir Pantalla de Proyección
                     </button>
