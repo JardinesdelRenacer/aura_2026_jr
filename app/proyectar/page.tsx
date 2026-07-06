@@ -31,8 +31,6 @@ export default function Proyectar() {
 
     const [savedMedia, setSavedMedia] = useState<MediaItem[]>([]);
 
-   
-
     const [autoPlay, setAutoplay] = useState(true);
 
     const [seconds, setSeconds] = useState(10);
@@ -531,7 +529,6 @@ export default function Proyectar() {
         return false;
     }, [projectionMode, verticalRoom, obituaries]);
 
-
     if (loading) {
         return <div>Cargando sede...</div>
     }
@@ -703,28 +700,31 @@ export default function Proyectar() {
 
                 </div>
 
-                {showCompartir && (
-                    <CompartirLinkModal
-                        presentacionId={presentacionId} 
-                        onClose={()=>setShowCompartir(false)}
-                    />
-                )}
+                
+                <CompartirLinkModal
+                    open={showCompartir}
+                    presentacionId={presentacionId} 
+                    onClose={()=>setShowCompartir(false)}
+                />
+                
+                <div className="mt-10 pt-6 border-t border-slate-100 flex items-center justify-between">
+                    {/* Btn Compartir */}
+                    <button
+                        onClick={() => setShowCompartir(true)}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-xl shadow-md transition-all hover:shadow-lg">
+                        🔗 Compartir Link
+                    </button>
 
-                <div className="mt-10 pt-6 border-t border-slate-300 flex justify-end">
+                    {/* Boton Abrir Pantalla */}
                     <button
                         onClick={() => {
                             if (isBotonProyectarDisabled) return;
-                            window.open(`/Pantalla/${presentacionId}`, "_blank");
+                            window.open(`/display/${presentacionId}`,"_blank");
                         }}
                         disabled={isBotonProyectarDisabled}
-                        className={`font-bold px-8 py-4 rounded-xl transition-all ${
-                            isBotonProyectarDisabled
-                                ? "bg-slate-300 text-slate-500 cursor-not-allowed"
-                                : "bg-linear-to-r from-blue-500 to-blue-700 hover:from-blue-400 hover:to-blue-600 text-white shadow-lg shadow-blue-500/30 transform hover:-translate-y-1"
-                        }`}
-                        title={isBotonProyectarDisabled ? "Debe seleccionar una sala y completar el obituario para proyectar en modo vertical" : "Abrir en una nueva ventana"}
-                    >
-                        Abrir Pantalla de Proyección
+                        className={`font-bold px-8 py-4 rounded-xl transition-all ${isBotonProyectarDisabled ? "bg-slate-300 text-slate-500 cursor-not-allowed" : "bg-linear-to-r from-blue-500 to-blue-700 hover:from-blue-400 hover:to-blue-600 text-white shadow-blue-500/30 transform hover:-translate-y-1"}`}
+                        title={isBotonProyectarDisabled ? "Debe seleccionar una sala y completar el obituario para proyectar en modo vertical" : "Abrir en una nueva ventana"}>
+                            Abrir Pantalla de Proyección
                     </button>
                 </div>
             </div>

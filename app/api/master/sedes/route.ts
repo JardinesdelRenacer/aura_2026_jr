@@ -14,7 +14,12 @@ export async function GET() {
                 media: true,
                 obituarios: true,
 
-                pantallaCliente: true,
+                pantallas: {
+                    include: {
+                        presentacion: true,
+                    },
+                },
+                codigos: true,
             },
             orderBy: { createdAt: 'desc'}
         });

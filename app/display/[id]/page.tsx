@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import PantallaView from "@/app/Pantalla/components/PantallaView";
+import PantallaView from "@/app/display/components/PantallaView";
 
 
 export default function PantallaById() {

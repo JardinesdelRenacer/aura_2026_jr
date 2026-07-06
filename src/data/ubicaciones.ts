@@ -5,7 +5,6 @@ export const ubicaciones = {
         "La Pintada",
         "Medellín",
         "Valparaíso",
-        "Zaragoza",
     ],
 
     Atlántico: [

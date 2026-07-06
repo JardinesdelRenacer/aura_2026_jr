@@ -24,6 +24,13 @@ enum EstadoSede {
   INACTIVA
 }
 
+enum EstadoPantalla {
+  OFFLINE
+  ONLINE
+  MANTENIMIENTO
+  ERROR
+}
+
 // Usuarios
 model User {
   id            String   @id @default(cuid())
@@ -53,7 +60,7 @@ model Sede {
   departamento  	  String
   ciudad        	  String
   nombre        	  String  		    
-  EstadoSede        String                   @default("INACTIVA")
+  estado            EstadoSede               @default(INACTIVA)
 
   numeroSalas       Int                      @default(1)
   salaVip           Boolean                  @default(false)
@@ -69,7 +76,8 @@ model Sede {
 
   lastSeen          DateTime?     
 
-  pantallaCliente   PantallaCliente?
+  pantallas         PantallaCliente[]
+  codigos           CodigoRegistro[]
 
   createdAt 		    DateTime                  @default(now())
   updatedAt 		    DateTime                  @updatedAt
@@ -143,28 +151,43 @@ model Media {
 }
 
 model Presentacion {
-  id                  String    @id @default(cuid())
+  id                  String              @id @default(cuid())
   nombre              String
 
-  projectionMode      String    @default("classic")
-  selectedImage       Int       @default(0)
+  projectionMode      String              @default("classic")
+  selectedImage       Int                 @default(0)
 
   roomsToShow         Json?
   obituaries          Json?
 
   sedeId              String
-  sede                Sede      @relation(fields: [sedeId], references: [id])
+  sede                Sede                @relation(fields: [sedeId], references: [id])
 
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  pantallas           PantallaCliente[]
+
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
 }
 
 
 model PantallaCliente {
-  id                  String    @id @default(cuid())
+  id                  String         @id @default(cuid())
 
-  sedeId              String    @unique
-  sede                Sede      @relation(fields: [sedeId], references: [id])
+  nombre              String
+
+  token               String          @unique @default(uuid())
+
+  online              Boolean         @default(false)
+
+  estado              EstadoPantalla  @default(OFFLINE)
+
+  lastSeen            DateTime?
+
+  sedeId              String          
+  sede                Sede            @relation(fields: [sedeId], references: [id])
+
+  presentacionId      String?
+  presentacion        Presentacion?   @relation(fields: [presentacionId], references: [id])
 
   screenWidth         Int?
   screenHeight        Int?
@@ -172,14 +195,34 @@ model PantallaCliente {
   viewportWidth       Int?
   viewportHeight      Int?
 
-  userAgent           String?
-  
-  language            String?
-
-  online              Boolean?
-
   ip                  String?
+  userAgent           String?
+  language            String?
+  
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
 
-  updatedAt           DateTime    @updatedAt
-  createdAt           DateTime    @default(now())
+  @@index([sedeId])
+  @@index([estado])
+  @@index([online])
+  
+}
+
+model CodigoRegistro{
+  id              String            @id @default(cuid())
+
+  codigo          String            @unique
+
+  pantallaNombre  String?
+
+  sedeId          String
+  sede            Sede              @relation(fields: [sedeId], references:[id])
+
+  usado           Boolean           @default(false)
+
+  expiresAt       DateTime
+
+  utilizadoAt     DateTime?
+
+  createdAt       DateTime          @default(now())
 }

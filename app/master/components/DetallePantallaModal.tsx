@@ -10,7 +10,7 @@ export default function DetallePantallaModal({
     onClose,
 }: Props) {
 
-    const cliente = sede.pantallaCliente;
+    const cliente = sede.pantallas;
 
     const navegador =
         cliente?.userAgent?.includes("Chrome")

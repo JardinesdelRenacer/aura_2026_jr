@@ -1,0 +1,5 @@
+la carpeta [ID], es un archivo importante.
+
+En dado caso de que el programa AURA falle, se extrae la carpeta y veremos cual es el problema
+
+ATT: Samuel el buñuelo

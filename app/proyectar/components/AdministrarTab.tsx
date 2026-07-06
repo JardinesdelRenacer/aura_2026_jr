@@ -136,7 +136,7 @@ export default function AdministrarTab({
                                 { (obituaries[room].name || obituaries[room].surname) && (
                                     <button
                                         onClick={() => {
-                                            window.open(`/Pantalla/${presentacionId}?room=${room}`, "_blank");
+                                            window.open(`/display/${presentacionId}?room=${room}`, "_blank");
                                         }}
                                         className="bg-blue-100/80 text-blue-700 hover:bg-blue-200/80 border border-blue-200 text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
                                         title={`Abrir proyección individual para ${room.replace("_", " ")}`}
@@ -266,12 +266,6 @@ export default function AdministrarTab({
                                                 Limpiar Horarios / Datos
                                             </button>
                                         )}
-                                        <button
-                                            onClick={showCompartir}
-                                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl font-bold shadow-md transition"
-                                        >
-                                            🔗 Compartir Link
-                                        </button>
                                     </div>
                                 </div>
                             </div>

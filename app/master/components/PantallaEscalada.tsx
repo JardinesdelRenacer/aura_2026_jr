@@ -6,25 +6,9 @@ interface Props{
 }
 
 export const PantallaEscalada = ({ presentacionId }:Props) => {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [scale, setScale] = useState(1);
-
-    useEffect(() => {
-        if (!containerRef.current) return;
-        const observer = new ResizeObserver((entries) => {
-            for (let entry of entries) {
-                setScale(entry.contentRect.width / 1920);
-            }
-        });
-        observer.observe(containerRef.current);
-        return () => observer.disconnect();
-    }, []);
-
+    console.log("Escalando:", presentacionId);
     return (
-        <div ref={containerRef} className="absolute inset-0 overflow-hidden bg-slate-900">
-            <div className="absolute top-0 left-0 origin-top-left" style={{ width: '1920px', height: '1080px', transform: `scale(${scale})` }}>
-                <iframe src={`/Pantalla/${presentacionId}`} className="w-full h-full border-0 pointer-events-none" tabIndex={-1} />
-            </div>
-        </div>
+        <iframe src={`/display/${presentacionId}`} className="w-full h-full border-0" />
     );
 };
+  

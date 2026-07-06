@@ -18,10 +18,13 @@ type ObituariesData = {
 
 interface PantallaViewProps {
     presentacionId?: string;
+
+    preview?: boolean;
 }
 
 export default function PantallaView({
     presentacionId,
+    preview = false,
 }: PantallaViewProps) {
 
     console.log("PRESENTACION ID:", presentacionId);
@@ -201,24 +204,25 @@ export default function PantallaView({
     }, [presentacionId]);
 
     useEffect(() => {
+        if (preview) return;
+
         if (!sedeId) return;
 
         const enviarHeartbeat = async () => {
             try {
-                await fetch("/api/pantalla/heartbeat", {
+                const response = await fetch("/api/pantalla/heartbeat", {
                     method: "PUT",
-
+                    credentials: "include",
                     headers: {
-                        "Content-type": "application/json",
+                        "Content-Type": "application/json",
                     },
-
                     body: JSON.stringify({
                         sedeId,
 
                         screen: {
                             width: window.screen.width,
-                            height: window.screen.height,
-                        },
+                            height: window.innerHeight,
+                        }, 
 
                         viewport: {
                             width: window.innerWidth,
@@ -232,6 +236,9 @@ export default function PantallaView({
                         online: navigator.onLine,
                     }),
                 });
+
+            console.log("Hearbeat: ", response.status);
+
             } catch (error) {
                 console.error("Heartbeat:", error);
             }
@@ -242,20 +249,19 @@ export default function PantallaView({
         const interval = setInterval(enviarHeartbeat, 5000);
 
         return () => clearInterval(interval);
-    }, [sedeId]);
+    }, [preview, sedeId]);
 
+   
     useEffect(() => {
         if (!presentacionId) return;
 
-        const handleStorageChange = (event: StorageEvent) => {
-            if (event.key === `presentacion-update-${presentacionId}`) {
-                console.log("Storage event detected, reloading presentation data.");
-                cargarPresentacion();
-            }
-        };
+        cargarPresentacion();
 
-        window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
+        const interval = setInterval(() => {
+            cargarPresentacion();
+        }, 3000);
+
+        return () => clearInterval(interval);
     }, [presentacionId]);
 
     // Lógica para alternar entre los Obituarios y las Imágenes a Pantalla Completa

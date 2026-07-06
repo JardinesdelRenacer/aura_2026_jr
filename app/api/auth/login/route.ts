@@ -51,16 +51,6 @@ export async function POST(req: Request) {
         console.log("================================");
         console.log(" SEDE: ")
         console.log(user?.sede);
-        if (user.estado === "SUSPENDIDO") {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: "Tu cuenta ha sido suspendida. Contacta al administrador." 
-            
-                },
-                { status: 403 }
-            );
-        }
 
         if (!user) {
             return NextResponse.json(
@@ -69,6 +59,17 @@ export async function POST(req: Request) {
                     error: "Credenciales inválidas",
                 },
                 { status: 401 }
+            );
+        }
+
+        if (user.estado === "SUSPENDIDO") {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: "Tu cuenta ha sido suspendida. Contacta al administrador." 
+            
+                },
+                { status: 403 }
             );
         }
 

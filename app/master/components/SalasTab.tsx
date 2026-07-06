@@ -97,8 +97,7 @@ export function SalasTab({ sedes, setShowModalSede }: SalasTabProps) {
                                         </td>
                                     </tr>
                                 );
-                            }) 
-                         : (
+                            }) : (
                             <tr>
                                 <td colSpan={6} className="p-8 text-center text-slate-500 text-sm">
                                    No hay sedes registradas en la base de datos. Haga clic en &quot;Crear Nueva Sede&quot; para empezar.

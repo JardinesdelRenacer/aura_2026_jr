@@ -16,6 +16,8 @@ import { ReportesTab } from "./components/ReportesTab";
 import { TrasladosTab } from "./components/TrasladosTab";
 import { ConfiguracionTab } from "./components/ConfiguracionTab";
 import EditSedeForm from "./components/EditSedeForm";
+
+import AdministrarPantallasModal from "./components/AdministrarPantallasModal";
 import DetallePantallaModal from "./components/DetallePantallaModal";
 
 
@@ -91,6 +93,9 @@ export default function MasterDashboard() {
     // Estados nuevos para edición y suspensión
     const [userToEdit, setUserToEdit] = useState<any>(null);
     const [userToSuspend, setUserToSuspend] = useState<string | null>(null);
+
+    //Nuevo modelo de AdministrarPantalla, se creo con el fin de una administración mas completa. la constante de abajo es del modelo antiguo(no se borra mientras se termina el modelo nuevo)
+    const [administrarPantallasId, setAdministrarPantallasId] = useState<string | null>(null);
 
     //Nuevo modelo DetallePantalla en Dashboard
     const [pantallaDetalle, setPantallaDetalle] = useState<any | null>(null);    
@@ -368,6 +373,10 @@ export default function MasterDashboard() {
         }
     };
 
+    const sedeAdministrar = sedes.find(
+        (sede) => sede.id === administrarPantallasId
+    );
+
 
     return (
         <div className="flex h-screen bg-[#EEF4FF] overflow-hidden font-sans text-slate-800">
@@ -384,7 +393,7 @@ export default function MasterDashboard() {
                     <div className="max-w-7xl mx-auto w-full">
 
                         {/* MÓDULO 1: DASHBOARD MASTER */}
-                        {activeTab === "dashboard" && <DashboardTab mockSedes={sedes} setExpandedSede={setExpandedSede} setPantallaDetalle={setPantallaDetalle} />}
+                        {activeTab === "dashboard" && <DashboardTab mockSedes={sedes} setExpandedSede={setExpandedSede} setPantallaDetalle={setPantallaDetalle} setAdministrarPantallasModal={(sede) => setAdministrarPantallasId(sede.id)} />}
 
                         {/* MÓDULO 2: GESTIÓN DE SALAS */}
                         {activeTab === "salas" && <SalasTab sedes={sedes} setShowModalSede={setShowModalSede} setSedeToEdit={setSedeToEdit} />}
@@ -442,6 +451,14 @@ export default function MasterDashboard() {
                     onClose={() => setPantallaDetalle(null)}
                 />
             )};
+
+            {sedeAdministrar && (
+                <AdministrarPantallasModal
+                    sede={sedeAdministrar}
+                    onClose={() => setAdministrarPantallasId(null)}
+                    onActualizar={cargarSedes}
+                />
+            )}
         </div>
     );
 }
