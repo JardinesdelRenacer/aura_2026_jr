@@ -3,3 +3,9 @@ la carpeta [ID], es un archivo importante.
 En dado caso de que el programa AURA falle, se extrae la carpeta y veremos cual es el problema
 
 ATT: Samuel el buñuelo
+
+ACTUALIZACIÓN del 8-07-2026
+
+Se intenta desplegar el proyecto AURA, pero por el archivo PAGE no permite. se comprime para desplegar correctamente
+
+ATT: Yo sin cafe
