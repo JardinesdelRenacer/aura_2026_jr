@@ -56,18 +56,6 @@ export default function RegistrarPantallaModal({
         setTimeout(() => setCopiado(false), 2000);
     }
 
-    useEffect(() => {
-        if (!presentacionId) return;
-
-        cargarPresentacion();
-
-        const interval = setInterval(() => {
-            cargarPresentacion();
-        }, 3000);
-
-        return () => clearInterval(interval);
-    }, [presentacion]);
-    
     if (!open) return null;
 
     return (

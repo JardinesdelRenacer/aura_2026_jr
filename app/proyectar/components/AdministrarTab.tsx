@@ -254,7 +254,7 @@ export default function AdministrarTab({
                                     <div className="flex justify-end mt-3">
                                         {notificacionesLimpieza[room] ? (
                                             <div className="relative flex items-center gap-2 text-xs font-semibold text-blue-800 bg-blue-100/80 px-4 py-2 rounded-full border border-blue-200/80 shadow-lg animate-in fade-in zoom-in-95 duration-300">
-                                                <div className="absolute bottom-0 left-0 h-1 bg-blue-500 rounded-bl-full animate-[progress_3s_ease-out_forwards]" style={{'--tw-translate-x': '-100%'}}></div>
+                                                <div className="absolute bottom-0 left-0 h-1 bg-blue-500 rounded-bl-full animate-[progress_3s_ease-out_forwards]" style={{ "--tw-translate-x": "-100%"} as React.CSSProperties}></div>
                                                 <style>{`@keyframes progress { to { transform: translateX(0); } }`}</style>
                                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />

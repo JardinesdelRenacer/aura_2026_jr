@@ -1,6 +1,6 @@
 import React from "react";
 import Slideshow from "@/components/Slideshow";
-import type { Obituary, RoomKeys } from "@/app/proyectar/page";
+import type { Obituary, RoomKeys, MediaItem } from "@/app/proyectar/page";
 import ObituarioVertical from "../ObituarioVertical";
 
 interface VistaPreviaTabProps {
@@ -10,7 +10,10 @@ interface VistaPreviaTabProps {
     seconds: number;
     selectedImage: number;
     transitionEffect: string;
-    mediaItems: { url: string; type: string }[];
+
+    //mediaItems: { url: string; type: string }[];
+    mediaItems: MediaItem[];
+    
     obituaries: Record<RoomKeys, Obituary>;
     verticalRoom: RoomKeys | '';
     roomsToShow: RoomKeys[];

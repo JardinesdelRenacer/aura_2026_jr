@@ -54,8 +54,9 @@ export function UsuariosTab({
                         </thead>
                         <tbody className="text-sm">
                             {usuarios.map((u, i) => {
-                                const ultimaConexion = u.lastSeen ? new Date(u.lastSeen) : null;
-                                const activo = Boolean(ultimaConexion) && Date.now() - ultimaConexion.getTime() < 15000;
+                                const ultimaConexion = u.lastSeen ? new Date(u.lastSeen) : undefined;
+                                
+                                const activo = ultimaConexion && Date.now() - ultimaConexion.getTime() < 15000;
 
                                 return(
                                     <tr key={u.id || i} className="border-b border-slate-100 hover:bg-blue-50/50 transition-colors group">
@@ -68,7 +69,7 @@ export function UsuariosTab({
                                                 <span className="font-bold text-slate-700">{u.email}</span>
                                                     <span className="text-xs text-slate-400 font-medium">
                                                         Último acceso: {" "}
-                                                        {ultimaConexion ? ultimaConexion.toDateString("es-CO") : "Nunca"}
+                                                        {ultimaConexion ? ultimaConexion.toLocaleString("es-CO") : "Nunca"}
                                                     </span>
                                                 </div>
                                             </div>

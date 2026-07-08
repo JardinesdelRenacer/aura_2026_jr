@@ -13,7 +13,7 @@ import CompartirLinkModal from "./components/CompartirLinkModal";
 
 
 // Tipos para los obituarios (se usarán en la Fase 2)
-type Obituary = { name: string, surname: string, dob: string, dod: string, timeStart: string, timeEnd: string, cemetery: string, endTime?: string, endDate?: string, massTime?: string, massChurch?: string, massChurchType?: string, massAddress?: string };
+export type Obituary = { name: string, surname: string, dob: string, dod: string, timeStart: string, timeEnd: string, cemetery: string, endTime?: string, endDate?: string, massTime?: string, massChurch?: string, massChurchType?: string, massAddress?: string };
 export type RoomKeys = "VIP" | "SALA_1" | "SALA_2" | "SALA_3";
 export type MediaItem = { id: string; url: string; type: string; room: RoomKeys | null; file?: File };
 
@@ -229,7 +229,10 @@ export default function Proyectar() {
 
     // Toma los datos del usuario MASTER desde sessionStorage para mostrar su email en el header
     interface User{
+        id: String;
         email: string;
+        role?: string;
+        sedeId?: string | null;
     }
     const [user, setUser] = useState<User | null>(null);
 
@@ -243,6 +246,11 @@ export default function Proyectar() {
     interface Sede {
         id: string, //el campo estaba en number, si algo.. se cambia nuevamente
         nombre: string;
+
+        ciudad?: string;
+        departamento?: string;
+        numeroSalas: number;
+        salaVip: boolean;
     }
   
     const cargarSede = async () => {

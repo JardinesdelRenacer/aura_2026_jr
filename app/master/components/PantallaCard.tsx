@@ -9,15 +9,15 @@ interface Props {
 
     onVerDetalles: (pantalla:any) => void;
 
-    onCambiarNombre: (pantalla:any) => void;
+    //onCambiarNombre?: (pantalla:any) => void;
 
     onCambiarPresentacion: (pantalla:any) => void;
 
     onReiniciar: (pantalla:any) => void;
 
-    onMantenimiento: (pantalla:any) => void;
+    //onMantenimiento?: (pantalla:any) => void;
 
-    onEliminar: (pantalla:any) => void;
+    //onEliminar?: (pantalla:any) => void;
 
 }
 
@@ -51,11 +51,11 @@ const estados = {
 export default function PantallaCard({
     pantalla,
     onVerDetalles,
-    onCambiarNombre,
+    //onCambiarNombre,
     onCambiarPresentacion,
     onReiniciar,
-    onMantenimiento,
-    onEliminar,
+    //onMantenimiento,
+    //onEliminar,
 }: Props) {
     const ultimaConexion = pantalla.lastSeen
         ? new Date(pantalla.lastSeen)
@@ -124,12 +124,13 @@ export default function PantallaCard({
                                     className="w-full text-left px-5 py-3 hover:bg-slate-50">
                                     👁 Ver detalles
                                 </button>
-
-                                <button onClick={() => onCambiarNombre(pantalla)} 
+                                
+                                {/*
+                                <button onClick={() => onCambiarNombre?.(pantalla)} 
                                     className="w-full text-left px-5 py-3 hover:bg-slate-50">
                                     ✏️ Cambiar nombre
                                 </button>
-
+                                */}
                                 <button onClick={() => {
                                     setMenuAbierto(false);
                                     onCambiarPresentacion(pantalla);
@@ -142,8 +143,9 @@ export default function PantallaCard({
                                     className="w-full text-left px-5 py-3 hover:bg-slate-50">
                                     🔄 Reiniciar contenido
                                 </button>
-
-                                <button onClick={() => onMantenimiento(pantalla)} 
+                                
+                                {/*
+                                <button onClick={() => onMantenimiento?.(pantalla)} 
                                     className="w-full text-left px-5 py-3 hover:bg-slate-50">
                                     🟡 Mantenimiento
                                 </button>
@@ -152,6 +154,7 @@ export default function PantallaCard({
                                     className="w-full text-left px-5 py-3 hover:bg-slate-50">
                                     🗑 Eliminar pantalla
                                 </button>
+                                */}
                             </div>
                         )}
                     </div>

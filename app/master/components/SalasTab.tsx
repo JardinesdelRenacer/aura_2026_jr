@@ -4,9 +4,10 @@ import { useRouter } from "next/navigation";
 interface SalasTabProps {
     sedes: any[];
     setShowModalSede: (show: boolean) => void;
+    setSedeToEdit: React.Dispatch<React.SetStateAction<any | null>>;
 }
 
-export function SalasTab({ sedes, setShowModalSede }: SalasTabProps) {
+export function SalasTab({ sedes, setShowModalSede, setSedeToEdit }: SalasTabProps) {
     const router = useRouter();
 
     return (
@@ -36,9 +37,11 @@ export function SalasTab({ sedes, setShowModalSede }: SalasTabProps) {
                         <tbody className="text-sm">
                             {sedes.length > 0 ? sedes.map((sede, i) => {
 
-                                const ultimaConexion = sede.lastSeen ? new Date(sede.lastSeen) : null;
+                                const ultimaConexion = sede.lastSeen ? new Date(sede.lastSeen) : undefined;
 
-                                const transmitiendo = Boolean(ultimaConexion) && Date.now() - ultimaConexion.getTime() < 15000;
+                                let estaTransmitiendo = false;
+
+                                if (ultimaConexion) { estaTransmitiendo = Date.now() - ultimaConexion.getTime() < 15000; }
 
                                 return (
                                     <tr key={sede.id || i} className="border-b border-slate-100 hover:bg-blue-50/50 transition-colors group">
@@ -82,7 +85,7 @@ export function SalasTab({ sedes, setShowModalSede }: SalasTabProps) {
                                         </td>
 
                                         <td className="p-4">
-                                            <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-md border ${transmitiendo ? "bg-green-50 text-green-600 border-green-200" : "bg-red-50 text-red-600 border-red-200"}`}>{transmitiendo ? "TRANSMITIENDO" : "INACTIVA"}</span>
+                                            <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-md border ${estaTransmitiendo ? "bg-green-50 text-green-600 border-green-200" : "bg-red-50 text-red-600 border-red-200"}`}>{estaTransmitiendo ? "TRANSMITIENDO" : "INACTIVA"}</span>
                                         </td>
 
                                         <td className="p-4 text-right">
@@ -90,9 +93,12 @@ export function SalasTab({ sedes, setShowModalSede }: SalasTabProps) {
                                                 <button onClick={() => router.push(`/proyectar/${sede.id}`  )} className="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg transition-all shadow-sm border border-blue-100 text-xs font-bold" title="Administrar Sede">
                                                     Administrar Sede
                                                 </button>
+
+                                                {/* 
                                                 <button className="px-3 py-1.5 bg-slate-50 text-slate-600 hover:bg-slate-200 rounded-lg transition-all shadow-sm border border-slate-200 text-xs font-bold" title="Configuración">
                                                     Configuración
                                                 </button>
+                                                */}
                                             </div>
                                         </td>
                                     </tr>

@@ -12,14 +12,14 @@ interface Props {
     sede: any;
     onClose:()=>void;
     onActualizar: () => void;
-    onCambiarPresentacion: () => void;
+    //onCambiarPresentacion: () => void;
 }
 
 export default function AdministrarPantallasModal({
     sede,
     onClose,
     onActualizar,
-    onCambiarPresentacion,
+    //onCambiarPresentacion,
 }:Props){
 
     {/* Botones de PantallaCard */}
@@ -144,6 +144,7 @@ export default function AdministrarPantallasModal({
                                 onVerDetalles={setPantallaDetalle}
                                 onCambiarPresentacion={setPantallaPresentacion}
                                 onReiniciar={reiniciarPantalla}
+
                             />
                         ))
                     ) : (

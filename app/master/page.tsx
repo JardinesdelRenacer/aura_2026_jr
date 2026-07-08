@@ -396,7 +396,7 @@ export default function MasterDashboard() {
                         {activeTab === "dashboard" && <DashboardTab mockSedes={sedes} setExpandedSede={setExpandedSede} setPantallaDetalle={setPantallaDetalle} setAdministrarPantallasModal={(sede) => setAdministrarPantallasId(sede.id)} />}
 
                         {/* MÓDULO 2: GESTIÓN DE SALAS */}
-                        {activeTab === "salas" && <SalasTab sedes={sedes} setShowModalSede={setShowModalSede} setSedeToEdit={setSedeToEdit} />}
+                        {activeTab === "salas" && <SalasTab sedes={sedes} setShowModalSede={setShowModalSede} setSedeToEdit={setSedeToEdit}  />}
 
                         {/* MÓDULO 3: GESTIÓN DE USUARIOS */}
                         {activeTab === "usuarios" && <UsuariosTab usuarios={usuarios} setShowModalAdmin={setShowModalAdmin} setUserToEdit={setUserToEdit} setUserToSuspend={setUserToSuspend} setUserToDelete={setUserToDelete} />}
@@ -457,6 +457,7 @@ export default function MasterDashboard() {
                     sede={sedeAdministrar}
                     onClose={() => setAdministrarPantallasId(null)}
                     onActualizar={cargarSedes}
+                    
                 />
             )}
         </div>

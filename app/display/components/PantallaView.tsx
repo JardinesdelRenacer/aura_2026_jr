@@ -152,19 +152,19 @@ export default function PantallaView({
             
             setRoomsToShow(rooms);
 
-            const mediaList = sede.media || [];
+            const mediaList: any[] = sede.media || [];
 
             if (presentacion.projectionMode === "vertical") {
             
                 const roomKey = presentacion.verticalRoom || roomParam || (rooms[0] as RoomKeys);
 
-                const roomMedia = mediaList.filter(m => m.room === roomKey);
+                const roomMedia = mediaList.filter((m: any) => m.room === roomKey);
                 
                 console.log("MEDIA: ", mediaList);
 
                 console.log("MEDIA FILTRADA: ", roomMedia);
 
-                setMedia(roomMedia.length > 0 ? roomMedia : mediaList.filter(m => !m.room));
+                setMedia(roomMedia.length > 0 ? roomMedia : mediaList.filter((m: any) => !m.room));
                 
                 } else {
                     // Classic y Split utilizan toda la multimedia
@@ -363,7 +363,7 @@ export default function PantallaView({
                         {/* Obituarios en Forma de L */}
                         {roomsToShow
                             .map((roomKey) => {
-                                const ob = obituaries[roomKey];
+                                const ob = obituaries[roomKey as RoomKeys];
 
                                 const expired = checkIsExpired(ob.endTime, ob.endDate);
                                 const isActive = Boolean((ob.name || ob.surname) && !expired);
@@ -440,7 +440,7 @@ export default function PantallaView({
                 <div className="w-full h-full grid grid-cols-2 grid-rows-2 gap-3 sm:gap-4 md:gap-5 lg:gap-6 p-3 sm:p-4 md:p-5 lg:p-6 bg-linear-to-br from-white/60 via-blue-50/50 to-white/40 backdrop-blur-2xl border border-white/80 shadow-[inset_0_0_20px_rgba(255,255,255,0.9),0_8px_32px_rgba(0,0,0,0.1)]">
                     {roomsToShow
                         .map((roomKey) => {
-                            const ob = obituaries[roomKey];
+                            const ob = obituaries[roomKey as RoomKeys];
 
                             const expired = checkIsExpired(ob.endTime, ob.endDate);
                             const isActive = Boolean((ob.name || ob.surname) && !expired);
