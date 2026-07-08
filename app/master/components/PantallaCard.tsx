@@ -6,6 +6,19 @@ import { useState } from "react";
 
 interface Props {
     pantalla: any;
+
+    onVerDetalles: (pantalla:any) => void;
+
+    onCambiarNombre: (pantalla:any) => void;
+
+    onCambiarPresentacion: (pantalla:any) => void;
+
+    onReiniciar: (pantalla:any) => void;
+
+    onMantenimiento: (pantalla:any) => void;
+
+    onEliminar: (pantalla:any) => void;
+
 }
 
 const estados = {
@@ -37,6 +50,12 @@ const estados = {
 
 export default function PantallaCard({
     pantalla,
+    onVerDetalles,
+    onCambiarNombre,
+    onCambiarPresentacion,
+    onReiniciar,
+    onMantenimiento,
+    onEliminar,
 }: Props) {
     const ultimaConexion = pantalla.lastSeen
         ? new Date(pantalla.lastSeen)
@@ -97,27 +116,40 @@ export default function PantallaCard({
 
                         {menuAbierto && (
                             <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden z-50">
-                                <button className="w-full text-left px-5 py-3 hover:bg-slate-50">
+                                <button 
+                                    onClick={() => { 
+                                        setMenuAbierto(false);
+                                        onVerDetalles(pantalla);
+                                    }}
+                                    className="w-full text-left px-5 py-3 hover:bg-slate-50">
                                     👁 Ver detalles
                                 </button>
 
-                                <button className="w-full text-left px-5 py-3 hover:bg-slate-50">
+                                <button onClick={() => onCambiarNombre(pantalla)} 
+                                    className="w-full text-left px-5 py-3 hover:bg-slate-50">
                                     ✏️ Cambiar nombre
                                 </button>
 
-                                <button className="w-full text-left px-5 py-3 hover:bg-slate-50">
+                                <button onClick={() => {
+                                    setMenuAbierto(false);
+                                    onCambiarPresentacion(pantalla);
+                                    }}
+                                    className="w-full text-left px-5 py-3 hover:bg-slate-50">
                                     📺 Cambiar presentación
                                 </button>
                                 
-                                <button className="w-full text-left px-5 py-3 hover:bg-slate-50">
+                                <button onClick={() => onReiniciar(pantalla)} 
+                                    className="w-full text-left px-5 py-3 hover:bg-slate-50">
                                     🔄 Reiniciar contenido
                                 </button>
 
-                                <button className="w-full text-left px-5 py-3 hover:bg-slate-50">
+                                <button onClick={() => onMantenimiento(pantalla)} 
+                                    className="w-full text-left px-5 py-3 hover:bg-slate-50">
                                     🟡 Mantenimiento
                                 </button>
 
-                                <button className="w-full text-left px-5 py-3 hover:bg-slate-50">
+                                <button onClick={() => onEliminar(pantalla)} 
+                                    className="w-full text-left px-5 py-3 hover:bg-slate-50">
                                     🗑 Eliminar pantalla
                                 </button>
                             </div>

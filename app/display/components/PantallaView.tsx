@@ -165,7 +165,7 @@ export default function PantallaView({
                 console.log("MEDIA FILTRADA: ", roomMedia);
 
                 setMedia(roomMedia.length > 0 ? roomMedia : mediaList.filter(m => !m.room));
-
+                
                 } else {
                     // Classic y Split utilizan toda la multimedia
                     setMedia(mediaList);

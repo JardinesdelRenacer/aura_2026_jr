@@ -40,9 +40,22 @@ export default function Slideshow({
     const [current, setCurrent] = useState(0);
 
     useEffect(() => {
+        setCurrent(0);
+    }, [media.length])
+    {/* 
+    useEffect(() => {
         const timeout = setTimeout(() => setCurrent(0), 0);
         return () => clearTimeout(timeout);
     }, [media]);
+    */}
+
+    useEffect(() => {
+        console.log("SLIDESHOW MONTADO")
+
+        return () => {
+            console.log("SLIDESHOW DESMONTADO")
+        };
+    }, []);
 
     useEffect(() => {
         if (!autoPlay || media.length === 0) return;

@@ -181,6 +181,8 @@ model PantallaCliente {
 
   estado              EstadoPantalla  @default(OFFLINE)
 
+  reiniciar           Boolean         @default(false)
+
   lastSeen            DateTime?
 
   sedeId              String          

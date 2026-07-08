@@ -4,19 +4,45 @@ import PantallaCard from "./PantallaCard";
 import EstadisticaCard from "./EstadisticaCard";
 import { useEffect, useState } from "react";
 import RegistrarPantallaModal from "./registrarPantallaModal";
+import PantallaDetalleModal from "./PantallaDetalleModal";
+import CambiarPresentacionModal from "./CambiarPresentacionModal";
+import { PresentationIcon } from "lucide-react";
 
 interface Props {
     sede: any;
     onClose:()=>void;
     onActualizar: () => void;
+    onCambiarPresentacion: () => void;
 }
 
 export default function AdministrarPantallasModal({
     sede,
     onClose,
-    onActualizar
+    onActualizar,
+    onCambiarPresentacion,
 }:Props){
+
+    {/* Botones de PantallaCard */}
+
     const [showRegistrar, setShowRegistrar] = useState(false);
+
+    const [pantallaDetalle, setPantallaDetalle] = useState<any | null>(null);
+
+    const [pantallaPresentacion, setPantallaPresentacion] = useState<any | null>(null);
+
+    const [menuAbierto, setMenuAbierto] = useState(false);
+
+    const [showCambiarPresentacion, setShowCambiarPresentacion] = useState(false);
+    
+    useEffect(() => {
+        if (!pantallaPresentacion) return;
+
+        console.log("Cambiar presentacion");
+
+        console.log(pantallaPresentacion);
+    }, [pantallaPresentacion]);
+
+
     
     useEffect(() => {
         if (!sede?.id) return;
@@ -28,6 +54,27 @@ export default function AdministrarPantallasModal({
         return () => clearInterval(interval);
     }, [sede.id, onActualizar]);
     
+    async function reiniciarPantalla(pantalla: any) {
+        try {
+            const response = await fetch(`/api/master/pantallas/${pantalla.id}/reiniciar`,
+                { method: "POST" }
+            );
+
+            const result = await response.json();
+
+            if(!result.success) {alert("No fue posible reiniciar la pantalla.");
+                return;
+            }
+
+            alert("Solicitud de reinicio enviada.");
+            
+        } catch (error) {
+            console.error (error);
+            alert("Error al reiniciar.");
+        }
+    }
+
+
     return(
         <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-md flex items-center justify-center p-6">
             <div className="w-full max-w-7xl bg-white rounded-3xl shadow-2xl overflow-hidden">
@@ -92,8 +139,11 @@ export default function AdministrarPantallasModal({
 
                             <PantallaCard
                                 key={pantalla.id}
-
+                                
                                 pantalla={pantalla}
+                                onVerDetalles={setPantallaDetalle}
+                                onCambiarPresentacion={setPantallaPresentacion}
+                                onReiniciar={reiniciarPantalla}
                             />
                         ))
                     ) : (
@@ -109,6 +159,23 @@ export default function AdministrarPantallasModal({
 
                 </div>
             </div>
+            {pantallaDetalle && (
+                <PantallaDetalleModal
+                    pantalla={pantallaDetalle}
+                    onClose={() => setPantallaDetalle(null)}
+                />  
+            )}
+
+            {pantallaPresentacion && (
+                <CambiarPresentacionModal
+                    open={!!pantallaPresentacion}
+                    pantalla={pantallaPresentacion}
+                    presentaciones={sede.presentaciones}
+                    onClose={() => setPantallaPresentacion(null)}            
+                    onActualizada={() => { onActualizar(); setPantallaPresentacion(null);}}
+                />
+            )}
+            
             <RegistrarPantallaModal
                 open={showRegistrar}
                 onClose={() => setShowRegistrar(false)}

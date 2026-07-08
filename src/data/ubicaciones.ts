@@ -152,6 +152,6 @@ export const ubicaciones = {
         "Versalles",
         "Yumbo",
         "Zarzal",
-        "Zaragosa",
+        "Zaragoza",
     ],
 };
