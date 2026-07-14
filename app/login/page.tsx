@@ -153,6 +153,12 @@ export default function LoginPage() {
                         >
                             📺 Registrar Pantalla
                         </button>
+
+                        <button onClick={() => router.push("/kiosk/condolencias")} 
+                            className="w-full rounded-xl border border-slate-300 bg-white py-3 font-semibold text-slate-700 hover:bg-slate-100 transition"
+                        >
+                            🖥️ Modo Tableta
+                        </button>
                     </form>
 
                     <div className="mt-8 text-center bg-white/50 p-4 rounded-xl border border-white/60 text-xs text-slate-500 font-medium">

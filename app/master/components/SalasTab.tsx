@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface SalasTabProps {
@@ -8,7 +8,19 @@ interface SalasTabProps {
 }
 
 export function SalasTab({ sedes, setShowModalSede, setSedeToEdit }: SalasTabProps) {
+    const [currentTime, setCurrentTime] = useState(Date.now());
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentTime(Date.now());
+        }, 1000); //Actualiza cada segunddo
+
+        return () => clearInterval(interval);
+    }, []);
+
     const router = useRouter();
+
+
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -37,11 +49,15 @@ export function SalasTab({ sedes, setShowModalSede, setSedeToEdit }: SalasTabPro
                         <tbody className="text-sm">
                             {sedes.length > 0 ? sedes.map((sede, i) => {
 
-                                const ultimaConexion = sede.lastSeen ? new Date(sede.lastSeen) : undefined;
+                                const estaTransmitiendo = sede.pantallas?.some((pantalla: any) => {
+                                    if (!pantalla.lastSeen) return false;
 
-                                let estaTransmitiendo = false;
+                                    const ultimaConexion = new Date(pantalla.lastSeen).getTime();
 
-                                if (ultimaConexion) { estaTransmitiendo = Date.now() - ultimaConexion.getTime() < 15000; }
+                                    return currentTime - ultimaConexion < 15000;
+                                }) ?? false;
+
+                               
 
                                 return (
                                     <tr key={sede.id || i} className="border-b border-slate-100 hover:bg-blue-50/50 transition-colors group">
