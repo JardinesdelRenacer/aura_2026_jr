@@ -1,6 +1,6 @@
 "use client";
 
-const isWindows = typeof navigation !== "undefined" && navigator.userAgent.includes("Windows");
+const isWindows = typeof navigator !== "undefined" && navigator.userAgent.includes("Windows");
 
 export function useKiosk() {
     const openKeyboard = () => {
