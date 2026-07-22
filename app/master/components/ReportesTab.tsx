@@ -1,9 +1,6 @@
+import { useDashboard } from "@/src/hooks/useDashboard";
 import React, { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
-
-interface ReportesTabProps {
-    mockSedes: any[];
-}
 
 // Datos simulados para la gráfica
 const data = [
@@ -15,8 +12,23 @@ const data = [
     { name: "Jun", obituarios: 85 },
 ];
 
-export function ReportesTab({ mockSedes }: ReportesTabProps) {
+export function ReportesTab() {
+
+    const{ dashboard, loading, error }=useDashboard();
+
     const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+    if (loading) {
+        return <div>Cargando dashboard...</div>;
+    }
+
+    if (error) {
+        return <div>Error: {error}</div>;
+    }
+
+    if (!dashboard) {
+        return <div>No hay información.</div>;
+    }
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -43,31 +55,31 @@ export function ReportesTab({ mockSedes }: ReportesTabProps) {
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total Obituarios</p>
                         <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">+15%</span>
                     </div>
-                    <h3 className="text-3xl font-black text-slate-800">1,248</h3>
+                    <h3 className="text-3xl font-black text-slate-800">{dashboard.summary.totalObituaries}</h3>
                     <p className="text-xs font-semibold text-slate-500 mt-2">Últimos 30 días</p>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-center">
                     <div className="flex justify-between items-start mb-2">
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Horas Transmisión</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total Pantallas</p>
                         <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">+5%</span>
                     </div>
-                    <h3 className="text-3xl font-black text-slate-800">342h</h3>
-                    <p className="text-xs font-semibold text-slate-500 mt-2">Acumulado mensual</p>
+                    <h3 className="text-3xl font-black text-slate-800">{dashboard.summary.totalScreens}</h3>
+                    <p className="text-xs font-semibold text-slate-500 mt-2">Pantallas registradas</p>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-center">
                     <div className="flex justify-between items-start mb-2">
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Sede Más Activa</p>
                     </div>
-                    <h3 className="text-xl font-black text-blue-700 truncate">Sede Centro</h3>
-                    <p className="text-xs font-semibold text-slate-500 mt-2">450 obituarios (36%)</p>
+                    <h3 className="text-xl font-black text-blue-700 truncate">{dashboard.topBranches[0]?.nombre ?? "Sin datos"}</h3>
+                    <p className="text-xs font-semibold text-slate-500 mt-2">{dashboard.topBranches[0]?.totalObituaries ?? 0} obituarios</p>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-center">
                     <div className="flex justify-between items-start mb-2">
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Uso de Pantallas</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Pantallas Online</p>
                         <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-md">Óptimo</span>
                     </div>
-                    <h3 className="text-3xl font-black text-slate-800">85%</h3>
-                    <p className="text-xs font-semibold text-slate-500 mt-2">Ocupación promedio</p>
+                    <h3 className="text-3xl font-black text-slate-800">{dashboard.summary.onlineScreens}</h3>
+                    <p className="text-xs font-semibold text-slate-500 mt-2">Pantallas conectadas</p>
                 </div>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -101,21 +113,38 @@ export function ReportesTab({ mockSedes }: ReportesTabProps) {
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col">
                     <h4 className="font-bold text-slate-800 mb-6">Rendimiento por Sede</h4>
                     <div className="flex flex-col gap-4">
-                        {mockSedes.map((sede, i) => (
-                            <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-blue-200 transition-colors">
-                                <div className="flex flex-col">
-                                    <span className="font-bold text-slate-700 text-sm">{sede.nombre}</span>
-                                    <span className="text-[10px] font-semibold text-slate-400">{sede.obituarios} obituarios</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className={`text-xs font-bold ${sede.tendencia.startsWith('+') ? 'text-emerald-600' : 'text-red-500'}`}>{sede.tendencia}</span>
-                                    <div className="w-16 h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                                        <div className={`h-full ${sede.tendencia.startsWith('+') ? 'bg-emerald-500' : 'bg-red-400'}`} style={{ width: `${Math.max(30, sede.obituarios)}%` }}></div>
+                        {dashboard.topBranches.map((branch) => {
+                            
+                            // const totalObituarios = sede.obituarios?.length ?? 0;
+                            // const totalPantallas = sede.pantallas?.length ?? 0;
+
+                            const porcentaje = Math.min(Math.max(branch.totalObituaries * 10, 10), 100);
+
+                            // const activa = sede.estado === "ACTIVA";
+
+                            return (
+                                <div key={branch.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-blue-200 transition-colors">
+
+                                    <div className="flex flex-col">
+                                        <span className="font-bold text-slate-700 text-sm">{branch.nombre}</span>
+                                        <span className="text-[10px] font-semibold text-slate-400">{branch.ciudad} • {branch.departamento}</span>
+                                        <span className="text-xs font-bold text-blue-700">{branch.totalObituaries} obituarios</span>
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-xs font-bold text-blue-700">{branch.totalObituaries} obituarios</span>
+                                        {/* <span className={`text-xs font-bold px-2 py-1 rounded-full ${activa ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-600"}`}>{sede.estado}</span> */}
+
+                                        {/* <div className="w-16 h-1.5 bg-slate-200 rounded-full overflow-hidden"> */}
+                                        <div className="w-20 h-2 bg-slate-200 rounded-full overflow-hidden">    
+                                            <div className="h-full bg-blue-500 transition-all duration-500" style={{width: `${porcentaje}%`}} />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
+               
                     <button className="mt-auto pt-4 text-sm font-bold text-blue-600 hover:text-blue-800 transition-colors w-full text-center">Ver reporte completo →</button>
                 </div>
             </div>

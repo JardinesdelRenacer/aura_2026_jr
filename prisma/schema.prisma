@@ -33,6 +33,18 @@ enum EstadoPantalla {
   ERROR
 }
 
+enum EstadoObituario{
+  ACTIVO
+  FINALIZADO
+  ARCHIVADO
+}
+
+enum EstadoCondolencia{
+  PENDIENTE
+  ENTREGADA
+  ARCHIVADA
+}
+
 // Usuarios
 model User {
   id            String   @id @default(cuid())
@@ -86,25 +98,29 @@ model Sede {
 }
 
 model Obituario {
-  id          String    @id @default(cuid())
+  id            String            @id @default(cuid())
 
-  sedeId      String
-  sede        Sede      @relation(fields: [sedeId], references: [id], onDelete: Cascade)
+  sedeId        String
+  sede          Sede              @relation(fields: [sedeId], references: [id], onDelete: Cascade)
 
-  sala        String
+  sala          String
 
-  name        String
-  surname     String
+  estado        EstadoObituario   @default(ACTIVO)
 
-  dob         String?
-  dod         String?
+  name          String
+  surname       String
 
-  timeStart   String?
-  timeEnd     String?
+  dob           String?
+  dod           String?
 
-  cemetery    String?
-  endTime     String?
-  endDate     String?
+  timeStart     String?
+  timeEnd       String?
+
+  cemetery      String?
+  endTime       String?
+  endDate       String?
+
+  condolencias  Condolencia[]
 
   // --- NUEVOS CAMPOS DE EUCARISTÍA ---
   massTime       String?  // Hora de la misa
@@ -112,10 +128,49 @@ model Obituario {
   massChurchType String?  @default("Parroquia") // Tipo: Parroquia, Capilla, etc.
   massAddress    String?  // Dirección del lugar
 
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 
   @@unique([sedeId, sala])
+}
+
+model Condolencia {
+  id                        String            @id @default(cuid())
+
+  codigo                    String?           @unique
+
+  obituarioId               String
+  obituario                 Obituario         @relation(fields: [obituarioId], references: [id], onDelete: Cascade)
+
+  fullName                  String
+
+  documentType              String
+
+  documentNumber            String
+
+  phone                     String
+  
+  email                     String?
+
+  message                   String              @db.Text
+
+  estado                    EstadoCondolencia   @default(PENDIENTE)
+
+  pdfGenerado               Boolean             @default(false)
+
+  enviadoAt                 DateTime?
+
+  observaciones             String?             @db.Text
+
+  acceptedPrivacyPolicy     Boolean
+
+  createdAt                 DateTime            @default(now())
+
+  updatedAt                 DateTime            @updatedAt
+
+  @@index([obituarioId])
+  @@index([estado])
+
 }
 
 model ConfiguracionPantalla {

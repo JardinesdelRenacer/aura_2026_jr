@@ -1,5 +1,7 @@
 "use client";
 
+import { useKiosk } from "@/src/hooks/useKiosk";
+
 interface AuraTextareaProps {
     label: string;
     value: string;
@@ -19,6 +21,9 @@ export default function AuraTextarea({
     rows = 8,
     maxLength = 500,
 }: AuraTextareaProps) {
+
+    const { openKeyboard } = useKiosk();
+
     return (
         <div className="flex flex-col gap-2">
             <label className="text-sm font-semibold text-slate-700">
@@ -50,6 +55,9 @@ export default function AuraTextarea({
                     focus:ring-blue-100
                     shadow-sm
                 "
+                onFocus={() => {
+                    openKeyboard();
+                }}
             />
 
             <div className="flex justify-end text-xs text-slate-400">

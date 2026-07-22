@@ -88,6 +88,7 @@ export default function SenderForm({
                         onChange={(value) => setFormData({...formData, phone: value })}
                         placeholder="3001234567"
                         type="tel"
+                        //inputMode="numeric"
                         required
                     />
                     

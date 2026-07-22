@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useKiosk } from "@/src/hooks/useKiosk";
 
 interface AuraInputProps {
     label: string;
@@ -19,6 +20,9 @@ export default function AuraInput({
     type = "text",
     required = false,
 }: AuraInputProps) {
+
+    const { openKeyboard } = useKiosk();
+
     return (
         <div className="flex flex-col gap-2">
             <label className="text-sm font-semibold text-slate-700">
@@ -34,7 +38,12 @@ export default function AuraInput({
                 value={value}
                 placeholder={placeholder}
                 onChange={(e) => onChange(e.target.value)}
-                className="h-14 rounded-2xl border boder-slate-200 bg-white/70 backdrop-blur-md px-5 text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 shadow-sm" />
+                className="h-14 rounded-2xl border boder-slate-200 bg-white/70 backdrop-blur-md px-5 text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 shadow-sm" 
+                onFocus={() => {
+                    openKeyboard();
+                }}
+            />
+
         </div>
     )
 }

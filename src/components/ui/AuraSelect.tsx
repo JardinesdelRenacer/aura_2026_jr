@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useKiosk } from "@/src/hooks/useKiosk";
 
 interface AuraSelectOption {
     value: string;
@@ -22,6 +23,10 @@ export default function AuraSelect({
     onChange,
     required = false,
 }: AuraSelectProps ) {
+
+    const { openKeyboard } = useKiosk();
+    // Hacer prueba si necesita teclado o no en este "Selector"
+
     return (
         <div className="flex flex-col gap-2">
 
@@ -52,6 +57,9 @@ export default function AuraSelect({
                     focus:ring-blue-100
                     shadow-sm
                 "
+                onFocus={() => {
+                    openKeyboard();
+                }}
             >
                 <option value="">
                     Seleccione...

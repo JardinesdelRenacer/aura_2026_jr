@@ -3,11 +3,15 @@ import Card from "@/app/kiosk/condolencias/components/ui/Card";
 import Paper from "@/src/components/ui/Paper";
 import { CondolenceForm } from "@/src/types/condolencias";
 
+import { Obituary } from "@/src/types/obituary";
+
 interface LetterPreviewProps {
+    obituary: Obituary | null;
     formData: CondolenceForm;
 }
 
 export default function LetterPreview({
+    obituary,
     formData,
 }: LetterPreviewProps) {
     return (
@@ -18,14 +22,22 @@ export default function LetterPreview({
                 <div className="text-center">
                     
                     <Image src="/imagenes/Logo_test.png" alt="Jardines del Renacer" width={85} height={85} className="mx-auto mb-6 object-contain"/>
-                    
+
                     <p className="mt-3 text-xs uppercase tracking-[0.35em] text-slate-400">
                         Carta de Condolencias
                     </p>
 
                     <h2 className="mt-5 text-4xl font-bold text-slate-800">
-                        Mensaje de Condolencias
+                        Mensaje para la familia de Mushu
                     </h2>
+
+                    <h3 className="mt-2 text-3xl font-bold text-blue-700">
+                        {obituary?.name} {obituary?.surname}
+                    </h3>
+
+                    <p className="mt-2 text-slate-500">
+                        {obituary?.roomName}
+                    </p>
 
                     <p className="mt-3 text-slate-500">
                         Así visualizará la familia su mensaje.

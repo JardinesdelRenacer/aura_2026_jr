@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma";
 
+import { listActiveObituaries } from "@/src/services/obituaryService";
+
 export async function GET() {
   try {
-    const obituarios = await prisma.obituario.findMany();
-    return NextResponse.json(obituarios);
+    const obituarios = await listActiveObituaries();
+
+    return NextResponse.json({ success: true, data: obituarios });
   } catch (error) {
     console.error("ERROR GET obituarios:", error);
     return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
