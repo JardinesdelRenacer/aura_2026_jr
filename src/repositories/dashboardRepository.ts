@@ -99,7 +99,7 @@ export async function getDashboardMetrics() {
 
     //Últimos obituarios
 
-    const latestObituarios = await prisma.obituario.findMany({
+    const latestObituaries = await prisma.obituario.findMany({
         take: 5,
 
         orderBy: {
@@ -154,7 +154,7 @@ export async function getDashboardMetrics() {
             totalUsers,
             activeUsers,
         }, 
-        latestObituarios,
+        latestObituaries,
 
         topBranches: topBranches.map((branch) => ({
             id: branch.id,
