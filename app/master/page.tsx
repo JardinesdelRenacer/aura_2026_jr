@@ -402,7 +402,7 @@ export default function MasterDashboard() {
                         {activeTab === "usuarios" && <UsuariosTab usuarios={usuarios} setShowModalAdmin={setShowModalAdmin} setUserToEdit={setUserToEdit} setUserToSuspend={setUserToSuspend} setUserToDelete={setUserToDelete} />}
 
                         {/* MÓDULO 4: REPORTES Y ANALÍTICAS */}
-                        {activeTab === "reportes" && <ReportesTab mockSedes={sedes} />}
+                        {activeTab === "reportes" && <ReportesTab />}
 
                         {/* MÓDULO 5: TRASLADOS Y CONTROL */}
                         {activeTab === "traslados" && <TrasladosTab />}
