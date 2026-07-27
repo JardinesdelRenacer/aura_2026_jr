@@ -4,30 +4,17 @@ import { Obituary } from "@/src/types/obituary";
 import Card from "./ui/Card";
 import Image from "next/image";
 
-export interface ObituaryCardProps{
-    id: string;
-
-    name: string;
-
-    surname: string;
-
-    roomName: string;
-
-    status: "ACTIVO" | "FINALIZADO";
-
-    startTime?: string;
-
-    endTime?: string;
-
-    description?: string;
-
-    onSelect:()=>void;
+interface ObituaryCardProps extends Obituary {
+    onSelect: () => void;
 }
 
 export default function ObituaryCard({
     name,
     surname,
     roomName,
+    status,
+    startTime,
+    endTime,
     description,
     onSelect,
 }: ObituaryCardProps) {

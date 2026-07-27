@@ -1,5 +1,5 @@
 export interface DashboardFiltersDTO{
     branchId?: string;
-    starDate?: string;
+    startDate?: string;
     endDate?: string;
 }
