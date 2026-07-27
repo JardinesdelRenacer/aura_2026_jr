@@ -45,6 +45,11 @@ enum EstadoCondolencia{
   ARCHIVADA
 }
 
+enum TipoDispositivo {
+  PANTALLA
+  AURA_TOUCH
+}
+
 // Usuarios
 model User {
   id            String   @id @default(cuid())
@@ -92,6 +97,7 @@ model Sede {
 
   pantallas         PantallaCliente[]
   codigos           CodigoRegistro[]
+  auraTouches       AuraTouch[]
 
   createdAt 		    DateTime                  @default(now())
   updatedAt 		    DateTime                  @updatedAt
@@ -267,6 +273,30 @@ model PantallaCliente {
   
 }
 
+model AuraTouch {
+  id          String      @id @default(cuid())
+
+  nombre      String  
+
+  token       String      @unique @default(uuid())
+
+  activo      Boolean     @default(true)
+
+  lastSeen    DateTime?   
+  
+  sedeId      String
+  sede        Sede        @relation(fields: [sedeId], references: [id])
+
+  userAgent   String?
+  ip          String?
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([sedeId])
+  @@index([activo])
+}
+
 model CodigoRegistro{
   id              String            @id @default(cuid())
 
@@ -276,6 +306,8 @@ model CodigoRegistro{
 
   sedeId          String
   sede            Sede              @relation(fields: [sedeId], references:[id])
+
+  tipoDispositivo TipoDispositivo   @default(PANTALLA)
 
   usado           Boolean           @default(false)
 
