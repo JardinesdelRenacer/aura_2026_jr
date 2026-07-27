@@ -1,27 +1,26 @@
 import { CondolenceDTO } from "@/src/dto/condolence.dto";
-import { error } from "console";
 import { ValidationError } from "../errors/ValidationError";
 import { NotFoundError } from "../errors/NotFoundError";
 
 export function validateCondolence(data: CondolenceDTO): void {
     if (!data.fullName.trim()) {
-        throw new Error("El nombre es obligatorio.");
+        throw new ValidationError("El nombre es obligatorio.");
     }
 
     if (!data.documentType.trim()) {
-        throw new Error("Debe seleccionar un tipo de documento.");
+        throw new ValidationError("Debe seleccionar un tipo de documento.");
     }
 
     if (!data.documentNumber.trim()) {
-        throw new Error("El número de documento es obligatorio.");
+        throw new ValidationError("El número de documento es obligatorio.");
     }
 
     if (!data.phone.trim()) {
-        throw new Error("El teléfono es obligatorio.");
+        throw new ValidationError("El teléfono es obligatorio.");
     }
     
     if (!data.message.trim()) {
-        throw new Error("Debe escribir un mensaje.");
+        throw new ValidationError("Debe escribir un mensaje.");
     }
 
     if (data.message.trim().length < 10) {
@@ -33,7 +32,7 @@ export function validateCondolence(data: CondolenceDTO): void {
     }
 
     if (!data.acceptedTerms) {
-        throw new Error("Debe aceptar la politica de privacidad.");
+        throw new ValidationError("Debe aceptar la politica de privacidad.");
     }
 
     if (!data.obituaryId.trim()) {

@@ -13,7 +13,7 @@ export interface ObituaryCardProps{
 
     roomName: string;
 
-    status?: "ACTIVO" | "FINALIZADO";
+    status: "ACTIVO" | "FINALIZADO";
 
     startTime?: string;
 

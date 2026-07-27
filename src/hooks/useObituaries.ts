@@ -2,13 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Obituary } from "@/src/types/obituary";
-import { mapObituary } from "../services/obituaryMapper";
 import { getObituaries } from "@/src/services/obituaryApi";
-
-interface ObituariesResponse {
-    success: boolean;
-    data: any[];
-}
 
 export function useObituaries() {
     const [obituaries, setObituaries] = useState<Obituary[]>([]);
@@ -17,43 +11,53 @@ export function useObituaries() {
 
     const [error, setError] = useState<string | null>(null);
 
-    const loadObituaries = useCallback(async () => {
-        try {
-            setLoading(true);
-            setError(null);
-            
-            const obituaries = await getObituaries();
-            setObituaries(obituaries);
-            
-            const response = await fetch("/api/obituarios");
+    const loadObituaries = useCallback(
+        async (showLoading = false) => {
+            try {
+                if (showLoading) {
+                    setLoading(true);
+                }
 
-            if (!response.ok) {
-                throw new Error("No fue posible conectar con el servidor");
-            }
+                setError(null);
 
-            const result: ObituariesResponse = await response.json();
+                const data = await getObituaries();
 
-            if (result.success) {
-                setObituaries(result.data.map(mapObituary));
-            } else {
-                setError("No fue posible cargar los obituarios.");
-            }
-        } catch (err) {
-            console.error(err);
-            setError("Error al conectar con el servidor");
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+                setObituaries(data);
+            } catch (err) {
+                console.error(err);
+
+                if (err instanceof Error) {
+                    setError(err.message);
+                } else {
+                    setError("Error al conectar con el servidor.");
+                }
+            } finally {
+                if (showLoading) {
+                    setLoading(false);
+                }
+            }  
+        },
+        []
+    );
 
     useEffect(() => {
-        void loadObituaries();
+        //Primera carga
+        loadObituaries(true);
+
+        //Actuliza automaticamente
+        const interval = setInterval(() => {
+            loadObituaries(false);
+        }, 5000);
+
+        return () => {
+            clearInterval(interval);
+        };
     }, [loadObituaries]);
 
     return {
         obituaries,
         loading,
         error,
-        reload: loadObituaries,
+        reload: () => loadObituaries(false),
     };
 }

@@ -3,27 +3,13 @@ export interface ObituaryDTO {
     name: string;
     surname: string;
     sala: string;
-    estado: "ACTIVO" | "FINALIZADO";
-    timeStart: string;
-    timeEnd: string;
+    estado: "ACTIVO" | "FINALIZADO" | "ARCHIVADO";
+    timeStart: string | null;
+    timeEnd: string | null;
+
+    endDate: string | null;
+    endTime: string | null;
 
     description?: string;
 }
 
-export interface CondolenceDTO {
-    obituaryId: string;
-    
-    fullName: string;
-
-    documentType: string;
-
-    documentNumber: string;
-
-    phone: string;
-
-    email: string;
-
-    message: string;
-
-    acceptedTerms: boolean;
-}

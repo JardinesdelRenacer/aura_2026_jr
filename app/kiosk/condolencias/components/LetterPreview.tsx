@@ -47,13 +47,13 @@ export default function LetterPreview({
                 <div className="my-10 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent" />
 
                 {/* Inicio de carta */}
-                <div className="flex-1 px-6">
+                <div className="flex-1 px-6 min-w-0 overflow-hidden">
                     <p className="text-lg font-medium text-slate-700">
                         Estimada familia:
                     </p>
 
                     {/* Carta */}
-                    <p className="mt-10 text-lg leading-9 whitespace-pre-wrap text-slate-600">
+                    <p className="mt-10 text-lg leading-9 whitespace-pre-wrap brack-words [overflow-wrap:anywhere] max-w-full text-slate-600">
                         {formData.message || `las palabras de apoyo que escriba aparecerán aquí mientras redacta su mensaje.`}
                     </p>
 

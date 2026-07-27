@@ -15,10 +15,14 @@ export async function generateSequentialCode(prefix: string): Promise<string> {
         const parts = lastCondolence.codigo.split("-");
 
         if (parts.length === 3) {
-            nextNumber = Number(parts[2]) + 1;
+            const lastNumber = Number(parts[2]);
+
+            if(!Number.isNaN(lastNumber)) {
+                nextNumber = lastNumber + 1;
+            }
         }
     }
 
-    return `${prefix}-${year}-$(String(nextNumber).padStart(6, "0"))`;
+    return `${prefix}-${year}-${String(nextNumber).padStart(6, "0")}`;
     
 }

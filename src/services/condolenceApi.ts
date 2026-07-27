@@ -8,11 +8,13 @@ export async function submitCondolence(form: CondolenceDTO) {
         body: JSON.stringify(form),
     });
 
-    if (!response.ok) {
-        throw new Error("No fue posible enviar la condolencia.");
-    }
-
+    // Se leé primero la respuesta del backend
     const result = await response.json();
+
+    // Luego se comprueba el status HTTP
+    if (!response.ok) {
+        throw new Error(result.message ?? "No fue posible enviar la condolencia.");
+    }
     
     if (!result.success) {
         throw new Error(result.message ?? "No fue posible registrar la condolencia.");

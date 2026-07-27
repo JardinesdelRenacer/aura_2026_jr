@@ -7,11 +7,15 @@ export interface Obituary{
 
     roomName: string;
 
-    status: "ACTIVO" | "FINALIZADO";
+    status: "ACTIVO" | "FINALIZADO" | "ARCHIVADO";
 
-    startTime?: string;
+    startTime?: string | null;
 
-    endTime?: string;
+    endTime?: string | null;
+
+    hideDate?: string | null;
+
+    hideTime?: string | null;
 
     description?: string;
 }

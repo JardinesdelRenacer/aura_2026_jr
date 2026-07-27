@@ -1,6 +1,41 @@
 import { prisma } from "@/src/lib/prisma";
+import { DashboardFiltersDTO } from "@/src/dto/dashboardFilters.dto";
 
-export async function getDashboardMetrics() {
+export async function getDashboardMetrics(
+    filters: DashboardFiltersDTO
+) {
+    //Filtros
+
+    const dateFilter = filters.startDate || filters.endDate ? {
+        createdAt: {
+            ...(filters.startDate && {
+                gte: new Date(`${filters.startDate}T00:00:00`),
+            }),
+            
+            ...(filters.endDate && {
+                lte: new Date(`${filters.endDate}T23:59:59.999`),
+            }),
+        },
+    }
+    : {};
+
+    const obituaryWhere = {
+        ...dateFilter,
+        ...(filters.branchId && {
+            sedeId: filters.branchId,
+        }),
+    };
+
+    const condolenceWhere = {
+        ...dateFilter,
+
+        ...(filters.branchId && {
+            obituario: {
+                sedeId: filters.branchId,
+            },
+        }),
+    };
+
     // Obituarios
     const [ 
         totalObituaries,
@@ -8,18 +43,26 @@ export async function getDashboardMetrics() {
         finishedObituaries,
         archivedObituaries,
     ] = await Promise.all([
-        prisma.obituario.count(),
+        prisma.obituario.count({
+            where: obituaryWhere,
+        }),
         
         prisma.obituario.count({ 
-            where: { estado: "ACTIVO"},
+            where: { 
+                ...obituaryWhere,
+                estado: "ACTIVO"},
         }),
 
         prisma.obituario.count({
-            where: { estado: "FINALIZADO"},
+            where: { 
+                ...obituaryWhere,
+                estado: "FINALIZADO"},
         }),
 
         prisma.obituario.count({
-            where: { estado: "ARCHIVADO"}
+            where: { 
+                ...obituaryWhere,
+                estado: "ARCHIVADO"}
         }),
     ]);
 
@@ -30,20 +73,62 @@ export async function getDashboardMetrics() {
         deliveredCondolences,
         archivedCondolences,
     ] = await Promise.all([
-        prisma.condolencia.count(),
-
         prisma.condolencia.count({
-            where: { estado: "PENDIENTE"},
+            where: condolenceWhere,
         }),
 
         prisma.condolencia.count({
-            where: { estado: "ENTREGADA"},
+            where: { 
+                ...condolenceWhere,
+                estado: "PENDIENTE"},
         }),
 
         prisma.condolencia.count({
-            where: { estado: "ARCHIVADA"},
+            where: { 
+                ...condolenceWhere,
+                estado: "ENTREGADA"},
+        }),
+
+        prisma.condolencia.count({
+            where: {
+                ...condolenceWhere, 
+                estado: "ARCHIVADA"},
         }),
     ]);
+
+    // Estadisticas mensuales
+    const monthlyStatisticsData = await prisma.obituario.findMany({
+        where: obituaryWhere,
+
+        select: {
+            createdAt: true,
+        },
+    });
+
+    const months = [
+        "Ene",
+        "Feb",
+        "Mar",
+        "Abr",
+        "May",
+        "Jun",
+        "Jul",
+        "Ago",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dic",
+    ];
+
+    const monthlyStatistics = months.map((month) => ({
+        month,
+        totalObituaries: 0,
+    }));
+
+    monthlyStatisticsData.forEach((item) => {
+        const monthIndex = item.createdAt.getMonth();
+        monthlyStatistics[monthIndex].totalObituaries++;
+    });
 
     // Sedes 
     const [
@@ -100,6 +185,8 @@ export async function getDashboardMetrics() {
     //Últimos obituarios
 
     const latestObituaries = await prisma.obituario.findMany({
+        where: obituaryWhere,
+
         take: 5,
 
         orderBy: {
@@ -116,23 +203,36 @@ export async function getDashboardMetrics() {
     }); 
 
     //Top sedes
-    const topBranches = await prisma.sede.findMany({
-        include: {
-            _count: {
-                select: {
-                    obituarios: true,
-                },
-            },
-        },
+    const topBranchesData = await prisma.sede.findMany({
+        where: filters.branchId ? { id: filters.branchId } : undefined,
+        
+        select: {
+            id: true,
+            nombre: true,
+            ciudad: true,
+            departamento: true,
 
-        orderBy: {
             obituarios: {
-                _count: "desc",
+                where: {...dateFilter},
+            
+                select: { id: true },
             },
         },
-
-        take: 5,
     });
+
+    const topBranches = topBranchesData
+        .map((branch) => ({
+            id: branch.id,
+            nombre: branch.nombre,
+            ciudad: branch.ciudad,
+            departamento: branch.departamento,
+            totalObituaries: branch.obituarios.length,
+        }))
+        .sort(
+            (a, b) =>
+                b.totalObituaries - a.totalObituaries
+        )
+        .slice(0, 5);
 
     return {
         summary: {
@@ -156,12 +256,8 @@ export async function getDashboardMetrics() {
         }, 
         latestObituaries,
 
-        topBranches: topBranches.map((branch) => ({
-            id: branch.id,
-            nombre: branch.nombre,
-            ciudad: branch.ciudad,
-            departamento: branch.departamento,
-            totalObituaries: branch._count.obituarios,
-        })),
+        topBranches,
+
+        monthlyStatistics,
     };    
 }

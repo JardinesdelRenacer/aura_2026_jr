@@ -30,7 +30,10 @@ export default function SelectObituaryScreen({
     //         description: "Acompaña a la familia con un mensaje.",
     //     },
     // ];
+
     const { obituaries, loading, error } = useObituaries();
+
+    console.table(obituaries);
 
     if (loading) {
         return (

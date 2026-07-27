@@ -8,6 +8,7 @@ import { Obituary } from "@/src/types/obituary";
 import { CondolenceForm } from "@/src/types/condolencias";
 import { useEffect, useState } from 'react';
 import { submitCondolence } from "@/src/services/condolenceApi";
+import { error } from "console";
 
 interface FormScreenProps{
     obituary: Obituary | null;
@@ -19,7 +20,9 @@ export default function FormScreen({
     onSuccess,
 }: FormScreenProps) {
 
-    const [loading, setLoading] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [formData, setFormData] = useState<CondolenceForm>({
        
@@ -42,26 +45,59 @@ export default function FormScreen({
 
     // TODO: Integrar con Prisma
     const handleSubmit = async() => {
-        if (!obituary) return;
-
+        if (!obituary) {
+            setSubmitError("No se encontro el obituario seleccinado.");   
+            return;
+        }
         try {
-            setLoading(true);
-            
-            await submitCondolence({...formData, 
-                // Lo agregamos al formulario
-                obituaryId: obituary.id
+            setSubmitError(null);
+            setIsSubmitting(true);
+
+            await submitCondolence({
+                obituaryId: obituary.id,
+                fullName: formData.fullName,
+                documentType: formData.documentType,
+                documentNumber: formData.documentNumber,
+                phone: formData.phone,
+                email: formData.email,
+                message: formData.message,
+                acceptedTerms: formData.acceptedTerms,
             });
 
             onSuccess();
+            
         } catch (error) {
-            console.log(error);
+            if (error instanceof Error) {
+                setSubmitError(error.message);
+            } else {
+                setSubmitError(
+                    "Ocurrió un error al enviar la condolencia."
+                );
+            }
         } finally {
-            setLoading(false);
+            setIsSubmitting(false);
         }
     };
     
     return (
         <div className="w-full h-full">
+
+            {/* errores */}
+            {submitError && (
+                <div role="alert" className="fixed top-6 left-1/2 z-[9999] w-[calc(100%-3rem)] max-w-xl-translate-x-1/2 animate-in fade-in slide-in-from-top-4 duration-300">
+                    <div className="flex items-start gap-4 rounded-2xl border border-red-200 bg-white px-5 py-4 shadow-2xl">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100 text-lg font-bold text-red-600">!</div>
+
+                        <div className="min-w-0 flex-1">
+                            <p className="font-bold text-slate-800">Revisa la información</p>
+
+                            <p className="mt-1 text-sm text-slate-600">{submitError}</p>
+                        </div>
+
+                        <button type="button" onClick={() => setSubmitError(null)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700" aria-label="Cerrar alerta">✕</button>
+                    </div>
+                </div>
+            )}
 
             {/* Encabezado */}
             <div className="pt-8"> 
@@ -84,7 +120,7 @@ export default function FormScreen({
                 {/* Vista Previa */}
                 <div className="col-span-7">
 
-                    {/* Test 2 */}
+                    {/* Test 2
                     <div className="mb-10 text-center">
                         <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-5 py-2 text-blue-700 font-semibold">
                             🌿
@@ -101,7 +137,7 @@ export default function FormScreen({
                     </div>
 
                     {/* test */}
-                    <div className="mb-10 text-center">
+                    {/* <div className="mb-10 text-center">
                         <h2 className="text-4xl font-bold text-slate-800">
                             {obituary?.name} {obituary?.surname}
                         </h2>
@@ -113,7 +149,7 @@ export default function FormScreen({
                         <p className="mt-4 text-slate-500">
                             {obituary?.description}
                         </p>
-                    </div>
+                    </div> */} 
 
 
                     <LetterPreview obituary={obituary} formData={formData} />
@@ -122,7 +158,7 @@ export default function FormScreen({
 
             {/* Footer */}
             <div className="h-[12vh] flex items-center justify-center">
-                <SubmitButton disabled={!isFormValid} loading={loading} onClick={handleSubmit} />
+                <SubmitButton disabled={!isFormValid} loading={isSubmitting} onClick={handleSubmit} />
             </div>
             
         </div>

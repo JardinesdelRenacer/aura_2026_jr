@@ -1,3 +1,5 @@
+import { MonthlyStatisticsDTO } from "./monthlyStatistics.dto";
+
 // export interface DashboardReportDTO {
 export interface DashboardSummaryDTO {    
     totalObituaries: number;
@@ -46,4 +48,6 @@ export interface DashboardReportDTO{
     latestObituaries: LatestObituaryDTO[];
 
     topBranches: TopBranchDTO[];
+
+    monthlyStatistics: MonthlyStatisticsDTO[];
 }
