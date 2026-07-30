@@ -123,7 +123,9 @@ export default function AdministrarTab({
             {/* Sección 2: Obituarios */}
             <div className="w-full space-y-6 bg-white/50 p-6 rounded-2xl border border-white/60 flex flex-col shadow-sm mt-8 animate-in fade-in duration-500">
                 <div className="border-b border-slate-200 pb-4">
-                    <h2 className="text-2xl font-bold text-slate-800">🕊️ Gestión de Obituarios</h2>
+                    {/* <h2 className="text-2xl font-bold text-slate-800">🕊️ Gestión de Obituarios</h2> */}
+
+                    <h2 className="text-2xl font-bold text-slate-800">Gestión de Obituarios</h2>
                 </div>
 
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mt-4">

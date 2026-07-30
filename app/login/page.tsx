@@ -146,6 +146,24 @@ export default function LoginPage() {
                             {loading ? "Validando..." : "Ingresar al Sistema"}
                         </button>
 
+                        {/* <button
+                            type="button"
+                            onClick={() => window.location.href = "/display"}
+                            className="w-full rounded-xl border border-slate-300 bg-white py-3 font-semibold text-slate-700 hover:bg-slate-100 transition"
+                        >
+                            📺 Registrar Pantalla
+                        </button>
+
+                        <button onClick={() => router.push("/kiosk/condolencias")} 
+                            className="w-full rounded-xl border border-slate-300 bg-white py-3 font-semibold text-slate-700 hover:bg-slate-100 transition"
+                        >
+                            🖥️ Modo Tableta
+                        </button> */}
+                    </form>
+
+                    {/* Test BTN */}
+                    
+                    <div className="w-full mt-4 w-full  space-y-5">
                         <button
                             type="button"
                             onClick={() => window.location.href = "/display"}
@@ -159,7 +177,7 @@ export default function LoginPage() {
                         >
                             🖥️ Modo Tableta
                         </button>
-                    </form>
+                    </div>
 
                     <div className="mt-8 text-center bg-white/50 p-4 rounded-xl border border-white/60 text-xs text-slate-500 font-medium">
                         <p className="mb-2 font-bold text-slate-700">Credenciales de Prueba:</p>

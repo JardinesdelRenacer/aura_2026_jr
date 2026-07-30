@@ -1,102 +1,301 @@
 "use client";
 
-import { Presentacion } from "@prisma/client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+    Check,
+    DoorOpen,
+    Monitor,
+    X,
+} from "lucide-react";
+
+type RoomKey =
+    | "VIP"
+    | "SALA_1"
+    | "SALA_2"
+    | "SALA_3";
 
 interface Props {
     open: boolean;
     onClose: () => void;
 
-    pantalla: any;
-    presentaciones: any[];
-    
+    pantalla: {
+        id: string;
+        nombre?: string;
+        verticalRoom?: RoomKey | null;
+    };
+
+    rooms: RoomKey[];
+    permiteModoVertical: boolean;
     onActualizada: () => void;
+}
+
+function obtenerNombreSala(room: RoomKey) {
+    if (room === "VIP") {
+        return "Sala VIP";
+    }
+
+    return room.replace("_", " ");
 }
 
 export default function CambiarPresentacionModal({
     open,
     onClose,
     pantalla,
-    presentaciones,
-    
+    rooms,
+    permiteModoVertical,
     onActualizada,
 }: Props) {
+    const [seleccionada, setSeleccionada] =
+        useState<RoomKey | null>(
+            pantalla.verticalRoom ?? null
+        );
 
-    
-    
-    const [seleccionada, setSeleccionada] = useState(
-        pantalla.presentacionId
-    );
+    const [guardando, setGuardando] =
+        useState(false);
+
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        if (!open) return;
+
+        setSeleccionada(
+            pantalla.verticalRoom ?? null
+        );
+
+        setError("");
+    }, [
+        open,
+        pantalla.id,
+        pantalla.verticalRoom,
+    ]);
 
     async function guardar() {
         try {
-            const response = await fetch(`/api/master/pantallas/${pantalla.id}`, {
-                method: "PUT",
+            setGuardando(true);
+            setError("");
 
-                headers: {
-                    "Content-Type": "application/json",
-                },
+            const response = await fetch(
+                `/api/master/pantallas/${pantalla.id}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+                    },
+                    body: JSON.stringify({
+                        verticalRoom: permiteModoVertical
+                            ? seleccionada
+                            : null,
+                    }),
+                }
+            );
 
-                body: JSON.stringify({
-                    presentacionId: seleccionada,
-                }),
-            });
+            const result =
+                await response.json();
 
-            const result = await response.json();
-
-            if (!result.success) {
-                alert(result.error ?? "No se puedo actualizar la presentación");
+            if (
+                !response.ok ||
+                !result.success
+            ) {
+                setError(
+                    result.error ??
+                        "No se pudo cambiar la sala."
+                );
                 return;
             }
 
             onActualizada();
-
-            onClose();
         } catch (error) {
-            console.log(error);
+            console.error(
+                "Error cambiando sala:",
+                error
+            );
 
-            alert("Error al actualizar la presentacion.");
+            setError(
+                "Ocurrió un error al cambiar la sala."
+            );
+        } finally {
+            setGuardando(false);
         }
     }
+
     if (!open) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[999999]">
-            <div className="bg-white rounded-3xl w-full max-w-xl p-8">
-                <h2 className="text-2xl font-black">Cambiar presentación</h2>
+        <div
+            className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+            onMouseDown={(event) => {
+                if (
+                    event.target ===
+                    event.currentTarget
+                ) {
+                    onClose();
+                }
+            }}
+        >
+            <div className="w-full max-w-xl overflow-hidden rounded-3xl bg-white shadow-2xl">
+                <div className="flex items-start justify-between border-b border-slate-100 px-8 py-6">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
+                            <DoorOpen size={22} />
+                        </div>
 
-                <div className="mt-8 space-y-3">
-                    {presentaciones.map((presentacion) => (
+                        <div>
+                            <h2 className="text-2xl font-black text-slate-900">
+                                ¿Qué sala quiere visualizar?
+                            </h2>
+
+                            <p className="mt-1 text-sm text-slate-500">
+                                Pantalla:{" "}
+                                <span className="font-semibold text-slate-700">
+                                    {pantalla.nombre ??
+                                        "Sin nombre"}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        disabled={guardando}
+                        className="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"
+                    >
+                        <X size={20} />
+                    </button>
+                </div>
+
+                <div className="max-h-[60vh] overflow-y-auto px-8 py-6">
+                    {!permiteModoVertical ? (
                         <button
-                            key={presentacion.id}
-                            onClick={() => setSeleccionada(presentacion.id)}
-                            className={`w-full rounded 2xl border p-5 text-left transition $(
-                                seleccionada === oresentacion.id
-                                ? "border-blue-600 bg-blue-50"
-                                : "border-slate-200 hover:border-blue-300"
-                            }`}
+                            type="button"
+                            onClick={() =>
+                                setSeleccionada(null)
+                            }
+                            className="relative w-full rounded-2xl border-2 border-blue-600 bg-blue-50 p-5 text-left"
                         >
-                            <h3 className="font-bold">{presentacion.nombre}</h3>
+                            <div className="flex items-center gap-4">
+                                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 text-white">
+                                    <Monitor size={20} />
+                                </div>
 
-                            <p className="text-sm text-slate-500 mt-1">{presentacion.projectionMode}</p>
+                                <div className="flex-1">
+                                    <h3 className="font-bold text-slate-900">
+                                        Pantalla completa
+                                    </h3>
+
+                                    <p className="mt-1 text-sm text-slate-500">
+                                        Esta sede no usa
+                                        visualización por sala.
+                                    </p>
+                                </div>
+
+                                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-white">
+                                    <Check
+                                        size={16}
+                                        strokeWidth={3}
+                                    />
+                                </div>
+                            </div>
                         </button>
-                    ))}
+                    ) : (
+                        <div className="space-y-3">
+                            {rooms.map((room) => {
+                                const activa =
+                                    seleccionada === room;
+
+                                return (
+                                    <button
+                                        type="button"
+                                        key={room}
+                                        onClick={() => {
+                                            setSeleccionada(
+                                                room
+                                            );
+                                            setError("");
+                                        }}
+                                        className={`relative w-full rounded-2xl border-2 p-5 text-left transition-all ${
+                                            activa
+                                                ? "border-blue-600 bg-blue-50 shadow-md shadow-blue-100"
+                                                : "border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50"
+                                        }`}
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div
+                                                className={`flex h-11 w-11 items-center justify-center rounded-xl ${
+                                                    activa
+                                                        ? "bg-blue-600 text-white"
+                                                        : "bg-slate-100 text-slate-600"
+                                                }`}
+                                            >
+                                                <DoorOpen
+                                                    size={20}
+                                                />
+                                            </div>
+
+                                            <div className="flex-1">
+                                                <h3 className="font-bold text-slate-900">
+                                                    {obtenerNombreSala(
+                                                        room
+                                                    )}
+                                                </h3>
+
+                                                <p className="mt-1 text-sm text-slate-500">
+                                                    Mostrar contenido
+                                                    exclusivo de esta
+                                                    sala.
+                                                </p>
+                                            </div>
+
+                                            {activa && (
+                                                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-white">
+                                                    <Check
+                                                        size={16}
+                                                        strokeWidth={
+                                                            3
+                                                        }
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    {error && (
+                        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                            {error}
+                        </div>
+                    )}
                 </div>
 
-                <div className="flex justify-end gap-3 mt-8">
+                <div className="flex justify-end gap-3 border-t border-slate-100 bg-slate-50/70 px-8 py-5">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        disabled={guardando}
+                        className="rounded-xl border border-slate-300 bg-white px-5 py-3 font-semibold text-slate-700"
+                    >
+                        Cancelar
+                    </button>
 
-                    <button onClick={onClose} className="px-5 px-3 rounded-xl border">Cancelar</button>
-
-                    <button onClick={guardar} className="px-6 py-3 rounded-xl bg-blue-600 text-white font-bold">Guardar cambios</button>
-                    
+                    <button
+                        type="button"
+                        onClick={guardar}
+                        disabled={
+                            guardando ||
+                            (permiteModoVertical &&
+                                !seleccionada)
+                        }
+                        className="rounded-xl bg-blue-600 px-6 py-3 font-bold text-white disabled:cursor-not-allowed disabled:bg-slate-300"
+                    >
+                        {guardando
+                            ? "Guardando..."
+                            : "Guardar cambios"}
+                    </button>
                 </div>
-                
-                {/* Boton color negro con letras blancas, sirve el estilo para otra pagina 
-                <button onClick={onClose} className="mt-8 bg-slate-900 text-white rounded-xl px-5 py-3">
-                    Cerrar
-                </button>
-
-                */}
             </div>
         </div>
     );

@@ -43,7 +43,7 @@ export default function VistaPreviaTab({
         <div className={containerClassName}>
             {!isVertical && (
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center border-b border-slate-200 pb-4 gap-2">
-                    <h2 className="text-2xl font-bold text-slate-800">👁️ Vista Previa en Vivo</h2>
+                    <h2 className="text-2xl font-bold text-slate-800">Vista Previa en Vivo</h2>
                     <p className="text-sm text-blue-800 bg-blue-100/80 px-3 py-1 rounded-full shadow-inner border border-blue-200">Simulación a escala (Ciclo 30s)</p>
                 </div>
             )}

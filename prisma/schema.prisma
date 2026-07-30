@@ -240,6 +240,8 @@ model PantallaCliente {
 
   token               String          @unique @default(uuid())
 
+  verticalRoom        String?
+
   online              Boolean         @default(false)
 
   estado              EstadoPantalla  @default(OFFLINE)
@@ -247,6 +249,7 @@ model PantallaCliente {
   reiniciar           Boolean         @default(false)
 
   lastSeen            DateTime?
+
 
   sedeId              String          
   sede                Sede            @relation(fields: [sedeId], references: [id])

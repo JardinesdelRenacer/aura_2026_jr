@@ -174,7 +174,7 @@ export default function CompartirLinkModal({
                         </div>
                     </div>
 
-                    <div className="flex gap-3">
+                    {/* <div className="flex gap-3">
                         <button
                             onClick={copiar}
                             className={`flex-1 font-bold py-3 rounded-xl transition-all duration-300 ${copiado ? "bg-green-600 text-white" : "bg-blue-600 hover:bg-blue-700 text-white"} `}
@@ -188,7 +188,7 @@ export default function CompartirLinkModal({
                         >
                             🌐 Abrir
                         </button>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>
