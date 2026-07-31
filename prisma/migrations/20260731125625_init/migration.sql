@@ -13,6 +13,9 @@ CREATE TYPE "EstadoObituario" AS ENUM ('ACTIVO', 'FINALIZADO', 'ARCHIVADO');
 -- CreateEnum
 CREATE TYPE "EstadoCondolencia" AS ENUM ('PENDIENTE', 'ENTREGADA', 'ARCHIVADA');
 
+-- CreateEnum
+CREATE TYPE "TipoDispositivo" AS ENUM ('PANTALLA', 'AURA_TOUCH');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
@@ -144,6 +147,7 @@ CREATE TABLE "PantallaCliente" (
     "id" TEXT NOT NULL,
     "nombre" TEXT NOT NULL,
     "token" TEXT NOT NULL,
+    "verticalRoom" TEXT,
     "online" BOOLEAN NOT NULL DEFAULT false,
     "estado" "EstadoPantalla" NOT NULL DEFAULT 'OFFLINE',
     "reiniciar" BOOLEAN NOT NULL DEFAULT false,
@@ -164,11 +168,28 @@ CREATE TABLE "PantallaCliente" (
 );
 
 -- CreateTable
+CREATE TABLE "AuraTouch" (
+    "id" TEXT NOT NULL,
+    "nombre" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+    "activo" BOOLEAN NOT NULL DEFAULT true,
+    "lastSeen" TIMESTAMP(3),
+    "sedeId" TEXT NOT NULL,
+    "userAgent" TEXT,
+    "ip" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "AuraTouch_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "CodigoRegistro" (
     "id" TEXT NOT NULL,
     "codigo" TEXT NOT NULL,
     "pantallaNombre" TEXT,
     "sedeId" TEXT NOT NULL,
+    "tipoDispositivo" "TipoDispositivo" NOT NULL DEFAULT 'PANTALLA',
     "usado" BOOLEAN NOT NULL DEFAULT false,
     "expiresAt" TIMESTAMP(3) NOT NULL,
     "utilizadoAt" TIMESTAMP(3),
@@ -211,6 +232,15 @@ CREATE INDEX "PantallaCliente_estado_idx" ON "PantallaCliente"("estado");
 CREATE INDEX "PantallaCliente_online_idx" ON "PantallaCliente"("online");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "AuraTouch_token_key" ON "AuraTouch"("token");
+
+-- CreateIndex
+CREATE INDEX "AuraTouch_sedeId_idx" ON "AuraTouch"("sedeId");
+
+-- CreateIndex
+CREATE INDEX "AuraTouch_activo_idx" ON "AuraTouch"("activo");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "CodigoRegistro_codigo_key" ON "CodigoRegistro"("codigo");
 
 -- AddForeignKey
@@ -236,6 +266,9 @@ ALTER TABLE "PantallaCliente" ADD CONSTRAINT "PantallaCliente_sedeId_fkey" FOREI
 
 -- AddForeignKey
 ALTER TABLE "PantallaCliente" ADD CONSTRAINT "PantallaCliente_presentacionId_fkey" FOREIGN KEY ("presentacionId") REFERENCES "Presentacion"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AuraTouch" ADD CONSTRAINT "AuraTouch_sedeId_fkey" FOREIGN KEY ("sedeId") REFERENCES "Sede"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "CodigoRegistro" ADD CONSTRAINT "CodigoRegistro_sedeId_fkey" FOREIGN KEY ("sedeId") REFERENCES "Sede"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

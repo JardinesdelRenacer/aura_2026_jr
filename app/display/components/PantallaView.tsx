@@ -1,14 +1,34 @@
 "use client";
 
-
+import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
 import Slideshow from "@/components/Slideshow";
 import ObituarioVertical from "@/app/proyectar/ObituarioVertical";
-import { userAgent } from "next/server";
-import { promiseHooks } from "v8";
 
-type Obituary = { name: string, surname: string, dob: string, dod: string, timeStart: string, timeEnd: string, cemetery: string, endTime?: string, endDate?: string, massTime?: string, massChurch?: string, massChurchType?: string, massAddress?: string };
+type RoomKeys = "VIP" | "SALA_1" | "SALA_2" | "SALA_3";
+
+type MediaItem = {
+    url: string;
+    type: string;
+    room?: string | null;
+};
+
+type Obituary = {
+    name: string;
+    surname: string;
+    dob: string;
+    dod: string;
+    timeStart: string;
+    timeEnd: string;
+    cemetery: string;
+    endTime?: string;
+    endDate?: string;
+    massTime?: string;
+    massChurch?: string;
+    massChurchType?: string;
+    massAddress?: string;
+};
+
 type ObituariesData = {
     VIP: Obituary;
     SALA_1: Obituary;
@@ -18,7 +38,6 @@ type ObituariesData = {
 
 interface PantallaViewProps {
     presentacionId?: string;
-
     preview?: boolean;
 }
 
@@ -26,243 +45,334 @@ export default function PantallaView({
     presentacionId,
     preview = false,
 }: PantallaViewProps) {
-
-    console.log("PRESENTACION ID:", presentacionId);
-
-    const [media, setMedia] = useState<{ url: string, type: string }[]>([]);
+    const [media, setMedia] = useState<MediaItem[]>([]);
+    const [allMedia, setAllMedia] = useState<MediaItem[]>([]);
 
     const [autoPlay, setAutoplay] = useState(true);
-
     const [seconds, setSeconds] = useState(10);
-
     const [selectedImage, setSelectedImage] = useState(0);
-
     const [transitionEffect, setTransitionEffect] = useState("fade");
-
     const [projectionMode, setProjectionMode] = useState("classic");
 
-    const [verticalRoom, setVerticalRoom] = useState<RoomKeys | ''>('');
-
-    const [obituaries, setObituaries] = useState<ObituariesData | null>(null);
+    const [verticalRoom, setVerticalRoom] = useState<RoomKeys | "">("");
+    const [obituaries, setObituaries] =
+        useState<ObituariesData | null>(null);
 
     const [showObituaries, setShowObituaries] = useState(true);
-
     const [currentTime, setCurrentTime] = useState(() => new Date());
-
     const [roomsToShow, setRoomsToShow] = useState<string[]>([]);
-
     const [sedeId, setSedeId] = useState("");
 
     const searchParams = useSearchParams();
 
     const roomParam = searchParams.get("room") as RoomKeys | null;
+    const pantallaToken = searchParams.get("token");
 
-    type RoomKeys = | "VIP" | "SALA_1" | "SALA_2" | "SALA_3";
-
-    const convertirObituarios = (
-        listas: any[]
-    ): ObituariesData => {
-
-        const resultado: ObituariesData = {
-            VIP: {
-                name: "",
-                surname: "",
-                dob: "",
-                dod: "",
-                timeStart: "",
-                timeEnd: "",
-                cemetery: "",
-            },
-
-            SALA_1: {
-                name: "",
-                surname: "",
-                dob: "",
-                dod: "",
-                timeStart: "",
-                timeEnd: "",
-                cemetery: "",
-            },
-
-            SALA_2: {
-                name: "",
-                surname: "",
-                dob: "",
-                dod: "",
-                timeStart: "",
-                timeEnd: "",
-                cemetery: "",
-            },
-
-            SALA_3: {
-                name: "",
-                surname: "",
-                dob: "",
-                dod: "",
-                timeStart: "",
-                timeEnd: "",
-                cemetery: "",
-            },
-        };
-
-        listas.forEach((ob) => {
-            resultado[
-                ob.sala as keyof ObituariesData
-            ] = {
-                ...ob,
+    const convertirObituarios = useCallback(
+        (listas: any[]): ObituariesData => {
+            const resultado: ObituariesData = {
+                VIP: {
+                    name: "",
+                    surname: "",
+                    dob: "",
+                    dod: "",
+                    timeStart: "",
+                    timeEnd: "",
+                    cemetery: "",
+                },
+                SALA_1: {
+                    name: "",
+                    surname: "",
+                    dob: "",
+                    dod: "",
+                    timeStart: "",
+                    timeEnd: "",
+                    cemetery: "",
+                },
+                SALA_2: {
+                    name: "",
+                    surname: "",
+                    dob: "",
+                    dod: "",
+                    timeStart: "",
+                    timeEnd: "",
+                    cemetery: "",
+                },
+                SALA_3: {
+                    name: "",
+                    surname: "",
+                    dob: "",
+                    dod: "",
+                    timeStart: "",
+                    timeEnd: "",
+                    cemetery: "",
+                },
             };
-        });
 
-        return resultado;
-    }
+            listas.forEach((obituario) => {
+                const sala = obituario.sala as RoomKeys;
 
-    const cargarPresentacion = async () => {
+                if (sala in resultado) {
+                    resultado[sala] = {
+                        ...resultado[sala],
+                        ...obituario,
+                    };
+                }
+            });
+
+            return resultado;
+        },
+        []
+    );
+
+    const cargarPresentacion = useCallback(async () => {
         try {
             if (!presentacionId) return;
 
-            const response = await fetch(`/api/master/presentaciones/${presentacionId}`);
+            const response = await fetch(
+                `/api/master/presentaciones/${presentacionId}`,
+                {
+                    method: "GET",
+                    cache: "no-store",
+                }
+            );
 
             const result = await response.json();
 
-            if (!result.success) {
+            if (!response.ok || !result.success) {
+                console.error(
+                    "No se pudo cargar la presentación:",
+                    result.error
+                );
                 return;
             }
 
             const presentacion = result.data;
-
-            console.log("PRESENTACIÓN COMPLETA");
-
-            console.log(result.data);
-
             const sede = presentacion.sede ?? {};
 
+            const rooms = Array.isArray(presentacion.roomsToShow)
+                ? presentacion.roomsToShow
+                : [];
+
+            const mediaList: MediaItem[] = Array.isArray(sede.media)
+                ? sede.media
+                : [];
+
             setSedeId(sede.id ?? "");
-
-            console.log("PRESENTACIÓN BACKEND: ", presentacion);
-
-            setProjectionMode(presentacion.projectionMode || "classic");
-
-            setVerticalRoom(presentacion.verticalRoom || '');
-
+            setProjectionMode(
+                presentacion.projectionMode || "classic"
+            );
             setSelectedImage(presentacion.selectedImage ?? 0);
-            
-            const rooms =
-                Array.isArray(presentacion?.roomsToShow)
-                    ? presentacion.roomsToShow : [];
-            
             setRoomsToShow(rooms);
+            setAllMedia(mediaList);
 
-            const mediaList: any[] = sede.media || [];
-
-            if (presentacion.projectionMode === "vertical") {
-            
-                const roomKey = presentacion.verticalRoom || roomParam || (rooms[0] as RoomKeys);
-
-                const roomMedia = mediaList.filter((m: any) => m.room === roomKey);
-                
-                console.log("MEDIA: ", mediaList);
-
-                console.log("MEDIA FILTRADA: ", roomMedia);
-
-                setMedia(roomMedia.length > 0 ? roomMedia : mediaList.filter((m: any) => !m.room));
-                
-                } else {
-                    // Classic y Split utilizan toda la multimedia
-                    setMedia(mediaList);
-                }
-
-            setObituaries(convertirObituarios(sede.obituarios || []));
-
-            console.log("RAW PRESENTACION:", result.data.roomsToShow);
+            setObituaries(
+                convertirObituarios(
+                    Array.isArray(sede.obituarios)
+                        ? sede.obituarios
+                        : []
+                )
+            );
 
             if (sede.configuracion) {
-
-                setAutoplay(sede.configuracion.autoPlay);
-
-                setSeconds(sede.configuracion.seconds);
-
-                setTransitionEffect(sede.configuracion.transitionEffect);
+                setAutoplay(
+                    sede.configuracion.autoPlay ?? true
+                );
+                setSeconds(
+                    sede.configuracion.seconds ?? 10
+                );
+                setTransitionEffect(
+                    sede.configuracion.transitionEffect ??
+                        "fade"
+                );
             }
         } catch (error) {
-            console.error("Error cargando presentación:", error);
+            console.error(
+                "Error cargando presentación:",
+                error
+            );
         }
-    };
+    }, [presentacionId, convertirObituarios]);
+
+    const cargarConfiguracionPantalla =
+        useCallback(async () => {
+            try {
+                if (preview) return;
+
+                const query = pantallaToken
+                    ? `?token=${encodeURIComponent(
+                          pantallaToken
+                      )}`
+                    : "";
+
+                const response = await fetch(
+                    `/api/pantalla/configuracion${query}`,
+                    {
+                        method: "GET",
+                        credentials: "include",
+                        cache: "no-store",
+                    }
+                );
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    console.error(
+                        "No se pudo cargar la configuración de pantalla:",
+                        result.error
+                    );
+                    return;
+                }
+
+                setVerticalRoom(
+                    result.data.verticalRoom ?? ""
+                );
+            } catch (error) {
+                console.error(
+                    "Error cargando configuración de pantalla:",
+                    error
+                );
+            }
+        }, [preview, pantallaToken]);
 
     useEffect(() => {
-        console.log("ROOMS ACTUALIZADOS:", roomsToShow);
-    }, [roomsToShow]);
+        if (projectionMode !== "vertical") {
+            setMedia(allMedia);
+            return;
+        }
+
+        // La configuración guardada de la pantalla tiene prioridad.
+        const roomKey =
+            verticalRoom ||
+            roomParam ||
+            (roomsToShow[0] as RoomKeys | undefined);
+
+        if (!roomKey) {
+            setMedia(
+                allMedia.filter((item) => !item.room)
+            );
+            return;
+        }
+
+        const roomMedia = allMedia.filter(
+            (item) => item.room === roomKey
+        );
+
+        const generalMedia = allMedia.filter(
+            (item) => !item.room
+        );
+
+        setMedia(
+            roomMedia.length > 0
+                ? roomMedia
+                : generalMedia
+        );
+    }, [
+        allMedia,
+        projectionMode,
+        roomParam,
+        verticalRoom,
+        roomsToShow,
+    ]);
 
     useEffect(() => {
-        const timer = setInterval(() => setCurrentTime(new Date()), 10000); // Revisa cada 10 segundos
-        return () => clearInterval(timer);
+        const timer = window.setInterval(
+            () => setCurrentTime(new Date()),
+            10000
+        );
+
+        return () => window.clearInterval(timer);
     }, []);
 
     useEffect(() => {
-        if (presentacionId) {
-            cargarPresentacion();
-        }
-    }, [presentacionId]);
+        if (!presentacionId) return;
+
+        let active = true;
+
+        const actualizarPantalla = async () => {
+            if (!active) return;
+
+            await Promise.all([
+                cargarPresentacion(),
+                cargarConfiguracionPantalla(),
+            ]);
+        };
+
+        actualizarPantalla();
+
+        const interval = window.setInterval(
+            actualizarPantalla,
+            3000
+        );
+
+        return () => {
+            active = false;
+            window.clearInterval(interval);
+        };
+    }, [
+        presentacionId,
+        cargarPresentacion,
+        cargarConfiguracionPantalla,
+    ]);
 
     useEffect(() => {
-        if (preview) return;
-
-        if (!sedeId) return;
+        if (preview || !sedeId) return;
 
         const enviarHeartbeat = async () => {
             try {
-                const response = await fetch("/api/pantalla/heartbeat", {
-                    method: "PUT",
-                    credentials: "include",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        sedeId,
-
-                        screen: {
-                            width: window.screen.width,
-                            height: window.innerHeight,
-                        }, 
-
-                        viewport: {
-                            width: window.innerWidth,
-                            height: window.innerHeight,
+                const response = await fetch(
+                    "/api/pantalla/heartbeat",
+                    {
+                        method: "PUT",
+                        credentials: "include",
+                        headers: {
+                            "Content-Type":
+                                "application/json",
                         },
+                        body: JSON.stringify({
+                            sedeId,
+                            token: pantallaToken,
+                            screen: {
+                                width: window.screen.width,
+                                height: window.screen.height,
+                            },
+                            viewport: {
+                                width: window.innerWidth,
+                                height: window.innerHeight,
+                            },
+                            userAgent:
+                                navigator.userAgent,
+                            language:
+                                navigator.language,
+                            online:
+                                navigator.onLine,
+                        }),
+                    }
+                );
 
-                        userAgent: navigator.userAgent,
-
-                        language: navigator.language,
-
-                        online: navigator.onLine,
-                    }),
-                });
-
-            console.log("Hearbeat: ", response.status);
-
+                if (!response.ok) {
+                    console.error(
+                        "Heartbeat rechazado:",
+                        response.status
+                    );
+                }
             } catch (error) {
-                console.error("Heartbeat:", error);
+                console.error(
+                    "Error enviando heartbeat:",
+                    error
+                );
             }
         };
 
         enviarHeartbeat();
 
-        const interval = setInterval(enviarHeartbeat, 5000);
+        const interval = window.setInterval(
+            enviarHeartbeat,
+            5000
+        );
 
-        return () => clearInterval(interval);
-    }, [preview, sedeId]);
-
-   
-    useEffect(() => {
-        if (!presentacionId) return;
-
-        cargarPresentacion();
-
-        const interval = setInterval(() => {
-            cargarPresentacion();
-        }, 3000);
-
-        return () => clearInterval(interval);
-    }, [presentacionId]);
+        return () => window.clearInterval(interval);
+    }, [preview, sedeId, pantallaToken]);
 
     // Lógica para alternar entre los Obituarios y las Imágenes a Pantalla Completa
     useEffect(() => {
@@ -321,19 +431,48 @@ export default function PantallaView({
     if (!obituaries) return <div className="w-screen h-screen bg-blue-50 flex items-center justify-center text-blue-800 font-bold text-2xl">Cargando presentación...</div>;
 
     if (projectionMode === "vertical" ) {
-        const roomKey = roomParam || verticalRoom || (roomsToShow[0] as RoomKeys);
+        const roomKey = verticalRoom || roomParam || (roomsToShow[0] as RoomKeys);
         const obituary = roomKey ? obituaries[roomKey] : null;
+
+        const expired = obituary ? checkIsExpired(obituary.endTime, obituary.endDate) : false;
+
+        const isActive = Boolean(
+            obituary &&
+                (obituary.name?.trim() || obituary.surname?.trim()) && !expired
+        );
+
         console.log("MEDIA STATE:", media);
         return (
             <div className="w-screen h-screen flex items-center justify-center overflow-hidden bg-black">
                 <div className="h-full max-w-full aspect-[9/16] bg-black overflow-hidden relative">
-                    {obituary ? (
+                    {roomKey ? (
                         <div className="flex h-full w-full flex-col gap-3 bg-slate-950 p-3">
                             <div className="relative h-3/5 flex-grow overflow-hidden rounded-[1.75rem] border border-white/20 shadow-2xl">
                                 <Slideshow media={media} autoPlay={autoPlay} seconds={seconds} selectedImage={selectedImage} transitionEffect={transitionEffect} onCompleteCycle={handleCompleteCycle} />
                             </div>
+
+                            {/* información del obituario */}
                             <div className="h-2/5 flex-shrink-0 overflow-hidden rounded-[1.75rem] border-2 border-white/70 shadow-2xl ring-1 ring-blue-200/30">
-                                <ObituarioVertical obituary={obituary} formatDate={formatDate} formatTime={formatTime} />
+                                {isActive && obituary ? (
+                                    <ObituarioVertical obituary={obituary} formatDate={formatDate} formatTime={formatTime} />
+                                ): (
+                                    <div className="flex h-full flex-col items-center justify-center bg-[url('/imagenes/35.png')] bg-cover bg-center px-8 text-center px-8 text-center">
+                                        <h2 className="text-4xl font-black uppercase tracking-[0.15em] text-black">
+                                            {roomKey === "VIP"
+                                                ? "Sala VIP"
+                                                : roomKey.replace(
+                                                    "-",
+                                                    " "
+                                                )}
+                                        </h2>
+
+                                        <div className="my-6 h-px w-2/3 bg-black/20" />
+
+                                        <p className="text-3xl font-bold uppercase tracking-widest text-black/50">
+                                            Sala Disponible
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ) : (
