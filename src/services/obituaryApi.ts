@@ -1,24 +1,32 @@
-import { Obituary } from "@/src/types/obituary";
-import { ObituaryDTO } from "@/src/dto/obituary.dto";
-import { mapObituary } from "./obituaryMapper";
+import type { Obituary } from "@/src/types/obituary";
 
-interface ApiResponse {
+interface ObituariesResponse {
     success: boolean;
-    data: ObituaryDTO[];
+    data?: Obituary[];
+    error?: string;
 }
 
 export async function getObituaries(): Promise<Obituary[]> {
-    const response = await fetch("/api/obituarios");
+    const response = await fetch(
+        "/api/aura-touch/obituarios",
+        {
+            method: "GET",
+            credentials: "include",
+            cache: "no-store",
+        }
+    );
 
-    if (!response.ok) {
-        throw new Error("No fue posible consultar el servidor.");
+    const result =
+        (await response.json()) as ObituariesResponse;
+
+    if (!response.ok || !result.success) {
+        throw new Error(
+            result.error ??
+                "No fue posible obtener los servicios funerarios."
+        );
     }
 
-    const result: ApiResponse = await response.json();
-
-    if (!result.success) {
-        throw new Error("No fue posible cargar los obituarios.");
-    }
-
-    return result.data.map(mapObituary);
+    return Array.isArray(result.data)
+        ? result.data
+        : [];
 }

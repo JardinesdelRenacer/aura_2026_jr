@@ -16,7 +16,7 @@ export function validateAuraTouchRegistration(
         );
     }
 
-    if (data.nombre.trim()) {
+    if (data.nombre.trim().length < 3) {
         throw new ValidationError(
             "El nombre del dispositivo debe tener al menos 3 caracteres."
         );

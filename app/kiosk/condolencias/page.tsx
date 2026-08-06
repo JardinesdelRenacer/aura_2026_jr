@@ -1,59 +1,41 @@
-"use client";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-import { useEffect, useState } from 'react';
+import { prisma } from "@/src/lib/prisma";
 
-import WelcomeScreen from "./screens/WelcomeScreen";
-import SelectObituaryScreen from './screens/SelectObituaryScreen';
-import FormScreen from "./screens/FormScreen";
-import ThanksScreen from "./screens/ThanksScreen";
-import { Obituary } from '@/src/types/obituary';
+import KioskCondolenciasClient from "./KioskCondolenciasClient";
 
-export default function KioskCondolencias() {
+export default async function KioskCondolenciasPage() {
+    const cookieStore = await cookies();
 
-    type Screen = "welcome" | "select" | "form" | "thanks";
+    const token =
+        cookieStore.get(
+            "aura_touch_token"
+        )?.value;
 
-    const [screen, setScreen] = useState<Screen>("welcome");
+    if (!token) {
+        redirect(
+            "/kiosk/condolencias/registrar"
+        );
+    }
 
-    // const [screen, setScreen] = useState<"welcome" | "select" | "form" | "thanks">("welcome");
+    const auraTouch =
+        await prisma.auraTouch.findUnique({
+            where: {
+                token,
+            },
 
-    const [selectedObituary, setSelectedObituary] = useState<Obituary | null>(null);
-    
-    useEffect(() => {
-        if (screen === "thanks") {
-            const timer = setTimeout(() => {
-                setSelectedObituary(null);
-                setScreen("welcome");
-            }, 5000);
-            return () => clearTimeout(timer);
-        }
-    }, [screen]);
+            select: {
+                id: true,
+                activo: true,
+            },
+        });
 
-    return (
-        //<main className="min-h-screen bg-[url('/imagenes/fondo-aura-touch.png')] bg-cover bg-center bg-no-repeat overflow-hidden">
-        <main className="relative min-h-screen overflow-hidden bg-[url('/imagenes/fondo-aura-touch.png')] bg-cover bg-center bg-no-repeat">
-                       
-            {/* Contenido */}
-            <div className="relative z-10 min-h-screen">
-                {/* Bienvenida */}
-                {screen === "welcome" && (<WelcomeScreen onStart={() => setScreen("select")} /> )}
-                
-                {/* Selecionar sala*/}
-                {/* {screen === "select" && (<SelectObituaryScreen onSelect={(obituary) => {setSelectedObituary(obituary); setScreen("form");}} />)} */}
-                {screen === "select" && (<SelectObituaryScreen onSelect={(obituary) => {
-                    console.log("Obituario Seleccionado:", obituary);
-                    setSelectedObituary(obituary);
-                    console.log("Cambiando a form");
-                    setScreen("form"); 
-                }}/>)}
-                
-                {/* Formulario */}    
-                {screen === "form" && (<FormScreen obituary={selectedObituary} onSuccess={() => setScreen("thanks")} /> )}
+    if (!auraTouch || !auraTouch.activo) {
+        redirect(
+            "/kiosk/condolencias/registrar"
+        );
+    }
 
-                {/* {screen === "form" && selectedObituary && (<FormScreen obituary={selectedObituary} onSuccess={() => setScreen("thanks")} /> )} */}
-
-                {/* Agradecimiento */}
-                {screen === "thanks" && (<ThanksScreen /> )}
-            </div>
-        </main>
-    );
+    return <KioskCondolenciasClient />;
 }

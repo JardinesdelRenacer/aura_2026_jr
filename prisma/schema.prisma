@@ -3,19 +3,18 @@
 
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // Roles
 enum Role {
+  SUPER_MASTER
   MASTER
   ADMIN
 }
@@ -33,13 +32,13 @@ enum EstadoPantalla {
   ERROR
 }
 
-enum EstadoObituario{
+enum EstadoObituario {
   ACTIVO
   FINALIZADO
   ARCHIVADO
 }
 
-enum EstadoCondolencia{
+enum EstadoCondolencia {
   PENDIENTE
   ENTREGADA
   ARCHIVADA
@@ -52,271 +51,326 @@ enum TipoDispositivo {
 
 // Usuarios
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  password      String
+  id       String @id @default(cuid())
+  email    String @unique
+  password String
 
-  nombres       String?
-  apellidos     String?
-  cedula        String?
-  telefono      String?
-  departamento  String?
-  ciudad        String?
-  estado        String?  @default("ACTIVO")
+  nombres      String?
+  apellidos    String?
+  cedula       String?
+  telefono     String?
+  departamento String?
+  ciudad       String?
+  estado       String? @default("ACTIVO")
 
-  lastSeen      DateTime?
+  lastSeen DateTime?
 
-  role          Role     @default(ADMIN)
-  sede          Sede?
+  role Role  @default(ADMIN)
+  sede Sede?
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Sede {
-  id      		      String                  @id @default(cuid())
+  id String @id @default(cuid())
 
-  departamento  	  String
-  ciudad        	  String
-  nombre        	  String  		    
-  estado            EstadoSede               @default(INACTIVA)
+  departamento String
+  ciudad       String
+  nombre       String
+  estado       EstadoSede @default(INACTIVA)
 
-  numeroSalas       Int                      @default(1)
-  salaVip           Boolean                  @default(false)
-  
-  adminId 		      String?                  @unique
-  admin   		      User?                    @relation(fields: [adminId], references: [id])
+  numeroSalas Int     @default(1)
+  salaVip     Boolean @default(false)
 
-  obituarios      	Obituario[]
-  media           	Media[]
-  configuracion   	ConfiguracionPantalla?
+  adminId String? @unique
+  admin   User?   @relation(fields: [adminId], references: [id])
 
-  presentaciones    Presentacion[] 
+  traslados TrasladoObituario[]
 
-  lastSeen          DateTime?     
+  obituarios    Obituario[]
+  media         Media[]
+  configuracion ConfiguracionPantalla?
 
-  pantallas         PantallaCliente[]
-  codigos           CodigoRegistro[]
-  auraTouches       AuraTouch[]
+  presentaciones Presentacion[]
 
-  createdAt 		    DateTime                  @default(now())
-  updatedAt 		    DateTime                  @updatedAt
+  lastSeen DateTime?
+
+  pantallas   PantallaCliente[]
+  codigos     CodigoRegistro[]
+  auraTouches AuraTouch[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Obituario {
-  id            String            @id @default(cuid())
+  id String @id @default(cuid())
 
-  sedeId        String
-  sede          Sede              @relation(fields: [sedeId], references: [id], onDelete: Cascade)
+  sedeId String
+  sede   Sede   @relation(fields: [sedeId], references: [id], onDelete: Cascade)
 
-  sala          String
+  sala String
 
-  estado        EstadoObituario   @default(ACTIVO)
+  estado EstadoObituario @default(ACTIVO)
 
-  name          String
-  surname       String
+  name    String
+  surname String
 
-  dob           String?
-  dod           String?
+  dob String?
+  dod String?
 
-  timeStart     String?
-  timeEnd       String?
+  timeStart String?
+  timeEnd   String?
 
-  cemetery      String?
-  endTime       String?
-  endDate       String?
+  cemetery String?
+  endTime  String?
+  endDate  String?
 
-  condolencias  Condolencia[]
+  condolencias Condolencia[]
 
   // --- NUEVOS CAMPOS DE EUCARISTÍA ---
-  massTime       String?  // Hora de la misa
-  massChurch     String?  // Nombre del lugar
-  massChurchType String?  @default("Parroquia") // Tipo: Parroquia, Capilla, etc.
-  massAddress    String?  // Dirección del lugar
+  massTime       String? // Hora de la misa
+  massChurch     String? // Nombre del lugar
+  massChurchType String? @default("Parroquia") // Tipo: Parroquia, Capilla, etc.
+  massAddress    String? // Dirección del lugar
 
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([sedeId, sala])
 }
 
 model Condolencia {
-  id                        String            @id @default(cuid())
+  id String @id @default(cuid())
 
-  codigo                    String?           @unique
+  codigo String? @unique
 
-  obituarioId               String
-  obituario                 Obituario         @relation(fields: [obituarioId], references: [id], onDelete: Cascade)
+  obituarioId String
+  obituario   Obituario @relation(fields: [obituarioId], references: [id], onDelete: Cascade)
 
-  fullName                  String
+  fullName String
 
-  documentType              String
+  documentType String
 
-  documentNumber            String
+  documentNumber String
 
-  phone                     String
-  
-  email                     String?
+  phone String
 
-  message                   String              @db.Text
+  email String?
 
-  estado                    EstadoCondolencia   @default(PENDIENTE)
+  message String @db.Text
 
-  pdfGenerado               Boolean             @default(false)
+  estado EstadoCondolencia @default(PENDIENTE)
 
-  enviadoAt                 DateTime?
+  pdfGenerado Boolean @default(false)
 
-  observaciones             String?             @db.Text
+  enviadoAt DateTime?
 
-  acceptedPrivacyPolicy     Boolean
+  observaciones String? @db.Text
 
-  createdAt                 DateTime            @default(now())
+  acceptedPrivacyPolicy Boolean
 
-  updatedAt                 DateTime            @updatedAt
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
 
   @@index([obituarioId])
   @@index([estado])
-
 }
 
 model ConfiguracionPantalla {
-  id                  String    @id @default(cuid())
+  id String @id @default(cuid())
 
-  sedeId              String    @unique
-  sede                Sede      @relation(fields: [sedeId], references: [id])
+  sedeId String @unique
+  sede   Sede   @relation(fields: [sedeId], references: [id])
 
-  autoPlay            Boolean   @default(true)
-  seconds             Int       @default(10)
+  autoPlay Boolean @default(true)
+  seconds  Int     @default(10)
 
-  transitionEffect    String    @default("fade")
+  transitionEffect String @default("fade")
 
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Media {
-  id        String    @id @default(cuid())
+  id String @id @default(cuid())
 
-  sedeId    String
-  sede      Sede      @relation(fields: [sedeId], references: [id])
+  sedeId String
+  sede   Sede   @relation(fields: [sedeId], references: [id])
 
-  url       String
+  url String
 
-  fileName  String
+  fileName String
 
-  type      String
+  type String
 
-  orden     Int
+  orden Int
 
-  room      String?
+  room String?
 
-  createdAt DateTime  @default(now())
+  createdAt DateTime @default(now())
 }
 
 model Presentacion {
-  id                  String              @id @default(cuid())
-  nombre              String
+  id     String @id @default(cuid())
+  nombre String
 
-  projectionMode      String              @default("classic")
-  selectedImage       Int                 @default(0)
+  projectionMode String @default("classic")
+  selectedImage  Int    @default(0)
 
-  roomsToShow         Json?
-  obituaries          Json?
+  roomsToShow Json?
+  obituaries  Json?
 
-  sedeId              String
-  sede                Sede                @relation(fields: [sedeId], references: [id])
+  sedeId String
+  sede   Sede   @relation(fields: [sedeId], references: [id])
 
-  pantallas           PantallaCliente[]
+  pantallas PantallaCliente[]
 
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-
 model PantallaCliente {
-  id                  String         @id @default(cuid())
+  id String @id @default(cuid())
 
-  nombre              String
+  nombre String
 
-  token               String          @unique @default(uuid())
+  token String @unique @default(uuid())
 
-  verticalRoom        String?
+  verticalRoom String?
 
-  online              Boolean         @default(false)
+  online Boolean @default(false)
 
-  estado              EstadoPantalla  @default(OFFLINE)
+  estado EstadoPantalla @default(OFFLINE)
 
-  reiniciar           Boolean         @default(false)
+  reiniciar Boolean @default(false)
 
-  lastSeen            DateTime?
+  lastSeen DateTime?
 
+  sedeId String
+  sede   Sede   @relation(fields: [sedeId], references: [id])
 
-  sedeId              String          
-  sede                Sede            @relation(fields: [sedeId], references: [id])
+  presentacionId String?
+  presentacion   Presentacion? @relation(fields: [presentacionId], references: [id])
 
-  presentacionId      String?
-  presentacion        Presentacion?   @relation(fields: [presentacionId], references: [id])
+  screenWidth  Int?
+  screenHeight Int?
 
-  screenWidth         Int?
-  screenHeight        Int?
+  viewportWidth  Int?
+  viewportHeight Int?
 
-  viewportWidth       Int?
-  viewportHeight      Int?
+  ip        String?
+  userAgent String?
+  language  String?
 
-  ip                  String?
-  userAgent           String?
-  language            String?
-  
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([sedeId])
   @@index([estado])
   @@index([online])
-  
 }
 
 model AuraTouch {
-  id          String      @id @default(cuid())
+  id String @id @default(cuid())
 
-  nombre      String  
+  nombre String
 
-  token       String      @unique @default(uuid())
+  token String @unique @default(uuid())
 
-  activo      Boolean     @default(true)
+  activo Boolean @default(true)
 
-  lastSeen    DateTime?   
-  
-  sedeId      String
-  sede        Sede        @relation(fields: [sedeId], references: [id])
+  lastSeen DateTime?
 
-  userAgent   String?
-  ip          String?
+  sedeId String
+  sede   Sede   @relation(fields: [sedeId], references: [id])
 
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  userAgent String?
+  ip        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([sedeId])
   @@index([activo])
 }
 
-model CodigoRegistro{
-  id              String            @id @default(cuid())
+model CodigoRegistro {
+  id String @id @default(cuid())
 
-  codigo          String            @unique
+  codigo String @unique
 
-  pantallaNombre  String?
+  pantallaNombre String?
 
-  sedeId          String
-  sede            Sede              @relation(fields: [sedeId], references:[id])
+  sedeId String
+  sede   Sede   @relation(fields: [sedeId], references: [id])
 
-  tipoDispositivo TipoDispositivo   @default(PANTALLA)
+  tipoDispositivo TipoDispositivo @default(PANTALLA)
 
-  usado           Boolean           @default(false)
+  usado Boolean @default(false)
 
-  expiresAt       DateTime
+  expiresAt DateTime
 
-  utilizadoAt     DateTime?
+  utilizadoAt DateTime?
 
-  createdAt       DateTime          @default(now())
+  createdAt DateTime @default(now())
+}
+
+model TrasladoObituario {
+  id String @id @default(cuid())
+
+  sedeId String
+  sede   Sede   @relation(fields: [sedeId], references: [id], onDelete: Cascade)
+
+  obituarioNombre String
+  salaOrigen      String
+  salaDestino     String
+
+  usuarioId    String?
+  usuarioEmail String?
+
+  estado String @default("COMPLETADO")
+
+  createdAt DateTime @default(now())
+
+  @@index([sedeId])
+  @@index([createdAt])
+}
+
+model ConfiguracionGlobal {
+  id String @id @default(cuid())
+
+  companyName String
+
+  companyPhone String?
+
+  companyEmail String?
+
+  companyWebsite String?
+
+  logo String?
+
+  primaryColor String @default("#2563EB")
+
+  secondaryColor String @default("#0F172A")
+
+  autoplay Boolean @default(true)
+
+  seconds Int @default(10)
+
+  transitionEffect String @default("fade")
+
+  auraTouchTimeout Int @default(90)
+
+  keyboardEnabled Boolean @default(true)
+
+  refreshInterval Int @default(5)
+
+  maintenanceMode Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
 }

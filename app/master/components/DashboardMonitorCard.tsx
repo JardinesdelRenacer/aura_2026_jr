@@ -7,6 +7,7 @@ interface Props {
     setExpandedSede: (sede: any) => void;
     setPantallaDetalle: (sede: any) => void;
     setAdministrarPantallasModal: (sede: any) => void;
+    onRegistrarAuraTouch: (sede: any) => void;
 }
 
 export default function DashboardMonitorCard({
@@ -14,6 +15,7 @@ export default function DashboardMonitorCard({
     setExpandedSede,
     setPantallaDetalle,
     setAdministrarPantallasModal,
+    onRegistrarAuraTouch
 }: Props) {
 
     //const pantalla = sede.pantallas?.[0];
@@ -82,12 +84,43 @@ export default function DashboardMonitorCard({
             </div>
             {/* Botones */}
             
-            <button onClick={() => setPantallaDetalle(sede)} className="mt-4 bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold py-2 rounded-lg text-xs transition-colors border border-slate-200 shadow-sm w-full">
+            {/* <button onClick={() => setPantallaDetalle(sede)} className="mt-4 bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold py-2 rounded-lg text-xs transition-colors border border-slate-200 shadow-sm w-full">
                 Ver Detalles
             </button>
 
             <button onClick={() => setAdministrarPantallasModal(sede)} className="mt-4 bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold py-2 rounded-lg text-xs transition-colors border border-slate-200 shadow-sm w-full">
                 Ver Detalles Admin test
+            </button> */}
+
+            {/* btones */}
+            <div className="mt-4 grid grid-cols-2 gap-3">
+                <button
+                    type="button"
+                    onClick={() => setPantallaDetalle(sede)}
+                    className="w-full rounded-lg border border-slate-200 bg-white py-2 text-xs font-bold text-slate-700 shadow-sm transition-colors hover:bg-blue-50 hover:text-blue-700"
+                >
+                    Ver detalles
+                </button>
+
+                <button
+                    type="button"
+                    onClick={() =>
+                        setAdministrarPantallasModal(sede)
+                    }
+                    className="w-full rounded-lg border border-blue-200 bg-blue-50 py-2 text-xs font-bold text-blue-700 shadow-sm transition-colors hover:bg-blue-100"
+                >
+                    Administrar pantallas
+                </button>
+            </div>
+
+            <button
+                type="button"
+                onClick={() =>
+                    onRegistrarAuraTouch(sede)
+                }
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-violet-200 bg-violet-50 py-2.5 text-xs font-bold text-violet-700 shadow-sm transition-colors hover:border-violet-300 hover:bg-violet-100"
+            >
+                Registrar tableta Aura Touch
             </button>
         </div>
     );

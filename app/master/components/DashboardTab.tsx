@@ -7,9 +7,11 @@ interface DashboardTabProps {
     setExpandedSede: (sede: any) => void;
     setPantallaDetalle: (sede:any) => void;
     setAdministrarPantallasModal: (sede:any) => void;
+    onRegistrarAuraTouch: (sede:any) => void;
+    // setRegistrarAuraTouchModal: (sede:any) => void;
 }
 
-export function DashboardTab({ mockSedes, setExpandedSede, setPantallaDetalle, setAdministrarPantallasModal }: DashboardTabProps) {
+export function DashboardTab({ mockSedes, setExpandedSede, setPantallaDetalle, setAdministrarPantallasModal, onRegistrarAuraTouch }: DashboardTabProps) {
     const sedesActivas = mockSedes.filter((sede) => {
 
         if (!sede.lastSeen) return false;
@@ -65,27 +67,31 @@ export function DashboardTab({ mockSedes, setExpandedSede, setPantallaDetalle, s
                         sede={sede}
                         setExpandedSede={setExpandedSede}
                         setPantallaDetalle={setPantallaDetalle}
-                        setAdministrarPantallasModal={setAdministrarPantallasModal}
-                    />
-                ))}             
-                {/*
-                {mockSedes.map((sede) => {
-                    const ultimaConexion = sede.lastSeen ? new Date(sede.lastSeen) : null;
-                    const estaTransmitiendo = Boolean(ultimaConexion) && Date.now() - ultimaConexion.getTime() < 15000;
+                        setAdministrarPantallasModal={
+                            setAdministrarPantallasModal
+                        }
+                        onRegistrarAuraTouch={() => {
+                            console.log(
+                                "DashboardTab abre Aura Touch para:",
+                                sede.nombre
+                            );
 
-                    const presentacion = sede.presentaciones?.[0];
-                    const puedeTransmitir = estaTransmitiendo && !!presentacion;
-                    
-                    
-                    return(
-                        <div key={sede.id} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col group hover:-translate-y-1 hover:shadow-md transition-all">
-                           
-                            
-                            
-                        
-                    );
-                })}
-                */}
+                            onRegistrarAuraTouch(sede);
+                        }}
+                    />
+                ))}
+                {/* {mockSedes.map((sede) => (
+                    <DashboardMonitorCard
+                        key={sede.id}
+                        sede={sede}
+                        setExpandedSede={setExpandedSede}
+                        setPantallaDetalle={setPantallaDetalle}
+                        setAdministrarPantallasModal={setAdministrarPantallasModal}
+                        onRegistrarAuraTouch={onRegistrarAuraTouch}
+                    />
+                ))}      */}
+
+        
             </div>
         </div>
     );

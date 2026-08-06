@@ -1,4 +1,5 @@
 import React from "react";
+import { useState } from "react";
 
 interface UsuariosTabProps {
     usuarios: any[];
@@ -15,6 +16,25 @@ export function UsuariosTab({
     setUserToSuspend,
     setUserToDelete
 }: UsuariosTabProps) {
+
+    const [search, setSearch] = useState("");
+    const [roleFilter, setRoleFilter] = useState("TODOS");
+
+    const usuariosFiltrados = usuarios.filter((u) => {
+        const texto = search.toLowerCase();
+
+        const coincideBusqueda =
+            u.email?.toLowerCase().includes(texto) ||
+            u.nombres?.toLowerCase().includes(texto) ||
+            u.apellidos?.toLowerCase().includes(texto) ||
+            u.cedula?.includes(search);
+
+        const coincideRol =
+            roleFilter === "TODOS" ||
+            u.role === roleFilter;
+
+        return coincideBusqueda && coincideRol;
+    });
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex justify-between items-center">
@@ -32,14 +52,21 @@ export function UsuariosTab({
                 <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row gap-4 bg-slate-50/50">
                     <div className="relative flex-1">
                         <svg className="w-5 h-5 absolute left-3 top-2.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                        <input type="text" placeholder="Buscar por nombre o correo..." className="w-full bg-white border border-slate-200 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-inner" />
+                        <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por nombre o correo..." className="w-full bg-white border border-slate-200 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-inner" />
                     </div>
-                    <select className="bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 transition-all text-slate-600 shadow-inner">
-                        <option>Todos los roles</option>
-                        <option>Admin Sede</option>
-                        <option>Super Master</option>
+                    <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 transition-all text-slate-600 shadow-inner">
+                        <option value="TODOS">Todos los roles</option>
+                        <option value="ADMIN SEDE">Admin Sede</option>
+                        <option value="SUPER MASTER">Super Master</option>
+                        <option value="MASTER">Master</option>
+                        
                     </select>
                 </div>
+
+                <p className="text-xs text-slate-500">
+                    Mostrando <strong>{usuariosFiltrados.length}</strong> de{" "}
+                    <strong>{usuarios.length}</strong> usuarios.
+                </p>
 
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
@@ -53,7 +80,7 @@ export function UsuariosTab({
                             </tr>
                         </thead>
                         <tbody className="text-sm">
-                            {usuarios.map((u, i) => {
+                            {usuariosFiltrados.map((u, i) => {
                                 const ultimaConexion = u.lastSeen ? new Date(u.lastSeen) : undefined;
                                 
                                 const activo = ultimaConexion && Date.now() - ultimaConexion.getTime() < 15000;

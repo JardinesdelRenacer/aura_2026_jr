@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
 // Se importan ubicaciones para el formulario de creación de sedes
@@ -19,6 +19,8 @@ import EditSedeForm from "./components/EditSedeForm";
 
 import AdministrarPantallasModal from "./components/AdministrarPantallasModal";
 import DetallePantallaModal from "./components/DetallePantallaModal";
+
+import GestionarCodigoAuraTouchModal from "./components/GestionarAuraTouchModal";
 
 
 
@@ -51,6 +53,8 @@ export default function MasterDashboard() {
     const [nuevaSedeNumeroSalas, setNuevaSedeNumeroSalas] = useState("1");
     const [nuevaSedeVip, setNuevaSedeVip] = useState(false);
     const [sedeToEdit, setSedeToEdit] = useState<any | null>(null);
+
+    const actualizandoSedesRef = useRef(false);
 
     const [user, setUser] = useState<any>(null);
 
@@ -99,6 +103,9 @@ export default function MasterDashboard() {
 
     //Nuevo modelo DetallePantalla en Dashboard
     const [pantallaDetalle, setPantallaDetalle] = useState<any | null>(null);    
+
+    // Estado para modal de generación de código Aura Touch
+    const [sedeRegistrarAuraTouch, setSedeRegistrarAuraTouch] = useState<any | null>(null);
 
     // Estado para modal de éxito
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -189,33 +196,116 @@ export default function MasterDashboard() {
         }
     };
 
-    const cargarSedes = async () => {
-        try {
-            const response = await fetch("/api/master/sedes");
+    const cargarSedes = useCallback(
+        async (mostrarCarga = false) => {
+            if (actualizandoSedesRef.current) {
+                return;
+            }
 
-            const result = await response.json();
+            try {
+                actualizandoSedesRef.current = true;
 
-            if (!result.success) return;
+                if (mostrarCarga) {
+                    setIsLoading(true);
+                }
 
-            setSedes(result.data);
-        } catch (error) {
-            console.error(error);
-        }
-    };
+                const response = await fetch(
+                    "/api/master/sedes",
+                    {
+                        method: "GET",
+                        cache: "no-store",
+                        headers: {
+                            Accept: "application/json",
+                        },
+                    }
+                );
+
+                const responseText = await response.text();
+
+                if (!responseText.trim()) {
+                    throw new Error(
+                        "La API de sedes respondió sin contenido."
+                    );
+                }
+
+                const result = JSON.parse(responseText);
+
+                if (!response.ok || !result.success) {
+                    throw new Error(
+                        result.error ??
+                            "No fue posible cargar las sedes."
+                    );
+                }
+
+                setSedes(
+                    Array.isArray(result.data)
+                        ? result.data
+                        : []
+                );
+            } catch (error) {
+                console.error(
+                    "Error cargando sedes:",
+                    error
+                );
+            } finally {
+                actualizandoSedesRef.current = false;
+
+                if (mostrarCarga) {
+                    setIsLoading(false);
+                }
+            }
+        },
+        []
+    );
 
     useEffect(() => {
-        cargarUsuarios();
-        cargarSedes();
-    }, []);
+        cargarSedes(true);
 
-    useEffect(() => {
-        cargarSedes();
-
-        const interval = setInterval(() => {
-            cargarSedes();
+        const interval = window.setInterval(() => {
+            if (document.visibilityState === "visible") {
+                cargarSedes(false);
+            }
         }, 5000);
-        return () => clearInterval(interval);
-    }, []);
+
+        const actualizarAlVolver = () => {
+            if (document.visibilityState === "visible") {
+                cargarSedes(false);
+            }
+        };
+
+        document.addEventListener(
+            "visibilitychange",
+            actualizarAlVolver
+        );
+
+        return () => {
+            window.clearInterval(interval);
+
+            document.removeEventListener(
+                "visibilitychange",
+                actualizarAlVolver
+            );
+        };
+    }, [cargarSedes]);
+
+    // const cargarSedes = async () => {
+    //     try {
+    //         const response = await fetch("/api/master/sedes");
+
+    //         const result = await response.json();
+
+    //         if (!result.success) return;
+
+    //         setSedes(result.data);
+    //     } catch (error) {
+    //         console.error(error);
+    //     }
+    // };
+
+    // useEffect(() => {
+    //     cargarUsuarios();
+    //     cargarSedes();
+    // }, []);
 
     const departamentos = Object.keys(ubicaciones);
 
@@ -393,7 +483,25 @@ export default function MasterDashboard() {
                     <div className="max-w-7xl mx-auto w-full">
 
                         {/* MÓDULO 1: DASHBOARD MASTER */}
-                        {activeTab === "dashboard" && <DashboardTab mockSedes={sedes} setExpandedSede={setExpandedSede} setPantallaDetalle={setPantallaDetalle} setAdministrarPantallasModal={(sede) => setAdministrarPantallasId(sede.id)} />}
+                        {/* {activeTab === "dashboard" && <DashboardTab mockSedes={sedes} setExpandedSede={setExpandedSede} setPantallaDetalle={setPantallaDetalle} setAdministrarPantallasModal={(sede) => setAdministrarPantallasId(sede.id)} onRegistrarAuraTouch={(sede) => {console.log("Abiendo modal aura touch", sede); setSedeRegistrarAuraTouch(sede)}} />} */}
+                        {activeTab === "dashboard" && (
+                            <DashboardTab
+                                mockSedes={sedes}
+                                setExpandedSede={setExpandedSede}
+                                setPantallaDetalle={setPantallaDetalle}
+                                setAdministrarPantallasModal={(sede) =>
+                                    setAdministrarPantallasId(sede.id)
+                                }
+                                onRegistrarAuraTouch={(sede) => {
+                                    console.log(
+                                        "MasterDashboard recibe sede:",
+                                        sede.nombre
+                                    );
+
+                                    setSedeRegistrarAuraTouch(sede);
+                                }}
+                            />
+                        )}
 
                         {/* MÓDULO 2: GESTIÓN DE SALAS */}
                         {activeTab === "salas" && <SalasTab sedes={sedes} setShowModalSede={setShowModalSede} setSedeToEdit={setSedeToEdit}  />}
@@ -405,7 +513,7 @@ export default function MasterDashboard() {
                         {activeTab === "reportes" && <ReportesTab branches={sedes} />}
 
                         {/* MÓDULO 5: TRASLADOS Y CONTROL */}
-                        {activeTab === "traslados" && <TrasladosTab />}
+                        {activeTab === "traslados" && <TrasladosTab sedes={sedes} usuarios={usuarios} usuario={user} onTrasladoCompleto={cargarSedes} />}
 
                         {/* MÓDULO 6: CONFIGURACIÓN MASTER */}
                         {activeTab === "configuracion" && <ConfiguracionTab />}
@@ -450,7 +558,7 @@ export default function MasterDashboard() {
                     sede={pantallaDetalle}
                     onClose={() => setPantallaDetalle(null)}
                 />
-            )};
+            )}
 
             {sedeAdministrar && (
                 <AdministrarPantallasModal
@@ -458,6 +566,13 @@ export default function MasterDashboard() {
                     onClose={() => setAdministrarPantallasId(null)}
                     onActualizar={cargarSedes}
                     
+                />
+            )}
+
+            {sedeRegistrarAuraTouch && (
+                <GestionarCodigoAuraTouchModal
+                    sede={sedeRegistrarAuraTouch}
+                    onClose={() => setSedeRegistrarAuraTouch(null)}
                 />
             )}
         </div>

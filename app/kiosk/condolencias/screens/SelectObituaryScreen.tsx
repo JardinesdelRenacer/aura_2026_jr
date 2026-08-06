@@ -57,7 +57,7 @@ export default function SelectObituaryScreen({
         return (
             <main className="min-h-screen flex items-center justify-center">
                 <p className="text-2xl text-slate-500">
-                    No hay servicios funenarios disponibles.
+                    No hay servicios funerarios disponibles.
                 </p>
             </main>
         );

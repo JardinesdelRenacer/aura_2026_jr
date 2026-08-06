@@ -1,14 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Obituary } from "@/src/types/obituary";
+
+import type { Obituary } from "@/src/types/obituary";
 import { getObituaries } from "@/src/services/obituaryApi";
 
 export function useObituaries() {
     const [obituaries, setObituaries] = useState<Obituary[]>([]);
-
     const [loading, setLoading] = useState(true);
-
     const [error, setError] = useState<string | null>(null);
 
     const loadObituaries = useCallback(
@@ -23,34 +22,37 @@ export function useObituaries() {
                 const data = await getObituaries();
 
                 setObituaries(data);
-            } catch (err) {
-                console.error(err);
+            } catch (error) {
+                console.error(
+                    "Error cargando obituarios:",
+                    error
+                );
 
-                if (err instanceof Error) {
-                    setError(err.message);
-                } else {
-                    setError("Error al conectar con el servidor.");
-                }
+                setObituaries([]);
+
+                setError(
+                    error instanceof Error
+                        ? error.message
+                        : "Error al conectar con el servidor."
+                );
             } finally {
                 if (showLoading) {
                     setLoading(false);
                 }
-            }  
+            }
         },
         []
     );
 
     useEffect(() => {
-        //Primera carga
         loadObituaries(true);
 
-        //Actuliza automaticamente
-        const interval = setInterval(() => {
+        const interval = window.setInterval(() => {
             loadObituaries(false);
         }, 5000);
 
         return () => {
-            clearInterval(interval);
+            window.clearInterval(interval);
         };
     }, [loadObituaries]);
 
