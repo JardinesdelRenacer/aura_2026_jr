@@ -47,7 +47,7 @@ export async function POST (request: Request) {
 
         const ciudad = typeof body.ciudad === "string" ? body.ciudad.trim() : null;
 
-        const adminId = typeof body.adminId === "string" && body.adminId.trim() ? body.admin.trim() : null;
+        const adminId = typeof body.adminId === "string" && body.adminId.trim() ? body.adminId.trim() : null;
 
         // los inputs HTML suelen enviar números como texto, por eso convertimos explicitamente el valor
         const numeroSalas = Number(body.numeroSalas);

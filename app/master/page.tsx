@@ -259,6 +259,39 @@ export default function MasterDashboard() {
     );
 
     useEffect(() => {
+        cargarUsuarios();
+    }, []);
+
+    useEffect(() => {
+        cargarSedes(true);
+
+        const interval = window.setInterval(() => {
+            if (document.visibilityState === "visible") {
+                cargarSedes(false);
+            }
+        }, 5000);
+
+        const actualizarAlVolver = () => {
+            if (document.visibilityState === "visible") {
+                cargarSedes(false);
+            }
+        };
+
+        document.addEventListener(
+            "visibilitychange",
+            actualizarAlVolver
+        );
+
+        return () => {
+            window.clearInterval(interval);
+
+            document.removeEventListener(
+                "visibilitychange",
+                actualizarAlVolver
+            );
+        };
+    }, [cargarSedes]);
+    useEffect(() => {
         cargarSedes(true);
 
         const interval = window.setInterval(() => {
@@ -483,7 +516,6 @@ export default function MasterDashboard() {
                     <div className="max-w-7xl mx-auto w-full">
 
                         {/* MÓDULO 1: DASHBOARD MASTER */}
-                        {/* {activeTab === "dashboard" && <DashboardTab mockSedes={sedes} setExpandedSede={setExpandedSede} setPantallaDetalle={setPantallaDetalle} setAdministrarPantallasModal={(sede) => setAdministrarPantallasId(sede.id)} onRegistrarAuraTouch={(sede) => {console.log("Abiendo modal aura touch", sede); setSedeRegistrarAuraTouch(sede)}} />} */}
                         {activeTab === "dashboard" && (
                             <DashboardTab
                                 mockSedes={sedes}
@@ -513,7 +545,7 @@ export default function MasterDashboard() {
                         {activeTab === "reportes" && <ReportesTab branches={sedes} />}
 
                         {/* MÓDULO 5: TRASLADOS Y CONTROL */}
-                        {activeTab === "traslados" && <TrasladosTab sedes={sedes} usuarios={usuarios} usuario={user} onTrasladoCompleto={cargarSedes} />}
+                        {activeTab === "traslados" && <TrasladosTab sedes={sedes} usuario={user} onTrasladoCompleto={cargarSedes} />}
 
                         {/* MÓDULO 6: CONFIGURACIÓN MASTER */}
                         {activeTab === "configuracion" && <ConfiguracionTab />}
