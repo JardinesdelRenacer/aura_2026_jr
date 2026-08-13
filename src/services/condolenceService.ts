@@ -12,9 +12,6 @@ export async function registerCondolence(data: CondolenceDTO) {
 
     const obituary = await findActiveObituaryById(data.obituaryId);
 
-    console.log("Obituario recibido: ", data.obituaryId);
-    console.log("Obituario encontrado: ", obituary);
-
     // Verifica que el obituario siga disponible
     if (!obituary) {
         throw new NotFoundError("El obituario seleccionado no existe o ya no se encuentra disponible.");

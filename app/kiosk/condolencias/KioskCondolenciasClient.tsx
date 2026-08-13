@@ -33,6 +33,22 @@ export default function KioskCondolencias() {
 
     const direction = screenOrder[screen] >= screenOrder[previousScreen] ? 1 : -1;
 
+    useEffect(() => {
+        const enviarHeartbeat = () => {
+            fetch("/api/aura-touch/heartbeat", {
+                method: "POST",
+                credentials: "include",
+            }).catch(() => {
+                // La disponibilidad se vuelve a comprobar en el siguiente ciclo.
+            });
+        };
+
+        enviarHeartbeat();
+        const interval = window.setInterval(enviarHeartbeat, 5000);
+
+        return () => window.clearInterval(interval);
+    }, []);
+
     const cambiarPantalla = (nextScreen: Screen) => {
         setPreviousScreen(screen);
         setScreen(nextScreen);
@@ -54,7 +70,7 @@ export default function KioskCondolencias() {
 
     return (
 
-        <main className="relative min-h-screen overflow-hidden bg-[url('/imagenes/fondo-aura-touch.png')] bg-cover bg-center bg-no-repeat">
+        <main className="relative min-h-screen overflow-x-hidden bg-[url('/imagenes/fondo-aura-touch.png')] bg-cover bg-center bg-no-repeat">
 
             {/* Capa decorativa */}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/10 via-blue-50/10 to-sky-100/20" />
@@ -255,4 +271,3 @@ export default function KioskCondolencias() {
 
 
 
-            

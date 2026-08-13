@@ -179,17 +179,6 @@ export default function LoginPage() {
                         </button>
                     </div>
 
-                    <div className="mt-8 text-center bg-white/50 p-4 rounded-xl border border-white/60 text-xs text-slate-500 font-medium">
-                        <p className="mb-2 font-bold text-slate-700">Credenciales de Prueba:</p>
-                        <div className="space-y-2">
-                            <div>
-                                <p className="text-slate-600"><strong className="text-blue-600">MASTER:</strong> master@jardines.co</p>
-                                <p className="text-slate-600"><strong className="text-blue-600">ADMIN:</strong> admin@jardines.co</p>
-                                <p className="text-slate-600 mt-1"><strong>Contraseña:</strong> 123456</p>
-                            </div>
-                    
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

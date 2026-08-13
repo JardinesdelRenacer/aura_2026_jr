@@ -28,9 +28,6 @@ export default function DashboardMonitorCard({
         return Date.now() - new Date(p.lastSeen).getTime() < 15000;
     });
 
-    console.log("PANTALLAS:", sede.pantallas);
-    console.log("PANTALLA SELECCIONADA:", pantalla);
-
     const presentacion = pantalla?.presentacion;
 
     const ultimaConexion = pantalla?.lastSeen
@@ -42,13 +39,12 @@ export default function DashboardMonitorCard({
 
     const puedeTransmitir =
         estaTransmitiendo && !!presentacion;
+    const tabletasEnLinea = (sede.auraTouches ?? []).filter((tableta: any) =>
+        tableta.activo &&
+        tableta.lastSeen &&
+        Date.now() - new Date(tableta.lastSeen).getTime() < 15000
+    );
 
-    console.log("SEDE:", sede);
-    console.log("PANTALLAS:", sede.pantallas);
-    console.log("PRESENTACIONES:", sede.presentaciones);
-
-    console.log("PANTALLA:", pantalla);
-    console.log("PRESENTACION:", pantalla?.presentacion);
     return (
         <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col group hover:-translate-y-1 hover:shadow-md transition-all">
 
@@ -59,9 +55,14 @@ export default function DashboardMonitorCard({
                     <p className="text-xs text-slate-500 font-medium">{sede.admin ? `${sede.admin.nombres} ${sede.admin.apellidos}` : "Sin administrador"}</p>
                 </div>
 
-                <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md border ${estaTransmitiendo ? "bg-green-50 text-green-600 border-green-200" : "bg-red-50 text-red-600 border-red-200"}`}>
-                    {!estaTransmitiendo ? "Offline" : presentacion ? "Transmitiendo" : "Sin presentacion"}
+                <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md border ${estaTransmitiendo ? "bg-green-50 text-green-600 border-green-200" : tabletasEnLinea.length > 0 ? "bg-violet-50 text-violet-700 border-violet-200" : "bg-red-50 text-red-600 border-red-200"}`}>
+                    {estaTransmitiendo ? (presentacion ? "Transmitiendo" : "Sin presentación") : tabletasEnLinea.length > 0 ? "Aura Touch en línea" : "Sin conexión"}
                 </span>
+            </div>
+
+            <div className={`mb-4 flex items-center justify-between rounded-xl border px-3 py-2 text-xs ${tabletasEnLinea.length > 0 ? "border-violet-100 bg-violet-50 text-violet-800" : "border-slate-100 bg-slate-50 text-slate-500"}`}>
+                <span className="font-semibold">Tabletas Aura Touch</span>
+                <span className="font-black">{tabletasEnLinea.length > 0 ? `${tabletasEnLinea.length} en línea` : "Sin tabletas activas"}</span>
             </div>
 
             {/* Monitor */}
@@ -79,7 +80,7 @@ export default function DashboardMonitorCard({
                         <div className="absolute top-2 right-2 bg-red-500 animate-pulse w-2 h-2 rounded-full shadow-[0_0_8px_rgba(239,68,68,1)] z-20" title="En Directo"></div>
                     </>
                 ) : (
-                    <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest">Pantalla Offline</p>
+                    <p className="text-center text-[10px] font-bold uppercase tracking-widest text-red-400">{tabletasEnLinea.length > 0 ? "Aura Touch activa · pantalla de proyección pendiente" : "Pantalla de proyección sin conexión"}</p>
                 )}
             </div>
             {/* Botones */}

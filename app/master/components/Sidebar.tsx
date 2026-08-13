@@ -6,11 +6,13 @@ interface SidebarProps {
     menuItems: any[];
     user: any;
     handleLogout: () => void;
+    mobileOpen: boolean;
+    onClose: () => void;
 }
 
-export function Sidebar({ activeTab, setActiveTab, menuItems, user, handleLogout }: SidebarProps) {
+export function Sidebar({ activeTab, setActiveTab, menuItems, user, handleLogout, mobileOpen, onClose }: SidebarProps) {
     return (
-        <aside className="w-72 bg-white border-r border-gray-200 flex-col hidden lg:flex shadow-xs z-20">
+        <aside className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-white/70 bg-white/85 shadow-2xl backdrop-blur-xl transition-transform duration-300 lg:static lg:z-20 lg:translate-x-0 lg:bg-white lg:shadow-xs ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
             <div className="h-20 flex items-center gap-3 px-6 border-b border-gray-100">
                 <div className="w-10 h-10 bg-blue-900 rounded-xl flex items-center justify-center p-1.5 shadow-sm">
                     <img src="/imagenes/logo-oficial.webp" alt="JR Logo" className="w-full h-full object-contain" />
@@ -26,7 +28,10 @@ export function Sidebar({ activeTab, setActiveTab, menuItems, user, handleLogout
                 {menuItems.map((item) => (
                     <button
                         key={item.id}
-                        onClick={() => setActiveTab(item.id)}
+                        onClick={() => {
+                            setActiveTab(item.id);
+                            onClose();
+                        }}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all duration-200 ${activeTab === item.id ? "bg-blue-50 text-blue-700 shadow-sm border border-blue-100" : "text-slate-600 hover:bg-slate-50 hover:text-blue-600"}`}
                     >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

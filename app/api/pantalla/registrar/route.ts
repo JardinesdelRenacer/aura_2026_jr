@@ -27,6 +27,10 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, error: "Código inválido" }, { status: 400 });
         }
 
+        if (registro.tipoDispositivo !== "PANTALLA") {
+            return NextResponse.json({ success: false, error: "Este código es para una tableta Aura Touch, no para una pantalla." }, { status: 400 });
+        }
+
         // Verificar si el código ha expirado
         if (registro.expiresAt < new Date()) {
             return NextResponse.json({ success: false, error: "Código expirado" }, { status: 400 });
@@ -91,7 +95,6 @@ export async function POST(request: Request) {
             path: "/",
         });
 
-        console.log("COOKIE CREADA:", token);
         return response;
         
     } catch (error: any) {

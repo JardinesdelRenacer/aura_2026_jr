@@ -3,6 +3,7 @@
 const VERTICAL_PROJECTION_SEDE_NAMES = [
     "Zaragoza",
     "Cartago",
+    "conmemorativo",
     "Parque Conmemorativo",
     "Parque Conmemorativo Cartago",
     "Parque Conmemorativo de Cartago",

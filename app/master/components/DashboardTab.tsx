@@ -12,13 +12,13 @@ interface DashboardTabProps {
 }
 
 export function DashboardTab({ mockSedes, setExpandedSede, setPantallaDetalle, setAdministrarPantallasModal, onRegistrarAuraTouch }: DashboardTabProps) {
-    const sedesActivas = mockSedes.filter((sede) => {
-
-        if (!sede.lastSeen) return false;
-        return (
-            Date.now() - new Date(sede.lastSeen).getTime() < 15000
-        );
-    }).length;
+    const sedesActivas = mockSedes.filter((sede) =>
+        sede.pantallas?.some((pantalla: any) =>
+            pantalla.online &&
+            pantalla.lastSeen &&
+            Date.now() - new Date(pantalla.lastSeen).getTime() < 15000
+        )
+    ).length;
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -70,14 +70,7 @@ export function DashboardTab({ mockSedes, setExpandedSede, setPantallaDetalle, s
                         setAdministrarPantallasModal={
                             setAdministrarPantallasModal
                         }
-                        onRegistrarAuraTouch={() => {
-                            console.log(
-                                "DashboardTab abre Aura Touch para:",
-                                sede.nombre
-                            );
-
-                            onRegistrarAuraTouch(sede);
-                        }}
+                        onRegistrarAuraTouch={() => onRegistrarAuraTouch(sede)}
                     />
                 ))}
                 {/* {mockSedes.map((sede) => (

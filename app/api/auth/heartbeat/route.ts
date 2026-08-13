@@ -1,22 +1,27 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { prisma } from "@/src/lib/prisma";
+import { readSession, SESSION_COOKIE } from "@/src/lib/auth-session";
 
-export async function POST(request: Request) {
+export async function POST() {
     try {
-        const body = await request.json();
+        const cookieStore = await cookies();
+        const session = await readSession(
+            cookieStore.get(SESSION_COOKIE)?.value
+        );
 
-        if (!body.userId) {
+        if (!session) {
             return NextResponse.json(
                 {
                     success: false,
-                    error: "userId requerido",
+                    error: "No autorizado",
                 },
-                { status: 400 }
+                { status: 401 }
             );
         }
 
         await prisma.user.update({
-            where: { id: body.userId },
+            where: { id: session.userId },
             data: { lastSeen: new Date() },
         });
 

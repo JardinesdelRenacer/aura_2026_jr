@@ -10,9 +10,9 @@ export async function PUT(request:Request) {
 
         const cookieStore = await cookies();
 
-        const token = cookieStore.get("pantalla_token")?.value;
-
-        console.log("TOKEN", token);
+        const token =
+            cookieStore.get("pantalla_token")?.value ??
+            body.token;
 
         if (!token) {
             return NextResponse.json({ success: false, error: "Token de pantalla no encontrado" }, { status: 401 });
@@ -21,8 +21,6 @@ export async function PUT(request:Request) {
         const pantalla = await prisma.pantallaCliente.findUnique({
             where: { token: token },
         });
-
-        console.log("PANTALLA", pantalla);
 
         if (!pantalla) {
             return NextResponse.json({ success: false, error: "Pantalla no encontrada" }, { status: 404 });

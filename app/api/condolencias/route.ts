@@ -9,8 +9,6 @@ export async function POST(request: NextRequest) {
 
         const condolence = await registerCondolence(body);
 
-        console.log(body);
-
         return NextResponse.json({
             success: true,
             data: condolence,

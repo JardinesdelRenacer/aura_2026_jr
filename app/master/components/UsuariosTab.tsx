@@ -35,14 +35,25 @@ export function UsuariosTab({
 
         return coincideBusqueda && coincideRol;
     });
+
+    const formatearRol = (rol?: string) => {
+        const roles: Record<string, string> = {
+            SUPER_MASTER: "SUPER MASTER",
+            MASTER: "MASTER",
+            ADMIN: "ADMIN SEDE",
+        };
+
+        return roles[rol ?? ""] ?? "SIN ROL";
+    };
+
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h3 className="text-xl font-bold text-slate-800">Usuarios y Accesos</h3>
                     <p className="text-sm text-slate-500 mt-1">Administra las credenciales, sedes y roles del sistema.</p>
                 </div>
-                <button onClick={() => setShowModalAdmin(true)} className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all text-sm flex items-center gap-2">
+                <button onClick={() => setShowModalAdmin(true)} className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-blue-700 hover:shadow-lg sm:w-auto">
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
                     Nuevo Usuario
                 </button>
@@ -68,14 +79,29 @@ export function UsuariosTab({
                     <strong>{usuarios.length}</strong> usuarios.
                 </p>
 
-                <div className="overflow-x-auto">
+                <div className="divide-y divide-slate-100 md:hidden">
+                    {usuariosFiltrados.map((u, i) => {
+                        const ultimaConexion = u.lastSeen ? new Date(u.lastSeen) : undefined;
+                        const activo = ultimaConexion && Date.now() - ultimaConexion.getTime() < 15000;
+                        const estado = u.estado === "SUSPENDIDO" ? "SUSPENDIDO" : activo ? "EN LÍNEA" : "FUERA DE LÍNEA";
+                        const estadoClass = u.estado === "SUSPENDIDO" ? "border-amber-200 bg-amber-50 text-amber-600" : activo ? "border-green-200 bg-green-50 text-green-600" : "border-red-200 bg-red-50 text-red-600";
+                        return (
+                            <article key={u.id || i} className="space-y-3 p-4">
+                                <div className="flex items-start justify-between gap-3"><div className="flex min-w-0 items-center gap-3"><div className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-blue-200 bg-blue-100 text-sm font-black text-blue-700">{u.email ? u.email.charAt(0).toUpperCase() : "?"}</div><div className="min-w-0"><p className="truncate font-bold text-slate-700">{u.email}</p><p className="mt-0.5 text-xs text-slate-400">{u.sede?.nombre || "Sin sede asignada"}</p></div></div><span className={`shrink-0 rounded-md border px-2 py-1 text-[10px] font-black ${estadoClass}`}>{estado}</span></div>
+                                <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-xs"><span className="text-slate-500">{formatearRol(u.role)}</span><span className="text-right text-slate-400">{ultimaConexion ? ultimaConexion.toLocaleString("es-CO") : "Sin acceso"}</span></div>
+                                <div className="grid grid-cols-3 gap-2"><button onClick={() => setUserToEdit({ id: u.id, nombres: u.nombres || "", apellidos: u.apellidos || "", cedula: u.cedula || "", telefono: u.telefono || "", email: u.email, password: "", estado: u.estado ?? "ACTIVO", departamento: u.departamento || u.sede?.departamento || "", ciudad: u.ciudad || u.sede?.ciudad || "", nombreSede: u.sede?.nombre || "" })} className="rounded-lg border border-emerald-100 bg-emerald-50 px-2 py-2 text-xs font-bold text-emerald-700">Editar</button><button onClick={() => u.estado !== "SUSPENDIDO" && setUserToSuspend(u.id)} disabled={u.estado === "SUSPENDIDO"} className="rounded-lg border border-amber-100 bg-amber-50 px-2 py-2 text-xs font-bold text-amber-700 disabled:opacity-40">Suspender</button><button onClick={() => setUserToDelete(u.id)} className="rounded-lg border border-red-100 bg-red-50 px-2 py-2 text-xs font-bold text-red-700">Eliminar</button></div>
+                            </article>
+                        );
+                    })}
+                </div>
+                <div className="hidden overflow-x-auto md:block">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/80 text-[10px] uppercase tracking-widest text-slate-500 border-b border-slate-200">
                                 <th className="p-4 font-bold">Usuario / Correo</th>
                                 <th className="p-4 font-bold">Sede Asignada</th>
                                 <th className="p-4 font-bold">Rol</th>
-                                <th className="p-4 font-bold">Estado</th>
+                                <th className="p-4 font-bold">Conexión</th>
                                 <th className="p-4 font-bold text-right">Acciones</th>
                             </tr>
                         </thead>
@@ -105,11 +131,13 @@ export function UsuariosTab({
                                         <td className="p-4 text-slate-600 font-semibold">{u.sede?.nombre || "Sin sede asignada"}</td>
 
                                         <td className="p-4">
-                                            <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md text-[10px] font-bold tracking-widest border border-slate-200">ADMIN SEDE</span>
+                                            <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md text-[10px] font-bold tracking-widest border border-slate-200">
+                                                {formatearRol(u.role)}
+                                            </span>
                                         </td>
                                         <td className="p-4">
                                             <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-md border ${u.estado === "SUSPENDIDO" ? "bg-amber-50 text-amber-600 border-amber-200" : activo ? "bg-green-50 text-green-600 border-green-200" : "bg-red-50 text-red-600 border-red-200"}`}> 
-                                                {u.estado === "SUSPENDIDO" ? "SUSPENDIDO" : activo ? "ACTIVO" : "INACTIVO"}
+                                                {u.estado === "SUSPENDIDO" ? "SUSPENDIDO" : activo ? "EN LÍNEA" : "FUERA DE LÍNEA"}
                                             </span>
                                         </td>
                                         <td className="p-4 text-right">

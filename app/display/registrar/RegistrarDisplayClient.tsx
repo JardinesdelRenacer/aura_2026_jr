@@ -45,9 +45,6 @@ export default function RegistrarDisplayClient() {
 
             const result = await response.json();
 
-            console.log("RESULTADO COMPLETO:", result);
-            console.log("PRESENTACION:", result.presentacionId);
-
             if (!result.success) {
                 setError(result.error);
                 return;

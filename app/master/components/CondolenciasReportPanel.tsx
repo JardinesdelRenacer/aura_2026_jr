@@ -83,6 +83,7 @@ export default function CondolenciasReportPanel({
 
     const [cargandoReporte, setCargandoReporte] =
         useState(false);
+    const [exportandoPdf, setExportandoPdf] = useState(false);
 
     const [error, setError] = useState("");
 
@@ -219,6 +220,21 @@ export default function CondolenciasReportPanel({
         }
     };
 
+    const exportarPdf = async () => {
+        if (!reporte || exportandoPdf) return;
+
+        try {
+            setExportandoPdf(true);
+            setError("");
+            await exportCondolenciasPdf(reporte);
+        } catch (error) {
+            console.error("Error exportando libro de condolencias:", error);
+            setError("No fue posible generar el libro de condolencias.");
+        } finally {
+            setExportandoPdf(false);
+        }
+    };
+
     return (
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-col gap-4 border-b border-slate-100 pb-6 lg:flex-row lg:items-center lg:justify-between">
@@ -263,35 +279,20 @@ export default function CondolenciasReportPanel({
 
                         <button
                             type="button"
-                            onClick={async () => {
-                                try {
-                                    await exportCondolenciasPdf(reporte);
-                                } catch (error) {
-                                    console.error(
-                                        "Error exportando libro de condolencias:",
-                                        error
-                                    );
-
-                                    setError(
-                                        "No fue posible generar el libro de condolencias."
-                                    );
-                                }
-                            }}
-
-                            // // ---
-                            // onClick={() =>
-                            //     exportCondolenciasPdf(reporte)
-                            // }
-                            
+                            onClick={exportarPdf}
                             disabled={
-                                reporte.condolencias.length ===
-                                0
+                                reporte.condolencias.length === 0 ||
+                                exportandoPdf
                             }
                             className="inline-flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white shadow-md transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
                         >
-                            <Download size={18} />
+                            {exportandoPdf ? (
+                                <Loader2 size={18} className="animate-spin" />
+                            ) : (
+                                <Download size={18} />
+                            )}
 
-                            Exportar PDF
+                            {exportandoPdf ? "Generando PDF..." : "Exportar PDF"}
                         </button>
                     </div>
                 )}

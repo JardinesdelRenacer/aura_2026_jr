@@ -67,6 +67,7 @@ export default function PantallaView({
 
     const roomParam = searchParams.get("room") as RoomKeys | null;
     const pantallaToken = searchParams.get("token");
+    const [screenRegistered, setScreenRegistered] = useState(false);
 
     const convertirObituarios = useCallback(
         (listas: any[]): ObituariesData => {
@@ -217,6 +218,13 @@ export default function PantallaView({
                 const result = await response.json();
 
                 if (!response.ok || !result.success) {
+                    // La vista abierta desde el panel de administración es una
+                    // previsualización autenticada, no una pantalla física.
+                    // En ese caso no hay token ni se debe reportar heartbeat.
+                    if (response.status === 400 || response.status === 401) {
+                        setScreenRegistered(false);
+                        return;
+                    }
                     console.error(
                         "No se pudo cargar la configuración de pantalla:",
                         result.error
@@ -227,6 +235,7 @@ export default function PantallaView({
                 setVerticalRoom(
                     result.data.verticalRoom ?? ""
                 );
+                setScreenRegistered(true);
             } catch (error) {
                 console.error(
                     "Error cargando configuración de pantalla:",
@@ -316,7 +325,7 @@ export default function PantallaView({
     ]);
 
     useEffect(() => {
-        if (preview || !sedeId) return;
+        if (preview || !sedeId || !screenRegistered) return;
 
         const enviarHeartbeat = async () => {
             try {
@@ -331,7 +340,7 @@ export default function PantallaView({
                         },
                         body: JSON.stringify({
                             sedeId,
-                            token: pantallaToken,
+                            ...(pantallaToken ? { token: pantallaToken } : {}),
                             screen: {
                                 width: window.screen.width,
                                 height: window.screen.height,
@@ -372,7 +381,7 @@ export default function PantallaView({
         );
 
         return () => window.clearInterval(interval);
-    }, [preview, sedeId, pantallaToken]);
+    }, [preview, sedeId, pantallaToken, screenRegistered]);
 
     // Lógica para alternar entre los Obituarios y las Imágenes a Pantalla Completa
     useEffect(() => {
@@ -441,7 +450,6 @@ export default function PantallaView({
                 (obituary.name?.trim() || obituary.surname?.trim()) && !expired
         );
 
-        console.log("MEDIA STATE:", media);
         return (
             <div className="w-screen h-screen flex items-center justify-center overflow-hidden bg-black">
                 <div className="h-full max-w-full aspect-[9/16] bg-black overflow-hidden relative">

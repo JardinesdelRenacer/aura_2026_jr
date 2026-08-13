@@ -1,9 +1,37 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma";
+import { readSession, SESSION_COOKIE } from "@/src/lib/auth-session";
 
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }>}) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }>}) {
     try {
         const { id } = await params;
+        const session = await readSession(
+            request.cookies.get(SESSION_COOKIE)?.value
+        );
+        const pantallaToken = request.cookies.get("pantalla_token")?.value;
+
+        // Una presentación puede verla un usuario autenticado o la pantalla
+        // registrada específicamente para esa presentación.
+        if (!session && !pantallaToken) {
+            return NextResponse.json(
+                { success: false, error: "No autorizado" },
+                { status: 401 }
+            );
+        }
+
+        if (!session) {
+            const pantalla = await prisma.pantallaCliente.findFirst({
+                where: { token: pantallaToken, presentacionId: id },
+                select: { id: true },
+            });
+
+            if (!pantalla) {
+                return NextResponse.json(
+                    { success: false, error: "No autorizado" },
+                    { status: 401 }
+                );
+            }
+        }
 
         const presentacion = await prisma.presentacion.findUnique({
             where: { id },
@@ -49,10 +77,6 @@ export async function PATCH(
     try {
         const { id } = await params;
         const body = await request.json();
-
-        console.log("PATCH RECIBIDO");
-        console.log("ID:", id);
-        console.log("BODY:", body);
 
         const presentacion = await prisma.presentacion.update({
             where: { id },

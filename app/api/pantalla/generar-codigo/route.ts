@@ -23,6 +23,7 @@ export async function POST(request: Request) {
         const existente = await prisma.codigoRegistro.findFirst({
             where: {
                 sedeId,
+                tipoDispositivo: "PANTALLA",
                 usado: false,
                 expiresAt: {
                     gt: new Date(),
@@ -49,6 +50,7 @@ export async function POST(request: Request) {
             data: {
                 codigo,
                 sedeId,
+                tipoDispositivo: "PANTALLA",
                 expiresAt,
             },
         });

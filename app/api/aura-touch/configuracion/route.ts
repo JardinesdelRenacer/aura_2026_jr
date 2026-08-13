@@ -51,6 +51,13 @@ export async function GET(request: NextRequest) {
             );
         }
 
+        // Consultar la configuración desde el propio dispositivo confirma que
+        // la tableta sigue disponible, incluso antes de abrir el formulario.
+        await prisma.auraTouch.update({
+            where: { id: auraTouch.id },
+            data: { lastSeen: new Date() },
+        });
+
         const rooms: string[] = [];
 
         for (

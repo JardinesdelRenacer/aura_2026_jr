@@ -26,6 +26,7 @@ import GestionarCodigoAuraTouchModal from "./components/GestionarAuraTouchModal"
 
 export default function MasterDashboard() {
     const [activeTab, setActiveTab] = useState<string>("dashboard");
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [usuarios, setUsuarios] = useState<any[]>([]);
     const [expandedSede, setExpandedSede] = useState<any>(null);
 
@@ -72,12 +73,6 @@ export default function MasterDashboard() {
             try {
                 await fetch("/api/auth/heartbeat", {
                     method: "POST",
-                    headers: {
-                        "Content-Type" : "application/json",
-                    },
-                    body: JSON.stringify({
-                        userId: user.id,
-                    }),
                 });
             } catch (error) {
                 console.error("Heartbeat usuario: ", error);
@@ -183,18 +178,30 @@ export default function MasterDashboard() {
         }
     };
 
-    const cargarUsuarios = async () => {
-        setIsLoading(true);
+    const cargarUsuarios = useCallback(async (mostrarCarga = false) => {
+        if (mostrarCarga) {
+            setIsLoading(true);
+        }
         try {
-            const response = await fetch("/api/master/users");
+            const response = await fetch("/api/master/users", {
+                cache: "no-store",
+            });
+
+            if (!response.ok) {
+                throw new Error("No fue posible cargar los usuarios.");
+            }
+
             const data = await response.json();
-            setUsuarios(data);
+            setUsuarios(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error("Error fetching users:", error);
+            setUsuarios([]);
         } finally {
-            setIsLoading(false);
+            if (mostrarCarga) {
+                setIsLoading(false);
+            }
         }
-    };
+    }, []);
 
     const cargarSedes = useCallback(
         async (mostrarCarga = false) => {
@@ -321,6 +328,18 @@ export default function MasterDashboard() {
         };
     }, [cargarSedes]);
 
+    useEffect(() => {
+        cargarUsuarios(true);
+
+        const interval = window.setInterval(() => {
+            if (document.visibilityState === "visible") {
+                cargarUsuarios(false);
+            }
+        }, 5000);
+
+        return () => window.clearInterval(interval);
+    }, [cargarUsuarios]);
+
     // const cargarSedes = async () => {
     //     try {
     //         const response = await fetch("/api/master/sedes");
@@ -334,11 +353,6 @@ export default function MasterDashboard() {
     //         console.error(error);
     //     }
     // };
-
-    // useEffect(() => {
-    //     cargarUsuarios();
-    //     cargarSedes();
-    // }, []);
 
     const departamentos = Object.keys(ubicaciones);
 
@@ -504,12 +518,20 @@ export default function MasterDashboard() {
     return (
         <div className="flex h-screen bg-[#EEF4FF] overflow-hidden font-sans text-slate-800">
             
-            <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} menuItems={menuItems} user={user} handleLogout={handleLogout} />
+            {isMobileMenuOpen && (
+                <button
+                    type="button"
+                    aria-label="Cerrar menú"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="fixed inset-0 z-30 bg-slate-950/35 backdrop-blur-sm lg:hidden"
+                />
+            )}
+            <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} menuItems={menuItems} user={user} handleLogout={handleLogout} mobileOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
 
             {/* ÁREA PRINCIPAL */}
             <div className="flex-1 flex flex-col overflow-hidden">
                 
-                <Topbar activeTab={activeTab} menuItems={menuItems} />
+                <Topbar activeTab={activeTab} menuItems={menuItems} onOpenMenu={() => setIsMobileMenuOpen(true)} />
 
                 {/* CONTENIDO DINÁMICO */}
                 <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-8 bg-[#EEF4FF]">
@@ -525,11 +547,6 @@ export default function MasterDashboard() {
                                     setAdministrarPantallasId(sede.id)
                                 }
                                 onRegistrarAuraTouch={(sede) => {
-                                    console.log(
-                                        "MasterDashboard recibe sede:",
-                                        sede.nombre
-                                    );
-
                                     setSedeRegistrarAuraTouch(sede);
                                 }}
                             />

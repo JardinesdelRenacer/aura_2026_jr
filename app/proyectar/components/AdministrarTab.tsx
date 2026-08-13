@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import UploadMedia from "@/components/UploadMedia";
 import type { Obituary, RoomKeys, MediaItem } from "@/app/proyectar/page";
 import { isVerticalProjectionSede } from "../projection-config";
@@ -23,8 +23,18 @@ export default function AdministrarTab({
     sedeId, sede, presentacionId, files, setFiles, mediaItems, removeImage, onUploadComplete, setMediaOrder, obituaries, handleObituaryChange, roomsToShow, showCompartir
 }: AdministrarTabProps) {
     const esSedeVertical = isVerticalProjectionSede(sede?.nombre);
+    const fieldLabelClass = "mb-2 block text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-500";
+    const fieldInputClass = "h-12 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-slate-800 shadow-sm outline-none transition-all placeholder:text-slate-300 hover:border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10";
+    const dateTimeInputClass = "h-12 w-full rounded-xl border border-blue-100 bg-white px-3.5 text-slate-800 shadow-sm outline-none transition-all hover:border-blue-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10";
     const [notificacionesLimpieza, setNotificacionesLimpieza] = useState<Record<string, boolean>>({});
     const [confirmModalState, setConfirmModalState] = useState<{ isOpen: boolean; title: string; message: string; onConfirm: () => void; } | null>(null);
+    const [selectedRoom, setSelectedRoom] = useState<RoomKeys | null>(roomsToShow?.[0] ?? null);
+
+    useEffect(() => {
+        if (!selectedRoom || !roomsToShow.includes(selectedRoom)) {
+            setSelectedRoom(roomsToShow[0] ?? null);
+        }
+    }, [roomsToShow, selectedRoom]);
 
     const handleRemove = useCallback((index: number) => {
         setConfirmModalState({
@@ -122,25 +132,55 @@ export default function AdministrarTab({
 
             {/* Sección 2: Obituarios */}
             <div className="w-full space-y-6 bg-white/50 p-6 rounded-2xl border border-white/60 flex flex-col shadow-sm mt-8 animate-in fade-in duration-500">
-                <div className="border-b border-slate-200 pb-4">
-                    {/* <h2 className="text-2xl font-bold text-slate-800">🕊️ Gestión de Obituarios</h2> */}
-
+                <div className="border-b border-slate-200 pb-5">
                     <h2 className="text-2xl font-bold text-slate-800">Gestión de Obituarios</h2>
+                    <p className="mt-1 text-sm text-slate-500">Seleccione una sala para administrar su información y multimedia.</p>
                 </div>
 
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mt-4">
-                    {(roomsToShow ?? []).map((room) => (
-                        <div key={room} className="p-6 bg-white/60 rounded-2xl border border-white/60 shadow-md flex flex-col gap-4">
-                            <div className="flex justify-between items-center border-b border-slate-200 pb-2">
-                                <h3 className="text-xl font-bold text-blue-700">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    {(roomsToShow ?? []).map((room) => {
+                        const obituary = obituaries[room];
+                        const hasContent = Boolean(obituary?.name || obituary?.surname || mediaItems.some((item) => item.room === room));
+                        const isSelected = selectedRoom === room;
+                        const roomName = room === "VIP" ? "Sala VIP" : room.replace("_", " ");
+
+                        return (
+                            <button
+                                key={room}
+                                type="button"
+                                onClick={() => setSelectedRoom(room)}
+                                className={`group relative overflow-hidden rounded-2xl border p-4 text-left transition-all duration-200 ${isSelected ? "border-blue-500 bg-blue-600 text-white shadow-lg shadow-blue-500/25" : hasContent ? "border-emerald-200 bg-emerald-50/80 text-slate-800 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md" : "border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md"}`}
+                                aria-pressed={isSelected}
+                            >
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="min-w-0">
+                                        <p className={`text-[10px] font-black uppercase tracking-[0.14em] ${isSelected ? "text-blue-100" : hasContent ? "text-emerald-700" : "text-slate-400"}`}> {hasContent ? "Activa" : "Disponible"}</p>
+                                        <h3 className="mt-1 text-base font-black">{roomName}</h3>
+                                        <p className={`mt-1 truncate text-sm ${isSelected ? "text-blue-100" : "text-slate-500"}`}>{hasContent ? `${obituary.name} ${obituary.surname}`.trim() : "Sin información cargada"}</p>
+                                    </div>
+                                    <span className={`mt-1 grid h-7 w-7 shrink-0 place-items-center rounded-full text-sm font-black ${isSelected ? "bg-white/20 text-white" : hasContent ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-400"}`}>{isSelected ? "✓" : hasContent ? "●" : "○"}</span>
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+
+                <div className="mt-1">
+                    {(selectedRoom ? [selectedRoom] : []).map((room) => (
+                        <div key={room} className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_18px_40px_-28px_rgba(15,23,42,0.45)]">
+                            <div className="flex items-center justify-between border-b border-blue-100 bg-linear-to-r from-blue-50 via-white to-indigo-50 px-5 py-4">
+                                <div>
+                                    <p className="mb-1 text-[10px] font-black uppercase tracking-[0.16em] text-blue-500">Información de sala</p>
+                                    <h3 className="text-xl font-black text-slate-800">
                                     {room === "VIP" ? "Sala VIP" : room.replace("_", " ")}
-                                </h3>
+                                    </h3>
+                                </div>
                                 { (obituaries[room].name || obituaries[room].surname) && (
                                     <button
                                         onClick={() => {
                                             window.open(`/display/${presentacionId}?room=${room}`, "_blank");
                                         }}
-                                        className="bg-blue-100/80 text-blue-700 hover:bg-blue-200/80 border border-blue-200 text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
+                                        className="rounded-xl border border-blue-200 bg-white px-3.5 py-2 text-xs font-bold text-blue-700 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-blue-600 hover:text-white"
                                         title={`Abrir proyección individual para ${room.replace("_", " ")}`}
                                     >
                                         Proyectar
@@ -148,14 +188,14 @@ export default function AdministrarTab({
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-semibold mb-1 text-slate-700">Nombre(s)</label>
-                                    <input type="text" value={obituaries[room].name} onChange={(e) => handleObituaryChange(room, "name", e.target.value)} className="w-full bg-white/70 border border-white/60 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all placeholder-slate-400 shadow-inner" placeholder="Ej: Juan" />
+                            <div className="grid grid-cols-1 gap-5 p-5 sm:grid-cols-2 sm:p-6">
+                                <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-3">
+                                    <label className={fieldLabelClass}>Nombre(s)</label>
+                                    <input type="text" value={obituaries[room].name} onChange={(e) => handleObituaryChange(room, "name", e.target.value)} className={fieldInputClass} placeholder="Ej: Juan" />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-semibold mb-1 text-slate-700">Apellido(s)</label>
-                                    <input type="text" value={obituaries[room].surname} onChange={(e) => handleObituaryChange(room, "surname", e.target.value)} className="w-full bg-white/70 border border-white/60 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all placeholder-slate-400 shadow-inner" placeholder="Ej: Pérez" />
+                                <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-3">
+                                    <label className={fieldLabelClass}>Apellido(s)</label>
+                                    <input type="text" value={obituaries[room].surname} onChange={(e) => handleObituaryChange(room, "surname", e.target.value)} className={fieldInputClass} placeholder="Ej: Pérez" />
                                 </div>
                                 {esSedeVertical && (
                                     <div className="sm:col-span-2 p-4 bg-blue-50/50 rounded-xl border border-blue-200/50 space-y-4">
@@ -193,64 +233,68 @@ export default function AdministrarTab({
                                         </div>
                                     </div>
                                 )}
-                                <div>
-                                    <label className="block text-sm font-semibold mb-1 text-slate-700">Fecha de Nacimiento</label>
-                                    <input type="date" value={obituaries[room].dob} onChange={(e) => handleObituaryChange(room, "dob", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className="w-full bg-white/70 border border-white/60 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all cursor-pointer shadow-inner" />
+                                <div className="rounded-2xl border border-blue-50 bg-blue-50/40 p-3">
+                                    <label className={fieldLabelClass}>Fecha de Nacimiento</label>
+                                    <input type="date" value={obituaries[room].dob} onChange={(e) => handleObituaryChange(room, "dob", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className={dateTimeInputClass} />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-semibold mb-1 text-slate-700">Fecha de Fallecimiento</label>
-                                    <input type="date" value={obituaries[room].dod} onChange={(e) => handleObituaryChange(room, "dod", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className="w-full bg-white/70 border border-white/60 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all cursor-pointer shadow-inner" />
+                                <div className="rounded-2xl border border-blue-50 bg-blue-50/40 p-3">
+                                    <label className={fieldLabelClass}>Fecha de Fallecimiento</label>
+                                    <input type="date" value={obituaries[room].dod} onChange={(e) => handleObituaryChange(room, "dod", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className={dateTimeInputClass} />
                                 </div>
-                                <div className="sm:col-span-2">
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div className="space-y-4 rounded-2xl border border-slate-100 bg-slate-50/70 p-4 sm:col-span-2">
+                                    <div className="flex items-center gap-2"><span className="grid h-7 w-7 place-items-center rounded-lg bg-blue-100 text-sm">◷</span><h4 className="text-sm font-black text-slate-700">Horario y destino</h4></div>
+                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                                         <div>
-                                            <label className="block text-sm font-semibold mb-1 text-slate-700">Hora Inicio</label>
-                                            <input type="time" value={obituaries[room].timeStart || ""} onChange={(e) => handleObituaryChange(room, "timeStart", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className="w-full bg-white/70 border border-white/60 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all cursor-pointer shadow-inner" />
+                                            <label className={fieldLabelClass}>Hora Inicio</label>
+                                            <input type="time" value={obituaries[room].timeStart || ""} onChange={(e) => handleObituaryChange(room, "timeStart", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className={dateTimeInputClass} />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-semibold mb-1 text-slate-700">Hora Fin</label>
-                                            <input type="time" value={obituaries[room].timeEnd || ""} onChange={(e) => handleObituaryChange(room, "timeEnd", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className="w-full bg-white/70 border border-white/60 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all cursor-pointer shadow-inner" />
+                                            <label className={fieldLabelClass}>Hora Fin</label>
+                                            <input type="time" value={obituaries[room].timeEnd || ""} onChange={(e) => handleObituaryChange(room, "timeEnd", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className={dateTimeInputClass} />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-semibold mb-1 text-slate-700">Destino Final</label>
-                                            <input type="text" value={obituaries[room].cemetery} onChange={(e) => handleObituaryChange(room, "cemetery", e.target.value)} className="w-full bg-white/70 border border-white/60 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all placeholder-slate-400 shadow-inner" placeholder="Ej: Jardines..." />
+                                            <label className={fieldLabelClass}>Destino Final</label>
+                                            <input type="text" value={obituaries[room].cemetery} onChange={(e) => handleObituaryChange(room, "cemetery", e.target.value)} className={fieldInputClass} placeholder="Ej: Jardines..." />
                                         </div>
                                     </div>
 
-                                    <div className="border-t border-slate-200 mt-4 pt-4">
-                                        <h4 className="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">⛪ Eucaristía</h4>
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div className="rounded-2xl border border-amber-100 bg-linear-to-br from-amber-50/80 to-white p-4">
+                                        <div className="mb-4 flex items-center gap-2"><span className="grid h-7 w-7 place-items-center rounded-lg bg-amber-100 text-sm">⛪</span><div><h4 className="text-sm font-black text-slate-700">Eucaristía</h4><p className="text-[11px] text-slate-400">Información opcional de ceremonia</p></div></div>
+                                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                             <div>
-                                                <label className="block text-xs font-semibold mb-1 text-slate-700">Hora</label>
-                                                <input type="time" value={obituaries[room].massTime || ""} onChange={(e) => handleObituaryChange(room, "massTime", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className="w-full bg-white/70 border border-white/60 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all cursor-pointer shadow-inner" />
+                                                <label className={fieldLabelClass}>Hora</label>
+                                                <input type="time" value={obituaries[room].massTime || ""} onChange={(e) => handleObituaryChange(room, "massTime", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className={dateTimeInputClass} />
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-semibold mb-1 text-slate-700">Lugar</label>
-                                                <div className="flex gap-1">
-                                                    <select value={obituaries[room].massChurchType || "Parroquia"} onChange={(e) => handleObituaryChange(room, "massChurchType", e.target.value)} className="w-[45%] bg-white/70 border border-white/60 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all shadow-inner text-xs px-1">
+                                                <label className={fieldLabelClass}>Lugar</label>
+                                                <div className="flex gap-2">
+                                                    <select value={obituaries[room].massChurchType || "Parroquia"} onChange={(e) => handleObituaryChange(room, "massChurchType", e.target.value)} className="h-12 w-28 shrink-0 rounded-xl border border-slate-200 bg-white px-2 text-sm font-semibold text-slate-700 shadow-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10">
                                                         <option value="Parroquia">Parroquia</option>
                                                         <option value="Iglesia">Iglesia</option>
                                                         <option value="Capilla">Capilla</option>
                                                         <option value="Catedral">Catedral</option>
                                                     </select>
-                                                    <input type="text" value={obituaries[room].massChurch || ""} onChange={(e) => handleObituaryChange(room, "massChurch", e.target.value)} className="w-[55%] bg-white/70 border border-white/60 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all placeholder-slate-400 shadow-inner" placeholder="Ej: San Miguel" />
+                                                    <input type="text" value={obituaries[room].massChurch || ""} onChange={(e) => handleObituaryChange(room, "massChurch", e.target.value)} className="h-12 min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 text-slate-800 shadow-sm outline-none transition-all placeholder:text-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10" placeholder="Ej: San Miguel" />
                                                 </div>
                                             </div>
-                                            <div>
-                                                <label className="block text-xs font-semibold mb-1 text-slate-700">Dirección</label>
-                                                <input type="text" value={obituaries[room].massAddress || ""} onChange={(e) => handleObituaryChange(room, "massAddress", e.target.value)} className="w-full bg-white/70 border border-white/60 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all placeholder-slate-400 shadow-inner" placeholder="Ej: Calle 10 # 5-20" />
+                                            <div className="sm:col-span-2">
+                                                <label className={fieldLabelClass}>Dirección</label>
+                                                <input type="text" value={obituaries[room].massAddress || ""} onChange={(e) => handleObituaryChange(room, "massAddress", e.target.value)} className={fieldInputClass} placeholder="Ej: Calle 10 # 5-20" />
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 bg-blue-50/60 p-3 rounded-xl border border-blue-200 shadow-sm">
+                                    <div className="mt-4 rounded-2xl border border-indigo-200 bg-linear-to-r from-indigo-50 via-blue-50 to-sky-50 p-4 shadow-sm">
+                                        <div className="mb-4 flex items-center gap-2"><span className="grid h-7 w-7 place-items-center rounded-lg bg-indigo-100 text-sm">◷</span><div><h4 className="text-sm font-black text-indigo-950">Programar ocultamiento</h4><p className="text-[11px] text-indigo-500">La sala se ocultará automáticamente en la fecha y hora indicadas.</p></div></div>
+                                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                         <div>
-                                            <label className="block text-sm font-semibold mb-1 text-blue-800">Fecha de ocultamiento:</label>
-                                                <input type="date" value={obituaries[room].endDate || ""} onChange={(e) => handleObituaryChange(room, "endDate", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className="w-full bg-white/70 border border-blue-200 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all cursor-pointer shadow-inner" />
+                                            <label className={fieldLabelClass}>Fecha de ocultamiento</label>
+                                                <input type="date" value={obituaries[room].endDate || ""} onChange={(e) => handleObituaryChange(room, "endDate", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className={dateTimeInputClass} />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-semibold mb-1 text-blue-800">Ocultar a las:</label>
-                                                <input type="time" value={obituaries[room].endTime || ""} onChange={(e) => handleObituaryChange(room, "endTime", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className="w-full bg-white/70 border border-blue-200 p-2.5 rounded-lg text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all cursor-pointer shadow-inner" />
+                                            <label className={fieldLabelClass}>Ocultar a las</label>
+                                                <input type="time" value={obituaries[room].endTime || ""} onChange={(e) => handleObituaryChange(room, "endTime", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className={dateTimeInputClass} />
+                                        </div>
                                         </div>
                                     </div>
                                     <div className="flex justify-end mt-3">

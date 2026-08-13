@@ -23,8 +23,6 @@ export default function Proyectar() {
     
     const sedeId = params.id as string; 
 
-    console.log("Sede:", sedeId);
-
     const [ loading, setLoading ] = useState(true);
 
     const [files, setFiles] = useState<File[]>([]);
@@ -61,11 +59,20 @@ export default function Proyectar() {
 
     const [loaded, setLoaded] = useState(false);
 
-    useEffect(() => {
-        console.log("PRESENTACION ID:", presentacionId);
-    },[presentacionId])
-
     const createdRef = useRef(false);
+
+    useEffect(() => {
+        const actualizarPresencia = () => {
+            fetch("/api/auth/heartbeat", { method: "POST" }).catch(() => {
+                // La sesión se valida en el servidor; no se muestra ruido de red al usuario.
+            });
+        };
+
+        actualizarPresencia();
+        const interval = window.setInterval(actualizarPresencia, 5000);
+
+        return () => window.clearInterval(interval);
+    }, []);
     
     const handleLogout = async () => {
         if (user?.id) {
@@ -102,10 +109,7 @@ export default function Proyectar() {
 
             const data = await response.json();
 
-            console.log("RESPUESTA DEL POST:", data);
-
             if (data.success) {
-                console.log("ID CREADO:", data.id)
                 setPresentacionId(data.id);
             }
         } catch (error) {
@@ -275,11 +279,6 @@ export default function Proyectar() {
                 setFiles([]); // Limpiamos los archivos locales ya que ahora vienen de la BD
             }
 
-            console.log("SEDE ID URL:", sedeId);
-            console.log("SEDE DATA:", sedeData);
-            console.log("OBITUARIOS DESDE BD");
-            console.log(sedeData.obituarios);
-
             //Configuración
             if (sedeData.configuracion) {
                 setAutoplay(sedeData.configuracion.autoPlay);
@@ -414,12 +413,6 @@ export default function Proyectar() {
         if (!presentacionId) return;
         if (!roomsToShow.length) return;
 
-        console.log("ANTES DEL PATCH");
-        console.log("presentacionId =", presentacionId);
-        console.log("rooms =", roomsToShow);
-        console.log("AUTOGUARDADO");
-        console.log(obituaries);
-        
         fetch(`/api/master/presentaciones/${presentacionId}`, {
             method: "PATCH",
             headers: { "Content-type": "application/json"},
@@ -553,51 +546,77 @@ export default function Proyectar() {
     return (
         
 
-        <div className="min-h-screen p-8 flex flex-col items-center">
+        <div className="min-h-screen p-3 sm:p-4 md:p-6 flex flex-col items-center">
    
             {/* Header del Dashboard - Estilo Glassmorphism */}
-            <header className="w-full max-w-7xl flex justify-between items-center mb-8 p-4 bg-white/40 backdrop-blur-lg border border-white/60 shadow-xl rounded-2xl">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-blue-950 rounded-full flex items-center justify-center border border-white/60 shadow-sm p-1.5">
+            <header className="mb-4 flex w-full max-w-7xl flex-col gap-3 rounded-2xl border border-white/60 bg-white/40 p-3.5 shadow-xl backdrop-blur-lg sm:flex-row sm:items-center sm:justify-between sm:gap-4 md:p-4">
+                <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+                    <div className="h-11 w-11 shrink-0 rounded-full border border-white/60 bg-blue-950 p-1.5 shadow-sm sm:h-12 sm:w-12">
                         <img src="/imagenes/logo-oficial.webp" alt="JR Logo" className="w-full h-full object-contain" />
                     </div>
-                    <h1 className="text-2xl font-bold tracking-wider text-slate-800">Aura 2026 - Jardines del Renacer</h1>
+                    <h1 className="min-w-0 text-xl font-bold leading-tight tracking-wide text-slate-800 sm:text-2xl sm:tracking-wider">Aura 2026 <span className="hidden sm:inline">- </span><span className="block sm:inline">Jardines del Renacer</span></h1>
                 </div>
-                <div className="flex items-center gap-4">
-                    <span className="text-sm text-slate-600 font-medium">{user?.email}</span>
-                    <div className="w-10 h-10 bg-blue-100 rounded-full border-2 border-white shadow-sm overflow-hidden">
+                <div className="flex min-w-0 items-center justify-between gap-2 sm:justify-end sm:gap-3">
+                    <span className="min-w-0 truncate text-xs font-medium text-slate-600 sm:max-w-48 sm:text-sm">{user?.email}</span>
+                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full border-2 border-white bg-blue-100 shadow-sm">
                         {/* Avatar dinámico temporal */}
                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" alt="Avatar" />
                     </div>
-                    <button onClick={handleLogout} className="bg-red-500/10 hover:bg-red-500/20 text-red-600 border border-red-200 hover:border-red-300 font-bold px-4 py-2 rounded-full transition-all text-xs uppercase tracking-widest">
+                    <button onClick={handleLogout} className="shrink-0 rounded-full border border-red-200 bg-red-500/10 px-4 py-2 text-xs font-bold uppercase tracking-widest text-red-600 transition-all hover:border-red-300 hover:bg-red-500/20">
                         Salir
                     </button>
                 </div>
             </header>
 
             {/* Contenedor Principal - Estilo Glassmorphism */}
-            <div className="w-full max-w-7xl bg-white/40 backdrop-blur-xl border border-white/60 shadow-2xl rounded-3xl p-8">
+            <div className="w-full max-w-7xl rounded-3xl border border-white/60 bg-white/40 p-4 shadow-2xl backdrop-blur-xl sm:p-5 md:p-6">
 
             {/* Navegación de Vistas (Tabs) */}
-            <div className="w-full flex flex-wrap justify-center gap-4 mb-8 border-b border-white/60 pb-8">
-                <button
-                    onClick={() => setActiveTab('administrar')}
-                    className={`px-6 py-3 rounded-full font-bold transition-all flex items-center gap-2 ${activeTab === 'administrar' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 scale-105' : 'bg-white/60 text-slate-700 hover:bg-white/90 shadow-sm'}`}
-                >
-                Administrar Sala
-                </button>
-                <button
-                    onClick={() => setActiveTab('configuracion')}
-                    className={`px-6 py-3 rounded-full font-bold transition-all flex items-center gap-2 ${activeTab === 'configuracion' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 scale-105' : 'bg-white/60 text-slate-700 hover:bg-white/90 shadow-sm'}`}
-                >
-                Configuración
-                </button>
-                <button
-                    onClick={() => setActiveTab('vista-previa')}
-                    className={`px-6 py-3 rounded-full font-bold transition-all flex items-center gap-2 ${activeTab === 'vista-previa' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 scale-105' : 'bg-white/60 text-slate-700 hover:bg-white/90 shadow-sm'}`}
-                >
-                Vista Previa
-                </button>
+            <div className="mb-6 flex flex-col gap-4 border-b border-slate-200/80 pb-5 xl:flex-row xl:items-center xl:justify-between">
+                <div className="min-w-0">
+                    <p className="mb-1 text-[10px] font-black uppercase tracking-[0.18em] text-blue-600">Sede operativa</p>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                        <h2 className="text-xl font-black text-slate-800 md:text-2xl">{sede?.nombre ?? "Cargando sede"}</h2>
+                        <span className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[11px] font-bold text-blue-700">
+                            {roomsToShow.length} {roomsToShow.length === 1 ? "sala" : "salas"} configuradas
+                        </span>
+                    </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex w-full gap-1 rounded-2xl border border-slate-200 bg-white/70 p-1.5 shadow-sm sm:w-auto">
+                        <button
+                            onClick={() => setActiveTab('administrar')}
+                            className={`flex-1 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-bold transition-all sm:flex-none ${activeTab === 'administrar' ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
+                        >
+                            Administrar
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('configuracion')}
+                            className={`flex-1 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-bold transition-all sm:flex-none ${activeTab === 'configuracion' ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
+                        >
+                            Configuración
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('vista-previa')}
+                            className={`flex-1 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-bold transition-all sm:flex-none ${activeTab === 'vista-previa' ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
+                        >
+                            Vista previa
+                        </button>
+                    </div>
+
+                    <button
+                        onClick={() => {
+                            if (!isBotonProyectarDisabled) {
+                                window.open(`/display/${presentacionId}`, "_blank");
+                            }
+                        }}
+                        disabled={isBotonProyectarDisabled}
+                        className={`w-full rounded-xl px-4 py-3 text-sm font-black transition-all sm:w-auto ${isBotonProyectarDisabled ? "cursor-not-allowed bg-slate-200 text-slate-400" : "bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 hover:-translate-y-0.5 hover:shadow-xl"}`}
+                    >
+                        Abrir proyección
+                    </button>
+                </div>
             </div>
 
                 <div className="w-full flex flex-col gap-8">

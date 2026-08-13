@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma";
 import bcrypt from "bcryptjs";
+import {
+    createSession,
+    SESSION_COOKIE,
+    SESSION_DURATION_SECONDS,
+} from "@/src/lib/auth-session";
 
 export async function POST(req: Request) {
-    console.log('[api/auth/login] request received');
     try {
         const contentType = req.headers.get('content-type') || '';
         if (!contentType.includes('application/json')) {
-            console.warn('[api/auth/login] unsupported content-type:', contentType);
             return NextResponse.json({ success: false, error: 'Invalid content type' }, { status: 400 });
         }
 
@@ -19,7 +22,6 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, error: 'Invalid JSON body' }, { status: 400 });
         }
 
-        console.log('[api/auth/login] body:', body);
         const { email, password } = body;
 
         // Validar que existan email y password
@@ -41,16 +43,6 @@ export async function POST(req: Request) {
                 sede: true,
             },
         });
-
-        console.log("================================");
-        console.log("USER ENCONTRADO:");
-        console.log(user);
-        console.log("================================");
-
-
-        console.log("================================");
-        console.log(" SEDE: ")
-        console.log(user?.sede);
 
         if (!user) {
             return NextResponse.json(
@@ -78,10 +70,6 @@ export async function POST(req: Request) {
             user.password
         );
 
-        console.log("PASSWORD RECIBIDO:", password);
-        console.log("HASH GUARDADO:", user.password);
-        console.log("PASSWORD VALIDO:", isPasswordValid);
-
         if (!isPasswordValid) {
             return NextResponse.json(
                 {
@@ -98,8 +86,13 @@ export async function POST(req: Request) {
         });
 
 
-        // Autenticación exitosa - retornar datos del usuario
-        return NextResponse.json(
+        const session = await createSession({
+            userId: user.id,
+            email: user.email,
+            role: user.role,
+            sedeId: user.sede?.id ?? null,
+        });
+        const response = NextResponse.json(
             {
                 success: true,
                 user: {
@@ -111,6 +104,15 @@ export async function POST(req: Request) {
             },
             { status: 200 }
         );
+        response.cookies.set(SESSION_COOKIE, session, {
+            httpOnly: true,
+            sameSite: "lax",
+            secure: process.env.NODE_ENV === "production",
+            path: "/",
+            maxAge: SESSION_DURATION_SECONDS,
+        });
+
+        return response;
     } catch (error: any) {
         console.error("ERROR en autenticación:", error && error.stack ? error.stack : error);
         

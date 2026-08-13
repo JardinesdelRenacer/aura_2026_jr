@@ -30,6 +30,7 @@ export function ReportesTab({ branches }: ReportesTabProps) {
     const [startDate, setStartDate] = useState("");
 
     const [endDate, setEndDate] = useState("");
+    const [exportandoInforme, setExportandoInforme] = useState(false);
 
     if (loading) {
         return <div>Cargando dashboard...</div>;
@@ -69,6 +70,19 @@ export function ReportesTab({ branches }: ReportesTabProps) {
         setShowfilters(false);
     };
 
+    const exportarInforme = () => {
+        if (exportandoInforme) return;
+
+        setExportandoInforme(true);
+        window.setTimeout(() => {
+            try {
+                exportDashboardpdf(dashboard);
+            } finally {
+                setExportandoInforme(false);
+            }
+        }, 0);
+    };
+
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex justify-between items-center">
@@ -82,9 +96,9 @@ export function ReportesTab({ branches }: ReportesTabProps) {
                         Filtrar
                     </button>
 
-                    <button onClick={() => exportDashboardpdf(dashboard)} className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all text-sm flex items-center gap-2">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                        Exportar Informe
+                    <button onClick={exportarInforme} disabled={exportandoInforme} className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-blue-700 hover:shadow-lg disabled:cursor-not-allowed disabled:bg-slate-400">
+                        <svg className={`h-4 w-4 ${exportandoInforme ? "animate-spin" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={exportandoInforme ? "M12 4v4l3-3M20 12a8 8 0 11-2.34-5.66" : "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"} /></svg>
+                        {exportandoInforme ? "Generando..." : "Exportar Informe"}
                     </button>
                 </div>
             </div>

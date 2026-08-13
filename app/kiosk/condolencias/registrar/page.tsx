@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import {
     CheckCircle2,
     KeyRound,
@@ -34,6 +34,39 @@ export default function RegistrarAuraTouchPage() {
     const [error, setError] = useState("");
     const [registroExitoso, setRegistroExitoso] =
         useState(false);
+    const [verificandoRegistro, setVerificandoRegistro] = useState(true);
+    const [dispositivoRegistrado, setDispositivoRegistrado] =
+        useState<AuraTouchConfiguracion | null>(null);
+
+    useEffect(() => {
+        const verificarRegistroExistente = async () => {
+            const controller = new AbortController();
+            const timeout = window.setTimeout(
+                () => controller.abort(),
+                4000
+            );
+
+            try {
+                const response = await fetch("/api/aura-touch/configuracion", {
+                    credentials: "include",
+                    cache: "no-store",
+                    signal: controller.signal,
+                });
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    setDispositivoRegistrado(result.data);
+                }
+            } catch {
+                // Sin cookie válida: se muestra el formulario de registro.
+            } finally {
+                window.clearTimeout(timeout);
+                setVerificandoRegistro(false);
+            }
+        };
+
+        verificarRegistroExistente();
+    }, []);
 
     const codigoNormalizado = codigo
         .toUpperCase()
@@ -106,6 +139,36 @@ export default function RegistrarAuraTouchPage() {
         } finally {
             setRegistrando(false);
         }
+    }
+
+    if (verificandoRegistro) {
+        return (
+            <main className="flex min-h-screen items-center justify-center bg-slate-100 text-slate-600">
+                <Loader2 className="mr-3 animate-spin" size={24} />
+                Verificando dispositivo...
+            </main>
+        );
+    }
+
+    if (dispositivoRegistrado) {
+        return (
+            <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[url('/imagenes/fondo-aura-touch.png')] bg-cover bg-center p-6">
+                <div className="absolute inset-0 bg-white/35 backdrop-blur-sm" />
+                <section className="relative z-10 w-full max-w-xl rounded-[36px] border border-white/80 bg-white/90 p-8 text-center shadow-2xl backdrop-blur-2xl sm:p-12">
+                    <div className="mx-auto grid h-20 w-20 place-items-center rounded-3xl bg-emerald-100 text-emerald-600">
+                        <CheckCircle2 size={46} />
+                    </div>
+                    <p className="mt-7 text-sm font-black uppercase tracking-[0.2em] text-emerald-600">Dispositivo vinculado</p>
+                    <h1 className="mt-3 text-3xl font-black text-slate-800 sm:text-4xl">Esta tableta ya está registrada</h1>
+                    <p className="mt-5 text-lg leading-relaxed text-slate-600">La tableta <strong>{dispositivoRegistrado.auraTouch.nombre}</strong> está vinculada a la sede <strong>{dispositivoRegistrado.sede.nombre}</strong>.</p>
+                    <button type="button" onClick={() => router.replace("/kiosk/condolencias")} className="mt-9 flex h-16 w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-600 px-6 text-lg font-bold text-white shadow-xl transition hover:-translate-y-0.5 hover:shadow-2xl">
+                        <Tablet size={23} />
+                        Abrir Aura Touch
+                    </button>
+                    <p className="mt-5 text-sm text-slate-400">No necesitas generar ni ingresar otro código.</p>
+                </section>
+            </main>
+        );
     }
 
     if (registroExitoso) {
@@ -345,4 +408,9 @@ export default function RegistrarAuraTouchPage() {
             </div>
         </main>
     );
+}
+
+interface AuraTouchConfiguracion {
+    auraTouch: { nombre: string };
+    sede: { nombre: string };
 }

@@ -8,7 +8,6 @@ import { Obituary } from "@/src/types/obituary";
 import { CondolenceForm } from "@/src/types/condolencias";
 import { useEffect, useState } from 'react';
 import { submitCondolence } from "@/src/services/condolenceApi";
-import { error } from "console";
 
 interface FormScreenProps{
     obituary: Obituary | null;
@@ -80,11 +79,11 @@ export default function FormScreen({
     };
     
     return (
-        <div className="w-full h-full">
+        <div className="w-full min-h-screen px-4 pb-10 pt-6 sm:px-6 lg:px-10">
 
             {/* errores */}
             {submitError && (
-                <div role="alert" className="fixed top-6 left-1/2 z-[9999] w-[calc(100%-3rem)] max-w-xl-translate-x-1/2 animate-in fade-in slide-in-from-top-4 duration-300">
+                <div role="alert" className="fixed top-6 left-1/2 z-[9999] w-[calc(100%-3rem)] max-w-xl -translate-x-1/2 animate-in fade-in slide-in-from-top-4 duration-300">
                     <div className="flex items-start gap-4 rounded-2xl border border-red-200 bg-white px-5 py-4 shadow-2xl">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100 text-lg font-bold text-red-600">!</div>
 
@@ -100,25 +99,21 @@ export default function FormScreen({
             )}
 
             {/* Encabezado */}
-            <div className="pt-8"> 
-                {/* Espacio entre el encabezado y cuerpo */}
+            <div className="mx-auto max-w-[1800px]">
                 <Header />
-                
             </div>
             
             {/* Contenido */}
-            <div className="grid grid-cols-12 gap-8 mt-8 px-10">
-
-               
+            <div className="mx-auto mt-6 grid max-w-[1800px] grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
 
                 {/* Formulario */}
-                <div className="col-span-5">
+                <div className="lg:col-span-5">
                     <SenderForm formData={formData} setFormData={setFormData} />
                 </div>
 
 
                 {/* Vista Previa */}
-                <div className="col-span-7">
+                <div className="lg:col-span-7">
 
                     {/* Test 2
                     <div className="mb-10 text-center">
@@ -157,7 +152,7 @@ export default function FormScreen({
             </div>
 
             {/* Footer */}
-            <div className="h-[12vh] flex items-center justify-center">
+            <div className="mx-auto mt-6 flex max-w-[1800px] justify-center border-t border-slate-200/80 pt-6 sm:mt-8 sm:pt-8">
                 <SubmitButton disabled={!isFormValid} loading={isSubmitting} onClick={handleSubmit} />
             </div>
             

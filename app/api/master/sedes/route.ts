@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma"; // Ajustar a la ruta real de su instancia de Prisma
-import { error } from "console";
 
 
 const MIN_SALAS = 1;
@@ -22,6 +21,14 @@ export async function GET() {
                 pantallas: {
                     include: {
                         presentacion: true,
+                    },
+                },
+                auraTouches: {
+                    select: {
+                        id: true,
+                        nombre: true,
+                        activo: true,
+                        lastSeen: true,
                     },
                 },
                 codigos: true,
@@ -47,7 +54,10 @@ export async function POST (request: Request) {
 
         const ciudad = typeof body.ciudad === "string" ? body.ciudad.trim() : null;
 
-        const adminId = typeof body.adminId === "string" && body.adminId.trim() ? body.adminId.trim() : null;
+        const adminId =
+            typeof body.adminId === "string" && body.adminId.trim()
+                ? body.adminId.trim()
+                : null;
 
         // los inputs HTML suelen enviar números como texto, por eso convertimos explicitamente el valor
         const numeroSalas = Number(body.numeroSalas);
