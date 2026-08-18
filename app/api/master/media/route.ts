@@ -5,9 +5,6 @@ export async function POST(request: Request) {
     try {
         const body = await request.json();
 
-        console.log("POST MEDIA RECIBIDO");
-        console.log(body);
-
         const ultimo = await prisma.media.count({
             where: {
                 sedeId:

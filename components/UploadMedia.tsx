@@ -1,6 +1,5 @@
 "use client";
 import { useId, useState } from "react";
-import { supabase } from "@/src/lib/supabase";
 
 
 interface Props {
@@ -51,58 +50,26 @@ export default function UploadMedia({
 
         try {
             for (const file of nuevosArchivos) {
-                // Agregamos room al nombre de la sala
-                // No es obligatorio para prisma, pero ayuda a mantener organizado el almacenamiento en SupaBase
-                const storageRoom = room ?? "general";
+                const formData = new FormData();
+                formData.append("file", file);
+                formData.append("sedeId", sedeId);
+                formData.append("room", room ?? "");
 
-                const fileName = `${sedeId}/${storageRoom}/${Date.now()}-${file.name}`;
-
-                const { error: uploadError } = await supabase.storage
-                    .from("media")
-                    .upload(fileName, file, {
-                        upsert: false
-                    });
-
-                if (uploadError) {
-                    console.error(
-                        "Error subiendo archivos a supabase: ",
-                        uploadError
-                    );
-                    
-                    continue;
-                }
-
-                const { data } = supabase.storage
-                    .from("media")
-                    .getPublicUrl(fileName);
-
-                const response = await fetch("/api/master/media", {
+                const response = await fetch("/api/master/media/upload", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        sedeId,
-                        url: data.publicUrl,
-                        type: file.type.startsWith("video/") ? "video" : "image", 
-                        fileName: file.name,
-                        room: room ?? null,
-                    }),
+                    body: formData,
                 });
 
                 const result = await response.json();
 
                 if (!response.ok || !result.success) {
                     console.error(
-                        "Error guardando la multimedia en la base de datos.",
+                    "Error guardando la multimedia local.",
                         result
                     );
                     continue;
                 }
 
-                console.log("MEDIA GUARDADA: ", {
-                    media: result.data,
-                    roomEnviado: room ?? null,
-                    roomGuardado: result.data?.room,
-                });
             }
 
             setFiles((prev) => [
