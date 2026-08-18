@@ -25,6 +25,7 @@ jobs:
       - name: Configurar acceso SSH al VPS
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
           VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
           VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
         run: |
@@ -33,13 +34,14 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
-          ssh -o BatchMode=yes -o ConnectTimeout=15 "root@$VPS_HOST" 'true'
+          ssh -p "$VPS_PORT" -o BatchMode=yes -o ConnectTimeout=15 "root@$VPS_HOST" 'true'
 
       - name: Instalar, migrar, compilar y reiniciar Aura
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
         run: |
-          ssh -o BatchMode=yes "root@$VPS_HOST" 'bash -s' <<'REMOTE_SCRIPT'
+          ssh -p "$VPS_PORT" -o BatchMode=yes "root@$VPS_HOST" 'bash -s' <<'REMOTE_SCRIPT'
             set -euo pipefail
 
             sudo -u deploy -H bash -lc '
