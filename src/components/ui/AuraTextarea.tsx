@@ -1,6 +1,6 @@
 "use client";
 
-import { useKiosk } from "@/src/hooks/useKiosk";
+import type { FocusEventHandler } from "react";
 
 interface AuraTextareaProps {
     label: string;
@@ -10,6 +10,8 @@ interface AuraTextareaProps {
     required?: boolean;
     rows?: number;
     maxLength?: number;
+
+    onFocus?: FocusEventHandler<HTMLTextAreaElement>;
 }
 
 export default function AuraTextarea({
@@ -20,14 +22,18 @@ export default function AuraTextarea({
     required = false,
     rows = 8,
     maxLength = 500,
+    onFocus,
 }: AuraTextareaProps) {
-
-    const { openKeyboard } = useKiosk();
-
     return (
         <div className="flex flex-col gap-2">
             <label className="text-sm font-semibold text-slate-700">
-                {label} {required && ( <span className="text-red-500 ml-1">*</span>)}
+                {label}
+
+                {required && (
+                    <span className="ml-1 text-red-500">
+                        *
+                    </span>
+                )}
             </label>
 
             <textarea
@@ -35,13 +41,17 @@ export default function AuraTextarea({
                 rows={rows}
                 maxLength={maxLength}
                 placeholder={placeholder}
-                onChange={(e) => onChange(e.target.value)}
+                required={required}
+                onChange={(event) =>
+                    onChange(event.target.value)
+                }
+                onFocus={onFocus}
                 className="
                     rounded-2xl
                     border
                     border-slate-200
                     bg-white/70
-                    backdrop-blue-md
+                    backdrop-blur-md
                     px-5
                     py-4
                     text-slate-700
@@ -55,9 +65,6 @@ export default function AuraTextarea({
                     focus:ring-blue-100
                     shadow-sm
                 "
-                onFocus={() => {
-                    openKeyboard();
-                }}
             />
 
             <div className="flex justify-end text-xs text-slate-400">

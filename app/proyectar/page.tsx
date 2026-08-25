@@ -10,6 +10,7 @@ import AdministrarTab from "./components/AdministrarTab";
 import { isVerticalProjectionSede } from "./projection-config";
 import { RootOptions } from "react-dom/client";
 import CompartirLinkModal from "./components/CompartirLinkModal";
+import AdminSidebar from "./components/AdminSidebar";
 
 
 // Tipos para los obituarios (se usarán en la Fase 2)
@@ -58,6 +59,8 @@ export default function Proyectar() {
     const [showCompartir,setShowCompartir]=useState(false);
 
     const [loaded, setLoaded] = useState(false);
+
+    const [menuOpen, setMenuOpen] = useState(false);
 
     const createdRef = useRef(false);
 
@@ -547,13 +550,33 @@ export default function Proyectar() {
         
 
         <div className="min-h-screen p-3 sm:p-4 md:p-6 flex flex-col items-center">
-   
+
+            {/* Organizar este renderizado */}
+            <AdminSidebar open={menuOpen} onClose={() => setMenuOpen(false)} sedeId={sedeId} sede={sede} user={user} onLogout={handleLogout} />
+
             {/* Header del Dashboard - Estilo Glassmorphism */}
             <header className="mb-4 flex w-full max-w-7xl flex-col gap-3 rounded-2xl border border-white/60 bg-white/40 p-3.5 shadow-xl backdrop-blur-lg sm:flex-row sm:items-center sm:justify-between sm:gap-4 md:p-4">
                 <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-                    <div className="h-11 w-11 shrink-0 rounded-full border border-white/60 bg-blue-950 p-1.5 shadow-sm sm:h-12 sm:w-12">
+                    {/* Hamburguesa */}
+                    {/* <button type="button" onClick={() => setMenuOpen(true)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/60 bg-blue-950/20 text-slate-200 shadow-sm transition hover:bg-blue-950/30 sm:h-11 sm:w-11">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
+                    </button> */}
+
+                    
+                    <button type="button" onClick={() => setMenuOpen(true)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white-70 text-slate-700 shadow-sm backdrop-blur-md transition-all hover:bg-blue-600 hover:text-white hover:shadow-md active:scale-95" aria-label="Abrir menú">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="h-6 w-6">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+
+                    {/* Logo */}
+                    {/* <div className="h-11 w-11 shrink-0 rounded-full border border-white/60 bg-blue-950 p-1.5 shadow-sm sm:h-12 sm:w-12">
                         <img src="/imagenes/logo-oficial.webp" alt="JR Logo" className="w-full h-full object-contain" />
-                    </div>
+                    </div> */}
+
+
                     <h1 className="min-w-0 text-xl font-bold leading-tight tracking-wide text-slate-800 sm:text-2xl sm:tracking-wider">Aura 2026 <span className="hidden sm:inline">- </span><span className="block sm:inline">Jardines del Renacer</span></h1>
                 </div>
                 <div className="flex min-w-0 items-center justify-between gap-2 sm:justify-end sm:gap-3">

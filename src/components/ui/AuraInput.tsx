@@ -1,13 +1,10 @@
 "use client";
 
 import { useId } from "react";
-import type {
-    FocusEventHandler,
-    InputHTMLAttributes,
-} from "react";
+import type { InputHTMLAttributes } from "react";
 import type { VariantProps } from "class-variance-authority";
 
-import { useKiosk } from "@/src/hooks/useKiosk";
+// import { useKiosk } from "@/src/hooks/useKiosk";
 import { cn } from "@/src/lib/cn";
 import { inputVariants } from "./input.styles";
 
@@ -54,22 +51,22 @@ export default function AuraInput({
     const generatedId = useId();
     const inputId = id ?? generatedId;
 
-    const { openKeyboard } = useKiosk();
+    // const { openKeyboard } = useKiosk();
 
     const messageId =
         error || success || helperText
             ? `${inputId}-message`
             : undefined;
 
-    const handleFocus: FocusEventHandler<HTMLInputElement> = (
-        event
-    ) => {
-        if (!disabled) {
-            openKeyboard();
-        }
+    // const handleFocus: FocusEventHandler<HTMLInputElement> = (
+    //     event
+    // ) => {
+    //     if (!disabled) {
+    //         openKeyboard();
+    //     }
 
-        onFocus?.(event);
-    };
+    //     onFocus?.(event);
+    // };
 
     return (
         <div
@@ -107,7 +104,7 @@ export default function AuraInput({
                 onChange={(event) =>
                     onChange(event.target.value)
                 }
-                onFocus={handleFocus}
+                onFocus={onFocus}
                 className={cn(
                     inputVariants({
                         variant,

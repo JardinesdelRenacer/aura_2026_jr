@@ -1,4 +1,0 @@
--- Los cambios de SUPER_MASTER, TrasladoObituario y ConfiguracionGlobal
--- ya forman parte de la migración base 0_init para MySQL.
--- Esta migración se mantiene como no-op para conservar el historial
--- de instalaciones que ya registraron su nombre.

@@ -1,34 +1,65 @@
 "use client";
 
-const isWindows = typeof navigator !== "undefined" && navigator.userAgent.includes("Windows");
+import { useCallback, useState } from "react";
 
 export function useKiosk() {
-    const openKeyboard = () => {
+    const [keyboardOpen, setKeyboardOpen] =
+        useState(false);
 
-        if (isWindows) {
-            console.log("Abrir teclado en pantalla virtual");
-        }
+    const openKeyboard = useCallback(() => {
+        setKeyboardOpen(true);
+    }, []);
+
+    const closeKeyboard = useCallback(() => {
+        setKeyboardOpen(false);
+    }, []);
+
+    const restartSession = useCallback(() => {
+        window.location.href =
+            "/kiosk/condolencias";
+    }, []);
+
+    const enterFullScreen = useCallback(
+        async () => {
+            try {
+                if (!document.fullscreenElement) {
+                    await document.documentElement.requestFullscreen();
+                }
+            } catch (error) {
+                console.error(
+                    "No fue posible entrar en pantalla completa:",
+                    error
+                );
+            }
+        },
+        []
+    );
+
+    const exitFullScreen = useCallback(
+        async () => {
+            try {
+                if (document.fullscreenElement) {
+                    await document.exitFullscreen();
+                }
+            } catch (error) {
+                console.error(
+                    "No fue posible salir de pantalla completa:",
+                    error
+                );
+            }
+        },
+        []
+    );
+
+    return {
+        keyboardOpen,
+
+        openKeyboard,
+        closeKeyboard,
+
+        restartSession,
+
+        enterFullScreen,
+        exitFullScreen,
     };
-
-    const closeKeyboard = () => {
-        console.log("Cerrar teclado virtual");
-    };
-
-    const restartSession = () => {
-        console.log("Reiniciar sesión del kiosk")
-    };
-
-    const enterFullScreen = () => {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen();
-        }
-    };
-
-    const exitFullScreen = () => {
-        if (document.fullscreenElement) {
-            document.exitFullscreen();
-        }
-    };
-
-    return{ openKeyboard, closeKeyboard, restartSession, enterFullScreen, exitFullScreen };
 }

@@ -11,7 +11,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             },
             include: {
                 media: true,
-                obituarios: true,
+                // Los obituarios activos se veran en el Fronted
+                obituarios: {
+                    where: { estado: "ACTIVO" },
+                    orderBy: { createdAt: "desc" },
+                },
+
                 configuracion: true,
                 admin: true,
             },
@@ -38,7 +43,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         return NextResponse.json(
             {
                 ok: false,
-                message: String(error),
+                message:
+                    error instanceof Error ? error.message : "Error obteniendo la sede",
             },
             {
                 status: 500,

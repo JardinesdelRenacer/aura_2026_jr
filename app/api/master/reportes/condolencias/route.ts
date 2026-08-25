@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-
 import { prisma } from "@/src/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -12,59 +11,18 @@ export async function GET(request: NextRequest) {
         const obituarioId =
             request.nextUrl.searchParams.get("obituarioId");
 
-        /*
-         * Si solo recibimos sedeId, devolvemos los
-         * obituarios disponibles de esa sede.
-         */
-        if (sedeId && !obituarioId) {
-            const obituarios =
-                await prisma.obituario.findMany({
-                    where: {
-                        sedeId,
-                    },
+        const search =
+            request.nextUrl.searchParams
+                .get("search")
+                ?.trim() || "";
 
-                    select: {
-                        id: true,
-                        name: true,
-                        surname: true,
-                        sala: true,
-                        estado: true,
-                        createdAt: true,
+        const estado =
+            request.nextUrl.searchParams.get("estado");
 
-                        _count: {
-                            select: {
-                                condolencias: true,
-                            },
-                        },
-                    },
+        // =====================================================
+        // 1. OBTENER UN OBITUARIO ESPECÍFICO
+        // =====================================================
 
-                    orderBy: [
-                        {
-                            estado: "asc",
-                        },
-                        {
-                            sala: "asc",
-                        },
-                    ],
-                });
-
-            return NextResponse.json(
-                {
-                    success: true,
-                    data: obituarios,
-                },
-                {
-                    headers: {
-                        "Cache-Control": "no-store",
-                    },
-                }
-            );
-        }
-
-        /*
-         * Si recibimos obituarioId, devolvemos toda la
-         * información necesaria para visualizar y exportar.
-         */
         if (obituarioId) {
             const obituario =
                 await prisma.obituario.findUnique({
@@ -74,13 +32,19 @@ export async function GET(request: NextRequest) {
 
                     select: {
                         id: true,
+                        codigo: true,
+
                         name: true,
                         surname: true,
+
                         sala: true,
                         estado: true,
+
                         dob: true,
                         dod: true,
+
                         createdAt: true,
+                        updatedAt: true,
 
                         sede: {
                             select: {
@@ -95,10 +59,19 @@ export async function GET(request: NextRequest) {
                             select: {
                                 id: true,
                                 codigo: true,
+
                                 fullName: true,
+
+                                documentType: true,
+                                documentNumber: true,
+
                                 phone: true,
+                                email: true,
+
                                 message: true,
+
                                 estado: true,
+
                                 createdAt: true,
                             },
 
@@ -135,6 +108,110 @@ export async function GET(request: NextRequest) {
             );
         }
 
+        // =====================================================
+        // 2. LISTAR OBITUARIOS DE UNA SEDE
+        // =====================================================
+
+        if (sedeId) {
+            const where: any = {
+                sedeId,
+            };
+
+            // =================================================
+            // FILTRO POR ESTADO
+            // =================================================
+
+            if (
+                estado === "ACTIVO" ||
+                estado === "FINALIZADO" ||
+                estado === "ARCHIVADO"
+            ) {
+                where.estado = estado;
+            }
+
+            // =================================================
+            // BUSCADOR
+            // =================================================
+
+            if (search) {
+                where.OR = [
+                    {
+                        codigo: {
+                            contains: search,
+                        },
+                    },
+                    {
+                        name: {
+                            contains: search,
+                        },
+                    },
+                    {
+                        surname: {
+                            contains: search,
+                        },
+                    },
+                    {
+                        sala: {
+                            contains: search,
+                        },
+                    },
+                ];
+            }
+
+            const obituarios =
+                await prisma.obituario.findMany({
+                    where,
+
+                    select: {
+                        id: true,
+                        codigo: true,
+
+                        name: true,
+                        surname: true,
+
+                        sala: true,
+                        estado: true,
+
+                        dob: true,
+                        dod: true,
+
+                        createdAt: true,
+                        updatedAt: true,
+
+                        _count: {
+                            select: {
+                                condolencias: true,
+                            },
+                        },
+                    },
+
+                    /*
+                     * Primero mostramos los servicios
+                     * más recientes.
+                     */
+                    orderBy: {
+                        createdAt: "desc",
+                    },
+                });
+
+            return NextResponse.json(
+                {
+                    success: true,
+                    data: obituarios,
+                    total: obituarios.length,
+                },
+                {
+                    headers: {
+                        "Cache-Control": "no-store",
+                    },
+                }
+            );
+        }
+
+        // =====================================================
+        // 3. FALTAN PARÁMETROS
+        // =====================================================
+
         return NextResponse.json(
             {
                 success: false,
@@ -145,6 +222,7 @@ export async function GET(request: NextRequest) {
                 status: 400,
             }
         );
+
     } catch (error) {
         console.error(
             "Error generando reporte de condolencias:",

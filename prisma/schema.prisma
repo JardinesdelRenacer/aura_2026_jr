@@ -1,26 +1,22 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider          = "mysql"
-  url               = env("DATABASE_URL")
-  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
-// Roles
+// ======================================================
+// ENUMS
+// ======================================================
+
 enum Role {
   SUPER_MASTER
   MASTER
   ADMIN
 }
 
-// Estados
 enum EstadoSede {
   ACTIVA
   INACTIVA
@@ -50,7 +46,10 @@ enum TipoDispositivo {
   AURA_TOUCH
 }
 
-// Usuarios
+// ======================================================
+// USUARIOS
+// ======================================================
+
 model User {
   id       String @id @default(cuid())
   email    String @unique
@@ -66,12 +65,19 @@ model User {
 
   lastSeen DateTime?
 
-  role Role  @default(ADMIN)
+  role Role @default(ADMIN)
+
   sede Sede?
+
+  CenizariosCreados   Cenizario[] @relation("CenizariosCreados")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// ======================================================
+// SEDES
+// ======================================================
 
 model Sede {
   id String @id @default(cuid())
@@ -79,7 +85,8 @@ model Sede {
   departamento String
   ciudad       String
   nombre       String
-  estado       EstadoSede @default(INACTIVA)
+
+  estado EstadoSede @default(INACTIVA)
 
   numeroSalas Int     @default(1)
   salaVip     Boolean @default(false)
@@ -87,10 +94,9 @@ model Sede {
   adminId String? @unique
   admin   User?   @relation(fields: [adminId], references: [id])
 
-  traslados TrasladoObituario[]
+  obituarios Obituario[]
+  media      Media[]
 
-  obituarios    Obituario[]
-  media         Media[]
   configuracion ConfiguracionPantalla?
 
   presentaciones Presentacion[]
@@ -101,15 +107,26 @@ model Sede {
   codigos     CodigoRegistro[]
   auraTouches AuraTouch[]
 
+  traslados TrasladoObituario[]
+
+  cenizario   Cenizario[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
+// ======================================================
+// OBITUARIOS
+// ======================================================
+
 model Obituario {
   id String @id @default(cuid())
 
+  codigo  String? @unique
+
   sedeId String
-  sede   Sede   @relation(fields: [sedeId], references: [id], onDelete: Cascade)
+
+  sede Sede @relation(fields: [sedeId], references: [id], onDelete: Cascade)
 
   sala String
 
@@ -125,22 +142,27 @@ model Obituario {
   timeEnd   String?
 
   cemetery String?
-  endTime  String?
-  endDate  String?
+
+  endTime String?
+  endDate String?
+
+  massTime       String?
+  massChurch     String?
+  massChurchType String? @default("Parroquia")
+  massAddress    String?
 
   condolencias Condolencia[]
-
-  // --- NUEVOS CAMPOS DE EUCARISTÍA ---
-  massTime       String? // Hora de la misa
-  massChurch     String? // Nombre del lugar
-  massChurchType String? @default("Parroquia") // Tipo: Parroquia, Capilla, etc.
-  massAddress    String? // Dirección del lugar
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([sedeId, sala])
+  @@index([sedeId, sala])
+  @@index([estado])
 }
+
+// ======================================================
+// CONDOLENCIAS
+// ======================================================
 
 model Condolencia {
   id String @id @default(cuid())
@@ -148,19 +170,18 @@ model Condolencia {
   codigo String? @unique
 
   obituarioId String
-  obituario   Obituario @relation(fields: [obituarioId], references: [id], onDelete: Cascade)
+
+  obituario Obituario @relation(fields: [obituarioId], references: [id], onDelete: Cascade)
 
   fullName String
 
-  documentType String
-
+  documentType   String
   documentNumber String
 
   phone String
-
   email String?
 
-  message String @db.Text
+  message String
 
   estado EstadoCondolencia @default(PENDIENTE)
 
@@ -168,26 +189,31 @@ model Condolencia {
 
   enviadoAt DateTime?
 
-  observaciones String? @db.Text
+  observaciones String?
 
   acceptedPrivacyPolicy Boolean
 
   createdAt DateTime @default(now())
-
   updatedAt DateTime @updatedAt
 
   @@index([obituarioId])
   @@index([estado])
 }
 
+// ======================================================
+// CONFIGURACION PANTALLA
+// ======================================================
+
 model ConfiguracionPantalla {
   id String @id @default(cuid())
 
   sedeId String @unique
-  sede   Sede   @relation(fields: [sedeId], references: [id])
+
+  sede Sede @relation(fields: [sedeId], references: [id])
 
   autoPlay Boolean @default(true)
-  seconds  Int     @default(10)
+
+  seconds Int @default(10)
 
   transitionEffect String @default("fade")
 
@@ -195,11 +221,16 @@ model ConfiguracionPantalla {
   updatedAt DateTime @updatedAt
 }
 
+// ======================================================
+// MEDIA
+// ======================================================
+
 model Media {
   id String @id @default(cuid())
 
   sedeId String
-  sede   Sede   @relation(fields: [sedeId], references: [id])
+
+  sede Sede @relation(fields: [sedeId], references: [id])
 
   url String
 
@@ -212,26 +243,42 @@ model Media {
   room String?
 
   createdAt DateTime @default(now())
+
+  @@index([sedeId])
 }
 
+// ======================================================
+// PRESENTACIONES
+// ======================================================
+
 model Presentacion {
-  id     String @id @default(cuid())
+  id String @id @default(cuid())
+
   nombre String
 
   projectionMode String @default("classic")
-  selectedImage  Int    @default(0)
+
+  selectedImage Int @default(0)
 
   roomsToShow Json?
-  obituaries  Json?
+
+  obituaries Json?
 
   sedeId String
-  sede   Sede   @relation(fields: [sedeId], references: [id])
+
+  sede Sede @relation(fields: [sedeId], references: [id])
 
   pantallas PantallaCliente[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([sedeId])
 }
+
+// ======================================================
+// PANTALLAS
+// ======================================================
 
 model PantallaCliente {
   id String @id @default(cuid())
@@ -251,10 +298,12 @@ model PantallaCliente {
   lastSeen DateTime?
 
   sedeId String
-  sede   Sede   @relation(fields: [sedeId], references: [id])
+
+  sede Sede @relation(fields: [sedeId], references: [id])
 
   presentacionId String?
-  presentacion   Presentacion? @relation(fields: [presentacionId], references: [id])
+
+  presentacion Presentacion? @relation(fields: [presentacionId], references: [id])
 
   screenWidth  Int?
   screenHeight Int?
@@ -272,7 +321,12 @@ model PantallaCliente {
   @@index([sedeId])
   @@index([estado])
   @@index([online])
+  @@index([presentacionId])
 }
+
+// ======================================================
+// AURA TOUCH
+// ======================================================
 
 model AuraTouch {
   id String @id @default(cuid())
@@ -286,7 +340,8 @@ model AuraTouch {
   lastSeen DateTime?
 
   sedeId String
-  sede   Sede   @relation(fields: [sedeId], references: [id])
+
+  sede Sede @relation(fields: [sedeId], references: [id])
 
   userAgent String?
   ip        String?
@@ -298,6 +353,10 @@ model AuraTouch {
   @@index([activo])
 }
 
+// ======================================================
+// CODIGOS DE REGISTRO
+// ======================================================
+
 model CodigoRegistro {
   id String @id @default(cuid())
 
@@ -306,7 +365,8 @@ model CodigoRegistro {
   pantallaNombre String?
 
   sedeId String
-  sede   Sede   @relation(fields: [sedeId], references: [id])
+
+  sede Sede @relation(fields: [sedeId], references: [id])
 
   tipoDispositivo TipoDispositivo @default(PANTALLA)
 
@@ -317,19 +377,28 @@ model CodigoRegistro {
   utilizadoAt DateTime?
 
   createdAt DateTime @default(now())
+
+  @@index([sedeId])
 }
+
+// ======================================================
+// TRASLADOS
+// ======================================================
 
 model TrasladoObituario {
   id String @id @default(cuid())
 
   sedeId String
-  sede   Sede   @relation(fields: [sedeId], references: [id], onDelete: Cascade)
+
+  sede Sede @relation(fields: [sedeId], references: [id], onDelete: Cascade)
 
   obituarioNombre String
-  salaOrigen      String
-  salaDestino     String
 
-  usuarioId    String?
+  salaOrigen  String
+  salaDestino String
+
+  usuarioId String?
+
   usuarioEmail String?
 
   estado String @default("COMPLETADO")
@@ -339,6 +408,10 @@ model TrasladoObituario {
   @@index([sedeId])
   @@index([createdAt])
 }
+
+// ======================================================
+// CONFIGURACION GLOBAL
+// ======================================================
 
 model ConfiguracionGlobal {
   id String @id @default(cuid())
@@ -374,4 +447,58 @@ model ConfiguracionGlobal {
   createdAt DateTime @default(now())
 
   updatedAt DateTime @updatedAt
+}
+
+
+model Cenizario {
+  id                    String  @id @default(cuid())
+
+  publicId              String @unique  @default(cuid())
+
+  nombreCompleto        String
+
+  documento             String
+
+  fechaNacimiento       String?
+  
+  fechaFallecimiento    String?
+
+  mensajeFamiliar       String?
+
+  estado                String  @default("ACTIVO")
+
+  sedeId                String
+
+  sede                  Sede @relation(fields: [sedeId], references: [id], onDelete: Cascade)
+
+  creadoPorId           String?
+
+  creadoPor             User? @relation("CenizariosCreados", fields: [creadoPorId], references: [id])
+
+  foto                  CenizarioFoto[]
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([sedeId])
+  @@index([documento])
+  @@index([estado])
+  @@index([createdAt])
+
+}
+
+model CenizarioFoto {
+  id              String    @id @default(cuid())
+
+  cenizarioId     String
+
+  Cenizario       Cenizario @relation(fields: [cenizarioId], references: [id], onDelete: Cascade)
+
+  url             String
+
+  orden           Int       @default(0)
+
+  createdAt       DateTime @default(now())
+
+  @@index([cenizarioId])
 }
