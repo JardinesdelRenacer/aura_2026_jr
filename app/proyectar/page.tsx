@@ -60,6 +60,8 @@ export default function Proyectar() {
 
     const [loaded, setLoaded] = useState(false);
 
+    const [obituarySaveState, setObituarySaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
     const [menuOpen, setMenuOpen] = useState(false);
 
     const createdRef = useRef(false);
@@ -375,8 +377,11 @@ export default function Proyectar() {
                 });
 
                 setObituaries(nuevosObituarios);
-                setLoaded(true);
             }
+
+            // También habilitamos el guardado para sedes nuevas, que todavía no
+            // tienen obituarios creados.
+            setLoaded(true);
 
         } catch (error) {
             console.error(error);
@@ -482,23 +487,42 @@ export default function Proyectar() {
     ]);
 
     useEffect(() => {
-        if (!loaded) return;
-        if (!sedeId) return;
+        if (!loaded || !sedeId) return;
 
-        fetch(`/api/master/obituarios/${sedeId}`,{
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                obituaries,
-            }),
-        });
-    }, [
-        loaded,
-        sedeId,
-        obituaries,
-    ]);
+        // Evita guardar una versión incompleta por cada pulsación. Así el
+        // servidor recibe una única versión coherente cuando el usuario termina.
+        let cancelled = false;
+        const timer = window.setTimeout(() => {
+            void (async () => {
+                try {
+                    setObituarySaveState("saving");
+
+                    const response = await fetch(`/api/master/obituarios/${sedeId}`, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ obituaries }),
+                    });
+                    const result = await response.json().catch(() => null);
+
+                    if (!response.ok || !result?.success) {
+                        throw new Error(result?.error || "No se pudo guardar el obituario.");
+                    }
+
+                    if (!cancelled) setObituarySaveState("saved");
+                } catch (error) {
+                    console.error("Error al guardar los obituarios:", error);
+                    if (!cancelled) setObituarySaveState("error");
+                }
+            })();
+        }, 700);
+
+        return () => {
+            cancelled = true;
+            window.clearTimeout(timer);
+        };
+    }, [loaded, sedeId, obituaries]);
 
     const cargarPresentacion = async () => {
         const res = await fetch(
@@ -602,6 +626,20 @@ export default function Proyectar() {
                         <h2 className="text-xl font-black text-slate-800 md:text-2xl">{sede?.nombre ?? "Cargando sede"}</h2>
                         <span className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[11px] font-bold text-blue-700">
                             {roomsToShow.length} {roomsToShow.length === 1 ? "sala" : "salas"} configuradas
+                        </span>
+                        <span
+                            aria-live="polite"
+                            className={`text-[11px] font-semibold ${
+                                obituarySaveState === "error"
+                                    ? "text-red-600"
+                                    : obituarySaveState === "saving"
+                                        ? "text-amber-600"
+                                        : "text-emerald-700"
+                            }`}
+                        >
+                            {obituarySaveState === "saving" && "Guardando cambios…"}
+                            {obituarySaveState === "saved" && "Cambios guardados"}
+                            {obituarySaveState === "error" && "No se pudo guardar. Intenta nuevamente."}
                         </span>
                     </div>
                 </div>
