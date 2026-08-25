@@ -69,7 +69,11 @@ model User {
 
   sede Sede?
 
+<<<<<<< HEAD
   CenizariosCreados   Cenizario[] @relation("CenizariosCreados")
+=======
+  CenizariosCreados Cenizario[] @relation("CenizariosCreados")
+>>>>>>> fab88bc2a62050abe4dbed3939f19c595596cb15
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -97,6 +101,13 @@ model Sede {
   obituarios Obituario[]
   media      Media[]
 
+<<<<<<< HEAD
+=======
+  cenizario Cenizario[]
+
+  obituarios    Obituario[]
+  media         Media[]
+>>>>>>> fab88bc2a62050abe4dbed3939f19c595596cb15
   configuracion ConfiguracionPantalla?
 
   presentaciones Presentacion[]
@@ -122,7 +133,11 @@ model Sede {
 model Obituario {
   id String @id @default(cuid())
 
+<<<<<<< HEAD
   codigo  String? @unique
+=======
+  codigo String? @unique
+>>>>>>> fab88bc2a62050abe4dbed3939f19c595596cb15
 
   sedeId String
 
@@ -449,6 +464,7 @@ model ConfiguracionGlobal {
   updatedAt DateTime @updatedAt
 }
 
+<<<<<<< HEAD
 
 model Cenizario {
   id                    String  @id @default(cuid())
@@ -479,11 +495,35 @@ model Cenizario {
 
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
+=======
+model Cenizario {
+  id       String @id @default(cuid())
+  publicId String @unique @default(cuid())
+
+  nombreCompleto     String
+  documento          String
+  fechaNacimiento    String?
+  fechaFallecimiento String?
+  mensajeFamiliar    String? @db.Text
+  estado             String  @default("ACTIVO")
+
+  sedeId String
+  sede   Sede @relation(fields: [sedeId], references: [id], onDelete: Cascade)
+
+  creadoPorId String?
+  creadoPor   User? @relation("CenizariosCreados", fields: [creadoPorId], references: [id])
+
+  foto CenizarioFoto[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+>>>>>>> fab88bc2a62050abe4dbed3939f19c595596cb15
 
   @@index([sedeId])
   @@index([documento])
   @@index([estado])
   @@index([createdAt])
+<<<<<<< HEAD
 
 }
 
@@ -502,3 +542,20 @@ model CenizarioFoto {
 
   @@index([cenizarioId])
 }
+=======
+}
+
+model CenizarioFoto {
+  id String @id @default(cuid())
+
+  cenizarioId String
+  Cenizario   Cenizario @relation(fields: [cenizarioId], references: [id], onDelete: Cascade)
+
+  url   String
+  orden Int @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([cenizarioId])
+}
+>>>>>>> fab88bc2a62050abe4dbed3939f19c595596cb15
