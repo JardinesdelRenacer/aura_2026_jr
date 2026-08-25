@@ -156,6 +156,7 @@ export async function POST(req: Request) {
                     data: {
                         sedeId,
                         sala,
+                        codigo,
 
                         estado: "ACTIVO",
 
@@ -253,6 +254,7 @@ export async function POST(req: Request) {
                     data: {
                         sedeId,
                         sala,
+                        codigo,
 
                         estado: "ACTIVO",
 

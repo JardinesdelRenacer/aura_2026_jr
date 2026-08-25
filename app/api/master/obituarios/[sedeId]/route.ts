@@ -1,6 +1,7 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma";
+import { generateObituaryCode } from "@/src/utils/obituaryCodeGenerator";
 
 export async function PUT(
     request: Request,
@@ -124,10 +125,13 @@ export async function PUT(
             // =====================================
 
             if (!actual) {
+                const codigo = await generateObituaryCode();
+
                 await prisma.obituario.create({
                     data: {
                         sedeId,
                         sala,
+                        codigo,
 
                         estado: "ACTIVO",
 
@@ -223,10 +227,13 @@ export async function PUT(
                 /*
                  * Creamos un servicio NUEVO.
                  */
+                const codigo = await generateObituaryCode();
+
                 await prisma.obituario.create({
                     data: {
                         sedeId,
                         sala,
+                        codigo,
 
                         estado: "ACTIVO",
 

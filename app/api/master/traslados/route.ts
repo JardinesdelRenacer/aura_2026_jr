@@ -228,22 +228,26 @@ export async function POST(
             await prisma.$transaction(
                 async (tx) => {
                     const origen =
-                        await tx.obituario.findUnique({
+                        await tx.obituario.findFirst({
                             where: {
-                                sedeId_sala: {
-                                    sedeId,
-                                    sala: salaOrigen,
-                                },
+                                sedeId,
+                                sala: salaOrigen,
+                                estado: "ACTIVO",
+                            },
+                            orderBy: {
+                                createdAt: "desc",
                             },
                         });
 
                     const destino =
-                        await tx.obituario.findUnique({
+                        await tx.obituario.findFirst({
                             where: {
-                                sedeId_sala: {
-                                    sedeId,
-                                    sala: salaDestino,
-                                },
+                                sedeId,
+                                sala: salaDestino,
+                                estado: "ACTIVO",
+                            },
+                            orderBy: {
+                                createdAt: "desc",
                             },
                         });
 
@@ -253,31 +257,7 @@ export async function POST(
                         );
                     }
 
-                    if (!destino) {
-                        throw new Error(
-                            "DESTINO_NO_ENCONTRADO"
-                        );
-                    }
-
-                    const origenOcupado =
-                        Boolean(
-                            origen.name?.trim() ||
-                                origen.surname?.trim()
-                        );
-
-                    const destinoOcupado =
-                        Boolean(
-                            destino.name?.trim() ||
-                                destino.surname?.trim()
-                        );
-
-                    if (!origenOcupado) {
-                        throw new Error(
-                            "ORIGEN_DISPONIBLE"
-                        );
-                    }
-
-                    if (destinoOcupado) {
+                    if (destino) {
                         throw new Error(
                             "DESTINO_OCUPADO"
                         );
@@ -291,71 +271,18 @@ export async function POST(
                         .join(" ")
                         .trim();
 
-                    /*
-                     * Copiamos toda la información del
-                     * servicio a la sala de destino.
-                     */
+                    // El servicio conserva su mismo ID y sus condolencias.
                     await tx.obituario.update({
                         where: {
-                            id: destino.id,
+                            id: origen.id,
                         },
 
                         data: {
-                            estado:
-                                origen.estado,
-
-                            name: origen.name,
-                            surname:
-                                origen.surname,
-
-                            dob: origen.dob,
-                            dod: origen.dod,
-
-                            timeStart:
-                                origen.timeStart,
-                            timeEnd:
-                                origen.timeEnd,
-
-                            cemetery:
-                                origen.cemetery,
-
-                            endTime:
-                                origen.endTime,
-                            endDate:
-                                origen.endDate,
-
-                            massTime:
-                                origen.massTime,
-                            massChurch:
-                                origen.massChurch,
-                            massChurchType:
-                                origen.massChurchType,
-                            massAddress:
-                                origen.massAddress,
+                            sala: salaDestino,
                         },
                     });
 
-                    /*
-                     * Movemos todas las condolencias para
-                     * que sigan relacionadas con el servicio
-                     * ahora ubicado en la sala destino.
-                     */
-                    await tx.condolencia.updateMany({
-                        where: {
-                            obituarioId:
-                                origen.id,
-                        },
-
-                        data: {
-                            obituarioId:
-                                destino.id,
-                        },
-                    });
-
-                    /*
-                     * Movemos las fotos y videos asociados
-                     * a la sala de origen.
-                     */
+                    // Las fotos y videos acompañan al servicio trasladado.
                     await tx.media.updateMany({
                         where: {
                             sedeId,
@@ -364,40 +291,6 @@ export async function POST(
 
                         data: {
                             room: salaDestino,
-                        },
-                    });
-
-                    /*
-                     * Limpiamos la sala de origen para
-                     * dejarla nuevamente disponible.
-                     */
-                    await tx.obituario.update({
-                        where: {
-                            id: origen.id,
-                        },
-
-                        data: {
-                            estado: "ACTIVO",
-
-                            name: "",
-                            surname: "",
-
-                            dob: null,
-                            dod: null,
-
-                            timeStart: null,
-                            timeEnd: null,
-
-                            cemetery: null,
-
-                            endTime: null,
-                            endDate: null,
-
-                            massTime: null,
-                            massChurch: null,
-                            massChurchType:
-                                "Parroquia",
-                            massAddress: null,
                         },
                     });
 
