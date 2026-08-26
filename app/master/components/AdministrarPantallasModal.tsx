@@ -89,6 +89,32 @@ export default function AdministrarPantallasModal({
         }
     }
 
+    async function eliminarPantalla(pantalla: any) {
+        const confirmar = window.confirm(
+            `¿Eliminar la pantalla “${pantalla.nombre}”? El equipo tendrá que registrarse de nuevo con un código nuevo.`
+        );
+
+        if (!confirmar) return;
+
+        try {
+            const response = await fetch(
+                `/api/master/pantallas/${pantalla.id}`,
+                { method: "DELETE" }
+            );
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                alert(result.error ?? "No fue posible eliminar la pantalla.");
+                return;
+            }
+
+            onActualizar();
+        } catch (error) {
+            console.error("Error eliminando pantalla:", error);
+            alert("No fue posible eliminar la pantalla.");
+        }
+    }
+
     const pantallas = sede?.pantallas ?? [];
     const presentaciones = sede?.presentaciones ?? [];
     const media = sede?.media ?? [];
@@ -170,6 +196,7 @@ export default function AdministrarPantallasModal({
                                         setPantallaPresentacion(pantalla);
                                     }}
                                     onReiniciar={reiniciarPantalla}
+                                    onEliminar={eliminarPantalla}
                                 />
                             ))
                         ) : (

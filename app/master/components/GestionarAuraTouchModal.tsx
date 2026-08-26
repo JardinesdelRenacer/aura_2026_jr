@@ -8,6 +8,7 @@ import {
     Loader2,
     RefreshCw,
     Tablet,
+    Trash2,
     Wifi,
     WifiOff,
     X,
@@ -302,6 +303,41 @@ export default function GestionarAuraTouchModal({
         );
     }
 
+    async function eliminarTableta(tableta: AuraTouchRegistrada) {
+        const confirmar = window.confirm(
+            `¿Eliminar la tableta “${tableta.nombre}”? El dispositivo tendrá que registrarse de nuevo con un código nuevo.`
+        );
+
+        if (!confirmar) return;
+
+        try {
+            setError("");
+
+            const response = await fetch(
+                `/api/master/aura-touch/${tableta.id}`,
+                { method: "DELETE" }
+            );
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(
+                    result.error ?? "No fue posible eliminar la tableta."
+                );
+            }
+
+            setTabletas((actuales) =>
+                actuales.filter((actual) => actual.id !== tableta.id)
+            );
+        } catch (error) {
+            console.error("Error eliminando tableta:", error);
+            setError(
+                error instanceof Error
+                    ? error.message
+                    : "No fue posible eliminar la tableta."
+            );
+        }
+    }
+
     return (
         <div
             className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/60 p-5 backdrop-blur-md"
@@ -529,6 +565,16 @@ export default function GestionarAuraTouchModal({
                                                     )}
                                                 </p>
                                             </div>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => eliminarTableta(tableta)}
+                                                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-red-600 transition hover:bg-red-100"
+                                                aria-label={`Eliminar ${tableta.nombre}`}
+                                                title="Eliminar tableta"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
                                         </article>
                                     );
                                 })}
@@ -591,6 +637,10 @@ export default function GestionarAuraTouchModal({
                                     Válido hasta las{" "}
                                     {fechaExpiracion}
                                 </div>
+
+                                <p className="mx-auto mt-5 max-w-md rounded-xl border border-violet-100 bg-white/70 px-4 py-3 text-sm leading-relaxed text-slate-600">
+                                    En la tableta abre <strong>/kiosk/condolencias/registrar</strong> e ingresa este código. No uses <strong>/display/registrar</strong>, que es exclusivo para pantallas de proyección.
+                                </p>
 
                                 <button
                                     type="button"

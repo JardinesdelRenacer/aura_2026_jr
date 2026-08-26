@@ -1,6 +1,6 @@
 "use client";
 
-import { Monitor, Globe, Clock, MoreVertical, Eye, Presentation, RefreshCw } from "lucide-react";
+import { Monitor, Globe, Clock, MoreVertical, Eye, Presentation, RefreshCw, Trash2 } from "lucide-react";
 import EstadisticaCard from "./EstadisticaCard";
 import { useState, useRef, useEffect } from "react";
 
@@ -15,9 +15,7 @@ interface Props {
 
     onReiniciar: (pantalla:any) => void;
 
-    //onMantenimiento?: (pantalla:any) => void;
-
-    //onEliminar?: (pantalla:any) => void;
+    onEliminar: (pantalla:any) => void;
 
 }
 
@@ -54,8 +52,7 @@ export default function PantallaCard({
     //onCambiarNombre,
     onCambiarPresentacion,
     onReiniciar,
-    //onMantenimiento,
-    //onEliminar,
+    onEliminar,
 }: Props) {
     const [menuAbierto, setMenuAbierto] = useState(false);
 
@@ -118,6 +115,11 @@ export default function PantallaCard({
     const handleReiniciar = async () => {
         setMenuAbierto(false);
         await onReiniciar(pantalla);
+    };
+
+    const handleEliminar = () => {
+        setMenuAbierto(false);
+        onEliminar(pantalla);
     };
  
     console.log("PANTALLA");
@@ -185,6 +187,16 @@ export default function PantallaCard({
                             <RefreshCw size={18} />
 
                             <span>Reiniciar contenido</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={handleEliminar}
+                            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-red-600 transition hover:bg-red-50 hover:text-red-700"
+                        >
+                            <Trash2 size={18} />
+
+                            <span>Eliminar pantalla</span>
                         </button>
                     </div>
                 )}
@@ -282,5 +294,3 @@ export default function PantallaCard({
 
     );
 }
-
-   

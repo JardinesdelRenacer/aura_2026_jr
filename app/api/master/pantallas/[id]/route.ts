@@ -43,3 +43,37 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         return NextResponse.json({ success: false, error: "No fue posible actualizar la pantalla" }, { status: 500 });
     }
 }
+
+export async function DELETE(
+    _request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { id } = await params;
+
+        const pantalla = await prisma.pantallaCliente.findUnique({
+            where: { id },
+            select: { id: true, nombre: true },
+        });
+
+        if (!pantalla) {
+            return NextResponse.json(
+                { success: false, error: "La pantalla ya no existe." },
+                { status: 404 }
+            );
+        }
+
+        await prisma.pantallaCliente.delete({ where: { id } });
+
+        return NextResponse.json({
+            success: true,
+            message: `La pantalla ${pantalla.nombre} fue eliminada.`,
+        });
+    } catch (error) {
+        console.error("Error eliminando pantalla:", error);
+        return NextResponse.json(
+            { success: false, error: "No fue posible eliminar la pantalla." },
+            { status: 500 }
+        );
+    }
+}
