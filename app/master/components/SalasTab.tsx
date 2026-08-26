@@ -10,6 +10,10 @@ interface SalasTabProps {
 export function SalasTab({ sedes, setShowModalSede, setSedeToEdit }: SalasTabProps) {
     const [currentTime, setCurrentTime] = useState(Date.now());
 
+    const editarSede = (sede: any) => {
+        setSedeToEdit(sede);
+    };
+
     useEffect(() => {
         const interval = setInterval(() => {
             setCurrentTime(Date.now());
@@ -43,7 +47,10 @@ export function SalasTab({ sedes, setShowModalSede, setSedeToEdit }: SalasTabPro
                                     <span className={`shrink-0 rounded-md border px-2 py-1 text-[10px] font-black uppercase ${estaTransmitiendo ? "border-green-200 bg-green-50 text-green-600" : "border-red-200 bg-red-50 text-red-600"}`}>{estaTransmitiendo ? "En línea" : "Inactiva"}</span>
                                 </div>
                                 <div className="grid grid-cols-2 gap-3 rounded-xl bg-slate-50 p-3 text-xs"><div><p className="text-slate-400">Encargado</p><p className="mt-1 font-semibold text-slate-700">{sede.admin?.nombres ? `${sede.admin.nombres} ${sede.admin.apellidos}` : sede.admin?.email || "Sin asignar"}</p></div><div><p className="text-slate-400">Distribución</p><p className="mt-1 font-semibold text-slate-700">{sede.numeroSalas} sala{sede.numeroSalas > 1 ? "s" : ""}{sede.salaVip ? " + VIP" : ""}</p></div></div>
-                                <button onClick={() => router.push(`/proyectar/${sede.id}`)} className="w-full rounded-xl border border-blue-100 bg-blue-50 px-3 py-2.5 text-sm font-bold text-blue-700 transition hover:bg-blue-600 hover:text-white">Administrar sede</button>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button onClick={() => router.push(`/proyectar/${sede.id}`)} className="rounded-xl border border-blue-100 bg-blue-50 px-3 py-2.5 text-sm font-bold text-blue-700 transition hover:bg-blue-600 hover:text-white">Administrar</button>
+                                    <button onClick={() => editarSede(sede)} className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700">Editar sede</button>
+                                </div>
                             </article>
                         );
                     }) : <p className="p-6 text-center text-sm text-slate-500">No hay sedes registradas.</p>}
@@ -120,16 +127,14 @@ export function SalasTab({ sedes, setShowModalSede, setSedeToEdit }: SalasTabPro
                                         </td>
 
                                         <td className="p-4 text-right">
-                                            <div className="flex justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                            <div className="flex justify-end gap-2 opacity-100 transition-opacity">
                                                 <button onClick={() => router.push(`/proyectar/${sede.id}`  )} className="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg transition-all shadow-sm border border-blue-100 text-xs font-bold" title="Administrar Sede">
                                                     Administrar Sede
                                                 </button>
-
-                                                {/* 
-                                                <button className="px-3 py-1.5 bg-slate-50 text-slate-600 hover:bg-slate-200 rounded-lg transition-all shadow-sm border border-slate-200 text-xs font-bold" title="Configuración">
-                                                    Configuración
+                                                <button onClick={() => editarSede(sede)} className="inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 bg-white text-slate-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-all shadow-sm border border-slate-200 hover:border-blue-200 text-xs font-bold" title={`Editar ${sede.nombre}`}>
+                                                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m16.862 4.487 1.688-1.688a2.121 2.121 0 1 1 3 3L10.582 16.768a4.5 4.5 0 0 1-1.897 1.13l-3.143.943.943-3.143a4.5 4.5 0 0 1 1.13-1.897l9.247-9.314Z" /></svg>
+                                                    Editar sede
                                                 </button>
-                                                */}
                                             </div>
                                         </td>
                                     </tr>
