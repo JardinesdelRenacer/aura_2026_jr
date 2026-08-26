@@ -3,6 +3,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Aura usa `proxy.ts` para proteger las rutas administrativas. Next.js
+  // almacena temporalmente ese cuerpo antes de llegar a la ruta de carga;
+  // el límite por defecto de 10 MB impedía procesar videos válidos.
+  experimental: {
+    proxyClientMaxBodySize: "120mb",
+  },
   allowedDevOrigins: [
     "10.0.1.137",
     "localhost",
