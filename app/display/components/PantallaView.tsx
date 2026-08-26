@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Slideshow from "@/components/Slideshow";
 import ObituarioVertical from "@/app/proyectar/ObituarioVertical";
+import { isObituaryExpired } from "@/src/utils/obituaryAvailability";
 
 type RoomKeys = string;
 
@@ -375,20 +376,8 @@ export default function PantallaView({
     };
 
     // Valida si la hora actual ya superó la configurada en la sala
-    const checkIsExpired = (endTime?: string, endDate?: string) => {
-        if (!endTime || !currentTime) return false;
-
-        const [hours, minutes] = endTime.split(':').map(Number);
-        const end = new Date(currentTime);
-
-        if (endDate) {
-            const [year, month, day] = endDate.split('-').map(Number);
-            end.setFullYear(year, month - 1, day);
-        }
-
-        end.setHours(hours, minutes, 0, 0);
-        return currentTime > end;
-    };
+    const checkIsExpired = (endTime?: string, endDate?: string) =>
+        isObituaryExpired(endTime, endDate, currentTime);
 
     const handleCompleteCycle = useCallback(() => {
         setShowObituaries(true);

@@ -12,6 +12,7 @@ import { RootOptions } from "react-dom/client";
 import CompartirLinkModal from "./components/CompartirLinkModal";
 import AdminSidebar from "./components/AdminSidebar";
 import { getRooms } from "@/src/lib/rooms";
+import { isObituaryExpired } from "@/src/utils/obituaryAvailability";
 
 
 // Tipos para los obituarios (se usarán en la Fase 2)
@@ -218,20 +219,8 @@ export default function Proyectar() {
         return `${h12}:${minutes} ${ampm}`;
     };
 
-    const checkIsExpired = (endTime?: string, endDate?: string) => {
-        if (!endTime || !currentTime) return false;
-
-        const [hours, minutes] = endTime.split(':').map(Number);
-        const end = new Date(currentTime);
-
-        if (endDate) {
-            const [year, month, day] = endDate.split('-').map(Number);
-            end.setFullYear(year, month - 1, day);
-        }
-
-        end.setHours(hours, minutes, 0, 0);
-        return currentTime > end;
-    };
+    const checkIsExpired = (endTime?: string, endDate?: string) =>
+        isObituaryExpired(endTime, endDate, currentTime);
 
     const handleCompleteCycle = useCallback(() => {
         setShowObituariesPreview(true);
