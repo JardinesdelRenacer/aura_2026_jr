@@ -7,12 +7,7 @@ import {
     Monitor,
     X,
 } from "lucide-react";
-
-type RoomKey =
-    | "VIP"
-    | "SALA_1"
-    | "SALA_2"
-    | "SALA_3";
+import { roomLabel, type RoomKey } from "@/src/lib/rooms";
 
 interface Props {
     open: boolean;
@@ -30,11 +25,7 @@ interface Props {
 }
 
 function obtenerNombreSala(room: RoomKey) {
-    if (room === "VIP") {
-        return "Sala VIP";
-    }
-
-    return room.replace("_", " ");
+    return roomLabel(room);
 }
 
 export default function CambiarPresentacionModal({

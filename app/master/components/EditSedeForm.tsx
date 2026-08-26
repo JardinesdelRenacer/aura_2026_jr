@@ -94,6 +94,7 @@ export default function EditSedeForm({ sede, usuarios, onSave, onClose }: Props)
               className="w-full p-3 border border-slate-300 rounded-lg"
               required
             />
+            <p className="mt-1 text-xs text-slate-500">Entre 1 y 10 salas. Para reducirlas, libera o traslada primero cualquier servicio o multimedia de la sala que vas a retirar.</p>
           </div>
           <div className="flex items-center gap-4">
             <input

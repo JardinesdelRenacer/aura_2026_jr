@@ -11,12 +11,18 @@ import { isVerticalProjectionSede } from "./projection-config";
 import { RootOptions } from "react-dom/client";
 import CompartirLinkModal from "./components/CompartirLinkModal";
 import AdminSidebar from "./components/AdminSidebar";
+import { getRooms } from "@/src/lib/rooms";
 
 
 // Tipos para los obituarios (se usarán en la Fase 2)
 export type Obituary = { name: string, surname: string, dob: string, dod: string, timeStart: string, timeEnd: string, cemetery: string, endTime?: string, endDate?: string, massTime?: string, massChurch?: string, massChurchType?: string, massAddress?: string };
-export type RoomKeys = "VIP" | "SALA_1" | "SALA_2" | "SALA_3";
+export type RoomKeys = string;
 export type MediaItem = { id: string; url: string; type: string; room: RoomKeys | null; file?: File };
+
+export const emptyObituary = (): Obituary => ({
+    name: "", surname: "", dob: "", dod: "", timeStart: "", timeEnd: "", cemetery: "",
+    endTime: "", endDate: "", massTime: "", massChurch: "", massChurchType: "Parroquia", massAddress: "",
+});
 
 export default function Proyectar() {
     
@@ -127,18 +133,13 @@ export default function Proyectar() {
         return () => clearInterval(timer);
     }, []);
 
-    const [obituaries, setObituaries] = useState({
-        VIP: { name: "", surname: "", dob: "", dod: "", timeStart: "", timeEnd: "", cemetery: "", endTime: "", endDate: "", massTime: "", massChurch: "", massChurchType: "Parroquia", massAddress: "" },
-        SALA_1: { name: "", surname: "", dob: "", dod: "", timeStart: "", timeEnd: "", cemetery: "", endTime: "", endDate: "", massTime: "", massChurch: "", massChurchType: "Parroquia", massAddress: "" },
-        SALA_2: { name: "", surname: "", dob: "", dod: "", timeStart: "", timeEnd: "", cemetery: "", endTime: "", endDate: "", massTime: "", massChurch: "", massChurchType: "Parroquia", massAddress: "" },
-        SALA_3: { name: "", surname: "", dob: "", dod: "", timeStart: "", timeEnd: "", cemetery: "", endTime: "", endDate: "", massTime: "", massChurch: "", massChurchType: "Parroquia", massAddress: "" },
-    });
+    const [obituaries, setObituaries] = useState<Record<RoomKeys, Obituary>>({});
 
-    const handleObituaryChange = (room: keyof typeof obituaries, field: keyof Obituary, value: string) => {
+    const handleObituaryChange = (room: RoomKeys, field: keyof Obituary, value: string) => {
         setObituaries((prev) => ({
             ...prev,
             [room]: {
-                ...prev[room],
+                ...(prev[room] ?? emptyObituary()),
                 [field]: value,
             },
         }));
@@ -294,72 +295,15 @@ export default function Proyectar() {
             }
 
             //Obituarios
-            if (sedeData.obituarios?.length) {
-                const nuevosObituarios = {
-                    VIP: {
-                        name: "",
-                        surname: "",
-                        dob: "",
-                        dod: "",
-                        timeStart: "",
-                        timeEnd: "",
-                        cemetery: "",
-                        endTime: "",
-                        endDate: "",
-                        massTime: "",
-                        massChurch: "",
-                        massChurchType: "Parroquia",
-                        massAddress: "",
-                    },
-                    SALA_1: {
-                        name: "",
-                        surname: "",
-                        dob: "",
-                        dod: "",
-                        timeStart: "",
-                        timeEnd: "",
-                        cemetery: "",
-                        endTime: "",
-                        endDate: "",
-                        massTime: "",
-                        massChurch: "",
-                        massChurchType: "Parroquia",
-                        massAddress: "",
-                    },
-                    SALA_2: {
-                        name: "",
-                        surname: "",
-                        dob: "",
-                        dod: "",
-                        timeStart: "",
-                        timeEnd: "",
-                        cemetery: "",
-                        endTime: "",
-                        endDate: "",
-                        massTime: "",
-                        massChurch: "",
-                        massChurchType: "Parroquia",
-                        massAddress: "",
-                    },
-                    SALA_3: {
-                        name: "",
-                        surname: "",
-                        dob: "",
-                        dod: "",
-                        timeStart: "",
-                        timeEnd: "",
-                        cemetery: "",
-                        endTime: "",
-                        endDate: "",
-                        massTime: "",
-                        massChurch: "",
-                        massChurchType: "Parroquia",
-                        massAddress: "",
-                    },
-                };
+            {
+                const rooms = getRooms(sedeData.numeroSalas, sedeData.salaVip);
+                const nuevosObituarios: Record<RoomKeys, Obituary> = Object.fromEntries(
+                    rooms.map((room) => [room, emptyObituary()])
+                );
 
-                sedeData.obituarios.forEach((ob: any) => {
-                    nuevosObituarios[ob.sala as keyof typeof nuevosObituarios] = {
+                sedeData.obituarios?.forEach((ob: any) => {
+                    if (!rooms.includes(ob.sala)) return;
+                    nuevosObituarios[ob.sala] = {
                         name: ob.name ?? "",
                         surname: ob.surname ?? "",
                         dob: ob.dob ?? "",
@@ -402,17 +346,7 @@ export default function Proyectar() {
     useEffect(() => {
         if (!sede) return;
 
-        const rooms: RoomKeys[] = [];
-
-        if (sede.salaVip) {
-            rooms.push("VIP");
-        }
-
-        for (let i = 1; i <= (sede.numeroSalas ?? 0); i++) {
-            rooms.push(`SALA_${i}` as RoomKeys);
-        }
-        
-        setRoomsToShow(rooms);
+        setRoomsToShow(getRooms(sede.numeroSalas, sede.salaVip));
     }, [sede]);
 
     // Autoguardado en tiempo real de todos los cambios

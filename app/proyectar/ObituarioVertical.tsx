@@ -49,14 +49,15 @@ export default function ObituarioVertical({ obituary, formatDate, formatTime }: 
                     )}
 
                     <div className="mt-2 grid w-full grid-cols-2 gap-3">
-                        {(obituary.timeStart || obituary.timeEnd) && (
+                        {(obituary.timeStart || obituary.timeEnd || obituary.endDate || obituary.endTime) && (
                             <div className="overflow-hidden rounded-xl border border-black/10 bg-white/30 p-3 shadow-lg backdrop-blur-md">
-                                <p className="mb-1 truncate text-xs font-bold uppercase tracking-widest text-black/80">Horario</p>
+                                <p className="mb-1 truncate text-xs font-bold uppercase tracking-widest text-black/80">Inicio</p>
                                 <p className="truncate text-base font-bold sm:text-xl">
                                     {obituary.timeStart && formatTime(obituary.timeStart)}
                                     {obituary.timeStart && obituary.timeEnd && " - "}
                                     {obituary.timeEnd && formatTime(obituary.timeEnd)}
                                 </p>
+                                {(obituary.endDate || obituary.endTime) && <p className="mt-1 truncate text-xs font-semibold text-black/75">Finaliza: {obituary.endDate && formatDate(obituary.endDate)} {obituary.endTime && formatTime(obituary.endTime)}</p>}
                             </div>
                         )}
                         {obituary.cemetery && (

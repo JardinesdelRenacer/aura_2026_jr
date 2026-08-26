@@ -14,6 +14,7 @@ import {
     X,
 } from "lucide-react";
 import ConfirmarEliminacionDispositivoModal from "./ConfirmarEliminacionDispositivoModal";
+import { getRooms, roomLabel } from "@/src/lib/rooms";
 
 interface Sede {
     id: string;
@@ -263,19 +264,7 @@ export default function GestionarAuraTouchModal({
           })
         : null;
 
-    const salas = Array.from(
-        {
-            length: Math.min(
-                Math.max(sede.numeroSalas ?? 0, 0),
-                3
-            ),
-        },
-        (_, index) => `Sala ${index + 1}`
-    );
-
-    if (sede.salaVip) {
-        salas.push("Sala VIP");
-    }
+    const salas = getRooms(sede.numeroSalas ?? 0, sede.salaVip).map(roomLabel);
 
     function estaOnline(
         tableta: AuraTouchRegistrada

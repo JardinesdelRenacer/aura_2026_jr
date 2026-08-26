@@ -4,6 +4,7 @@ import {
 } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
+import { getRooms } from "@/src/lib/rooms";
 
 interface TrasladoBody {
     sedeId?: unknown;
@@ -13,24 +14,6 @@ interface TrasladoBody {
     usuarioEmail?: unknown;
 }
 
-const SALAS_VALIDAS = [
-    "VIP",
-    "SALA_1",
-    "SALA_2",
-    "SALA_3",
-] as const;
-
-type SalaValida =
-    (typeof SALAS_VALIDAS)[number];
-
-function esSalaValida(
-    sala: string
-): sala is SalaValida {
-    return SALAS_VALIDAS.includes(
-        sala as SalaValida
-    );
-}
-
 function obtenerSalasPermitidas({
     numeroSalas,
     salaVip,
@@ -38,28 +21,7 @@ function obtenerSalasPermitidas({
     numeroSalas: number;
     salaVip: boolean;
 }) {
-    const salasPermitidas: SalaValida[] = [];
-
-    const totalSalas = Math.min(
-        Math.max(numeroSalas, 0),
-        3
-    );
-
-    for (
-        let index = 1;
-        index <= totalSalas;
-        index++
-    ) {
-        salasPermitidas.push(
-            `SALA_${index}` as SalaValida
-        );
-    }
-
-    if (salaVip) {
-        salasPermitidas.push("VIP");
-    }
-
-    return salasPermitidas;
+    return getRooms(numeroSalas, salaVip);
 }
 
 export async function POST(
@@ -106,32 +68,6 @@ export async function POST(
                     success: false,
                     error:
                         "La sede es obligatoria.",
-                },
-                {
-                    status: 400,
-                }
-            );
-        }
-
-        if (!esSalaValida(salaOrigen)) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error:
-                        "La sala de origen no es válida.",
-                },
-                {
-                    status: 400,
-                }
-            );
-        }
-
-        if (!esSalaValida(salaDestino)) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error:
-                        "La sala de destino no es válida.",
                 },
                 {
                     status: 400,

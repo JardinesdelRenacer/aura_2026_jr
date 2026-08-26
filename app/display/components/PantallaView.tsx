@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Slideshow from "@/components/Slideshow";
 import ObituarioVertical from "@/app/proyectar/ObituarioVertical";
 
-type RoomKeys = "VIP" | "SALA_1" | "SALA_2" | "SALA_3";
+type RoomKeys = string;
 
 type MediaItem = {
     url: string;
@@ -29,12 +29,12 @@ type Obituary = {
     massAddress?: string;
 };
 
-type ObituariesData = {
-    VIP: Obituary;
-    SALA_1: Obituary;
-    SALA_2: Obituary;
-    SALA_3: Obituary;
-};
+type ObituariesData = Record<RoomKeys, Obituary>;
+
+const emptyObituary = (): Obituary => ({
+    name: "", surname: "", dob: "", dod: "", timeStart: "", timeEnd: "", cemetery: "",
+    endTime: "", endDate: "", massTime: "", massChurch: "", massChurchType: "Parroquia", massAddress: "",
+});
 
 interface PantallaViewProps {
     presentacionId?: string;
@@ -71,54 +71,12 @@ export default function PantallaView({
 
     const convertirObituarios = useCallback(
         (listas: any[]): ObituariesData => {
-            const resultado: ObituariesData = {
-                VIP: {
-                    name: "",
-                    surname: "",
-                    dob: "",
-                    dod: "",
-                    timeStart: "",
-                    timeEnd: "",
-                    cemetery: "",
-                },
-                SALA_1: {
-                    name: "",
-                    surname: "",
-                    dob: "",
-                    dod: "",
-                    timeStart: "",
-                    timeEnd: "",
-                    cemetery: "",
-                },
-                SALA_2: {
-                    name: "",
-                    surname: "",
-                    dob: "",
-                    dod: "",
-                    timeStart: "",
-                    timeEnd: "",
-                    cemetery: "",
-                },
-                SALA_3: {
-                    name: "",
-                    surname: "",
-                    dob: "",
-                    dod: "",
-                    timeStart: "",
-                    timeEnd: "",
-                    cemetery: "",
-                },
-            };
+            const resultado: ObituariesData = {};
 
             listas.forEach((obituario) => {
                 const sala = obituario.sala as RoomKeys;
 
-                if (sala in resultado) {
-                    resultado[sala] = {
-                        ...resultado[sala],
-                        ...obituario,
-                    };
-                }
+                resultado[sala] = { ...emptyObituary(), ...obituario };
             });
 
             return resultado;
@@ -439,6 +397,12 @@ export default function PantallaView({
 
     if (!obituaries) return <div className="w-screen h-screen bg-blue-50 flex items-center justify-center text-blue-800 font-bold text-2xl">Cargando presentación...</div>;
 
+    const splitItems = roomsToShow.length + 1;
+    const splitColumns = Math.min(3, Math.max(1, Math.ceil(Math.sqrt(splitItems))));
+    const splitRows = Math.ceil(splitItems / splitColumns);
+    const obituaryColumns = Math.min(3, Math.max(1, Math.ceil(Math.sqrt(roomsToShow.length))));
+    const obituaryRows = Math.ceil(Math.max(roomsToShow.length, 1) / obituaryColumns);
+
     if (projectionMode === "vertical" ) {
         const roomKey = verticalRoom || roomParam || (roomsToShow[0] as RoomKeys);
         const obituary = roomKey ? obituaries[roomKey] : null;
@@ -499,9 +463,8 @@ export default function PantallaView({
         return (
             <div className="w-screen h-screen bg-blue-50 overflow-hidden relative font-sans">
                 <div className="w-full h-full p-4 sm:p-6 lg:p-8 bg-linear-to-br from-white/60 via-blue-50/50 to-white/40 backdrop-blur-2xl border border-white/80 shadow-[inset_0_0_20px_rgba(255,255,255,0.9),0_8px_32px_rgba(0,0,0,0.1)]">
-                    <div className="w-full h-full grid grid-cols-3 grid-rows-2 gap-4 sm:gap-6 lg:gap-8">
-                        {/* Media Slider en Top Right */}
-                        <div className="col-start-2 col-span-2 row-start-1 min-h-0 min-w-0 h-full w-full rounded-4xl overflow-hidden relative shadow-2xl border border-white/80 bg-white/40">
+                    <div className="grid h-full w-full gap-4 sm:gap-6 lg:gap-8" style={{ gridTemplateColumns: `repeat(${splitColumns}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${splitRows}, minmax(0, 1fr))` }}>
+                        <div className="min-h-0 min-w-0 h-full w-full rounded-4xl overflow-hidden relative shadow-2xl border border-white/80 bg-white/40">
                             <div className="absolute inset-0">
                                 <Slideshow media={media} autoPlay={autoPlay} seconds={seconds} selectedImage={selectedImage} transitionEffect={transitionEffect} />
                             </div>
@@ -510,17 +473,16 @@ export default function PantallaView({
                         {/* Obituarios en Forma de L */}
                         {roomsToShow
                             .map((roomKey) => {
-                                const ob = obituaries[roomKey as RoomKeys];
+                                const ob = obituaries[roomKey] ?? emptyObituary();
 
                                 const expired = checkIsExpired(ob.endTime, ob.endDate);
                                 const isActive = Boolean((ob.name || ob.surname) && !expired);
                                 return { roomKey, ob, isActive };
                             })
                             .sort((a, b) => Number(b.isActive) - Number(a.isActive))
-                            .map(({ roomKey, ob, isActive }, index) => {
-                                const slotClasses = ["col-start-1 row-start-1", "col-start-1 row-start-2", "col-start-2 row-start-2", "col-start-3 row-start-2"];
+                            .map(({ roomKey, ob, isActive }) => {
                                 return (
-                                    <div key={roomKey} className={`${slotClasses[index]} min-h-0 min-w-0 h-full w-full bg-[url('/imagenes/35.png')] bg-size-[100%_100%] bg-no-repeat border border-white/20 rounded-4xl shadow-2xl relative overflow-hidden`}>
+                                    <div key={roomKey} className="min-h-0 min-w-0 h-full w-full bg-[url('/imagenes/35.png')] bg-size-[100%_100%] bg-no-repeat border border-white/20 rounded-4xl shadow-2xl relative overflow-hidden">
                                         <div className="absolute inset-0 p-4 sm:p-6 lg:p-8 flex flex-col justify-start items-center text-center">
                                             <div className="absolute top-0 right-0 w-20 sm:w-32 lg:w-40 h-20 sm:h-32 lg:h-40 bg-white/30 rounded-bl-full blur-3xl"></div>
                                             <div className="absolute bottom-0 left-0 w-20 sm:w-32 lg:w-40 h-20 sm:h-32 lg:h-40 bg-white/30 rounded-tr-full blur-3xl"></div>
@@ -550,12 +512,13 @@ export default function PantallaView({
                                                     )}
 
                                                     <div className="mt-auto grid grid-cols-2 gap-1 sm:gap-3 lg:gap-4 w-full px-2">
-                                                        {(ob.timeStart || ob.timeEnd) && (
+                                                        {(ob.timeStart || ob.timeEnd || ob.endDate || ob.endTime) && (
                                                             <div className="bg-white/30 border border-black/10 rounded-xl sm:rounded-2xl p-1.5 lg:p-3 backdrop-blur-md shadow-xl flex flex-col justify-center overflow-hidden">
-                                                                <p className="text-black/80 text-[10px] sm:text-xs lg:text-sm uppercase tracking-widest mb-0.5 sm:mb-1 font-bold [text-shadow:0_1px_3px_rgb(255_255_255)] truncate">Horario</p>
+                                                                <p className="text-black/80 text-[10px] sm:text-xs lg:text-sm uppercase tracking-widest mb-0.5 sm:mb-1 font-bold [text-shadow:0_1px_3px_rgb(255_255_255)] truncate">Inicio</p>
                                                                 <p className="text-xs sm:text-base lg:text-lg font-bold text-black [text-shadow:0_1px_5px_rgb(255_255_255)] truncate">
                                                                     {ob.timeStart && formatTime(ob.timeStart)} {ob.timeStart && ob.timeEnd && "-"} {ob.timeEnd && formatTime(ob.timeEnd)}
                                                                 </p>
+                                                                {(ob.endDate || ob.endTime) && <p className="mt-1 truncate text-[10px] font-semibold text-black/75">Finaliza: {ob.endDate && formatDate(ob.endDate)} {ob.endTime && formatTime(ob.endTime)}</p>}
                                                             </div>
                                                         )}
                                                         {ob.cemetery && (
@@ -584,10 +547,10 @@ export default function PantallaView({
     return (
         <div className="w-screen h-screen bg-blue-50 overflow-hidden relative font-sans">
             {isShowingObituaries ? (
-                <div className="w-full h-full grid grid-cols-2 grid-rows-2 gap-3 sm:gap-4 md:gap-5 lg:gap-6 p-3 sm:p-4 md:p-5 lg:p-6 bg-linear-to-br from-white/60 via-blue-50/50 to-white/40 backdrop-blur-2xl border border-white/80 shadow-[inset_0_0_20px_rgba(255,255,255,0.9),0_8px_32px_rgba(0,0,0,0.1)]">
+                <div className="grid h-full w-full gap-3 border border-white/80 bg-linear-to-br from-white/60 via-blue-50/50 to-white/40 p-3 shadow-[inset_0_0_20px_rgba(255,255,255,0.9),0_8px_32px_rgba(0,0,0,0.1)] backdrop-blur-2xl sm:gap-4 sm:p-4 md:gap-5 md:p-5 lg:gap-6 lg:p-6" style={{ gridTemplateColumns: `repeat(${obituaryColumns}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${obituaryRows}, minmax(0, 1fr))` }}>
                     {roomsToShow
                         .map((roomKey) => {
-                            const ob = obituaries[roomKey as RoomKeys];
+                            const ob = obituaries[roomKey] ?? emptyObituary();
 
                             const expired = checkIsExpired(ob.endTime, ob.endDate);
                             const isActive = Boolean((ob.name || ob.surname) && !expired);
@@ -627,12 +590,13 @@ export default function PantallaView({
                                         )}
 
                                         <div className="mt-auto grid grid-cols-2 gap-1 sm:gap-2 md:gap-3 lg:gap-4 w-full px-1 sm:px-2 md:px-3 lg:px-0">
-                                            {(ob.timeStart || ob.timeEnd) && (
+                                            {(ob.timeStart || ob.timeEnd || ob.endDate || ob.endTime) && (
                                                 <div className="bg-white/30 border border-black/10 rounded-lg sm:rounded-xl md:rounded-2xl p-1 sm:p-2 md:p-2 lg:p-3 backdrop-blur-md shadow-xl flex flex-col justify-center overflow-hidden">
-                                                    <p className="text-black/80 text-[10px] sm:text-xs md:text-sm lg:text-sm uppercase tracking-widest mb-0.5 sm:mb-1 md:mb-1 lg:mb-1 font-bold [text-shadow:0_1px_3px_rgb(255_255_255)] truncate">Horario</p>
+                                                    <p className="text-black/80 text-[10px] sm:text-xs md:text-sm lg:text-sm uppercase tracking-widest mb-0.5 sm:mb-1 md:mb-1 lg:mb-1 font-bold [text-shadow:0_1px_3px_rgb(255_255_255)] truncate">Inicio</p>
                                                     <p className="text-xs sm:text-sm md:text-base lg:text-xl font-bold text-black [text-shadow:0_1px_5px_rgb(255_255_255)] truncate">
                                                         {ob.timeStart && formatTime(ob.timeStart)} {ob.timeStart && ob.timeEnd && "-"} {ob.timeEnd && formatTime(ob.timeEnd)}
                                                     </p>
+                                                    {(ob.endDate || ob.endTime) && <p className="mt-1 truncate text-[10px] font-semibold text-black/75">Finaliza: {ob.endDate && formatDate(ob.endDate)} {ob.endTime && formatTime(ob.endTime)}</p>}
                                                 </div>
                                             )}
                                             {ob.cemetery && (

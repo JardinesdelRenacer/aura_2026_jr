@@ -4,6 +4,7 @@ import {
 } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
+import { getRooms } from "@/src/lib/rooms";
 
 export const dynamic = "force-dynamic";
 
@@ -70,27 +71,7 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        const rooms: string[] = [];
-
-        const numeroSalas = Math.min(
-            Math.max(
-                auraTouch.sede.numeroSalas,
-                0
-            ),
-            3
-        );
-
-        for (
-            let index = 1;
-            index <= numeroSalas;
-            index++
-        ) {
-            rooms.push(`SALA_${index}`);
-        }
-
-        if (auraTouch.sede.salaVip) {
-            rooms.push("VIP");
-        }
+        const rooms = getRooms(auraTouch.sede.numeroSalas, auraTouch.sede.salaVip);
 
         const obituarios =
             await prisma.obituario.findMany({

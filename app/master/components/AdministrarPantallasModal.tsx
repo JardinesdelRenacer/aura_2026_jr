@@ -10,20 +10,13 @@ import CambiarPresentacionModal from "./CambiarPresentacionModal";
 import ConfirmarEliminacionDispositivoModal from "./ConfirmarEliminacionDispositivoModal";
 
 import { isVerticalProjectionSede } from "@/app/proyectar/projection-config";
+import { getRooms, type RoomKey } from "@/src/lib/rooms";
 
 interface Props {
     sede: any;
     onClose: () => void;
     onActualizar: () => void;
 }
-
-type RoomKey = "VIP" | "SALA_1" | "SALA_2" | "SALA_3";
-
-const SALAS_VALIDAS: RoomKey[] = [
-    "SALA_1",
-    "SALA_2",
-    "SALA_3",
-];
 
 export default function AdministrarPantallasModal({
     sede,
@@ -55,20 +48,7 @@ export default function AdministrarPantallasModal({
     }, [sede?.id, onActualizar]);
 
     const roomsDisponibles = useMemo<RoomKey[]>(() => {
-        const rooms: RoomKey[] = [];
-
-        if (sede?.salaVip) {
-            rooms.push("VIP");
-        }
-
-        const numeroSalas = Math.min(
-            Math.max(Number(sede?.numeroSalas ?? 0), 0),
-            SALAS_VALIDAS.length
-        );
-
-        rooms.push(...SALAS_VALIDAS.slice(0, numeroSalas));
-
-        return rooms;
+        return getRooms(sede?.numeroSalas ?? 0, Boolean(sede?.salaVip));
     }, [sede?.salaVip, sede?.numeroSalas]);
 
     async function reiniciarPantalla(pantalla: any) {

@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma"; // Ajustar a la ruta real de su instancia de Prisma
+import { MAX_SALAS, MIN_SALAS, getRooms } from "@/src/lib/rooms";
 
-
-const MIN_SALAS = 1;
-const MAX_SALAS = 3;
 
 export async function GET() {
     try {
@@ -81,7 +79,7 @@ export async function POST (request: Request) {
         }
 
         if ( numeroSalas < MIN_SALAS || numeroSalas > MAX_SALAS ) {
-            return NextResponse.json({ success: false, error: "La sede debe tener entre 1 y 3 salas." }, { status: 400 });
+            return NextResponse.json({ success: false, error: `La sede debe tener entre ${MIN_SALAS} y ${MAX_SALAS} salas.` }, { status: 400 });
         }
 
         if (adminId) {
@@ -118,26 +116,12 @@ export async function POST (request: Request) {
                     },
                 });
 
-                const obituarios = Array.from(
-                    {
-                        length: numeroSalas 
-                    },
-                    (_, index) => ({
-                        sala: `SALA_${index + 1}`,
+                const obituarios = getRooms(numeroSalas, salaVip).map((sala) => ({
+                        sala,
                         sedeId: sede.id,
                         name: "",
                         surname: "",
-                    })
-                );
-
-                if (salaVip) {
-                    obituarios.push({
-                        sala: "VIP",
-                        sedeId: sede.id,
-                        name: "",
-                        surname: "",
-                    });
-                }
+                    }));
 
                 await tx.obituario.createMany({
                     data: obituarios,
