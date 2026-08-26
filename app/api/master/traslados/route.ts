@@ -169,6 +169,10 @@ export async function POST(
                                 sedeId,
                                 sala: salaOrigen,
                                 estado: "ACTIVO",
+                                OR: [
+                                    { name: { not: "" } },
+                                    { surname: { not: "" } },
+                                ],
                             },
                             orderBy: {
                                 createdAt: "desc",
@@ -181,6 +185,10 @@ export async function POST(
                                 sedeId,
                                 sala: salaDestino,
                                 estado: "ACTIVO",
+                                OR: [
+                                    { name: { not: "" } },
+                                    { surname: { not: "" } },
+                                ],
                             },
                             orderBy: {
                                 createdAt: "desc",
@@ -198,6 +206,19 @@ export async function POST(
                             "DESTINO_OCUPADO"
                         );
                     }
+
+                    // Las salas disponibles pueden conservar una fila vacía
+                    // de preparación. No es un servicio: se elimina antes de
+                    // mover el servicio real para evitar duplicados.
+                    await tx.obituario.deleteMany({
+                        where: {
+                            sedeId,
+                            sala: salaDestino,
+                            estado: "ACTIVO",
+                            name: "",
+                            surname: "",
+                        },
+                    });
 
                     const nombreObituario = [
                         origen.name,

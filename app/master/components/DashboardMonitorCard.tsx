@@ -65,6 +65,14 @@ export default function DashboardMonitorCard({
                 <span className="font-black">{tabletasEnLinea.length > 0 ? `${tabletasEnLinea.length} en línea` : "Sin tabletas activas"}</span>
             </div>
 
+            <div className={`mb-4 rounded-xl border px-3 py-2.5 text-xs ${pantalla ? "border-emerald-100 bg-emerald-50/70 text-emerald-900" : "border-slate-100 bg-slate-50 text-slate-500"}`}>
+                <div className="flex items-center justify-between gap-3">
+                    <span className="font-semibold">Pantalla de proyección</span>
+                    <span className={`font-black ${pantalla ? "text-emerald-700" : "text-slate-500"}`}>{pantalla ? "En línea" : "No conectada"}</span>
+                </div>
+                {pantalla && <p className="mt-1 truncate font-bold text-slate-700" title={pantalla.nombre}>{pantalla.nombre} · {pantalla.screenWidth ?? "-"}×{pantalla.screenHeight ?? "-"}</p>}
+            </div>
+
             {/* Monitor */}
             <div 
                 className={`w-full aspect-video bg-slate-900 rounded-lg overflow-hidden relative border border-slate-800 shadow-inner ${puedeTransmitir ? "cursor-pointer group-hover:ring-4 ring-blue-500/20 transition-all group/screen" : "flex items-center justify-center"}`}

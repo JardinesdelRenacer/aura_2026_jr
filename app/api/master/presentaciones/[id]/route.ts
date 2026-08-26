@@ -40,7 +40,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
                 sede: {
                     include: {
                         media: true,
-                        obituarios: true,
+                        obituarios: {
+                            where: { estado: "ACTIVO" },
+                            orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+                        },
                         configuracion: true,
                     },
                 },

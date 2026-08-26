@@ -8,7 +8,6 @@ interface Props{
 export const PantallaEscalada = ({ presentacionId }:Props) => {
     console.log("Escalando:", presentacionId);
     return (
-        <iframe src={`/display/${presentacionId}`} className="w-full h-full border-0" />
+        <iframe title="Vista previa de la pantalla" src={`/display/${presentacionId}?preview=1`} className="w-full h-full border-0" />
     );
 };
-  

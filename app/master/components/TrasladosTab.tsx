@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { getRooms } from "@/src/lib/rooms";
 
 interface ObituarioSala {
     id: string;
@@ -8,6 +9,9 @@ interface ObituarioSala {
     name?: string | null;
     surname?: string | null;
     timeStart?: string | null;
+    estado?: string;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 interface Sede {
@@ -15,6 +19,8 @@ interface Sede {
     nombre: string;
     ciudad?: string;
     departamento?: string;
+    numeroSalas?: number;
+    salaVip?: boolean;
     obituarios?: ObituarioSala[];
 }
 
@@ -135,12 +141,21 @@ export function TrasladosTab({
     );
 
     const salas = useMemo(
-        () =>
-            Array.isArray(
-                sedeSeleccionada?.obituarios
-            )
-                ? sedeSeleccionada.obituarios
-                : [],
+        () => {
+            const activas = Array.isArray(sedeSeleccionada?.obituarios)
+                ? sedeSeleccionada.obituarios.filter(
+                    (obituario) => obituario.estado === "ACTIVO"
+                )
+                : [];
+
+            // Defensa adicional para bases que tengan duplicados heredados:
+            // cada sala muestra sólo su versión más reciente.
+            return [...activas]
+                .sort((a, b) => new Date(b.updatedAt ?? b.createdAt ?? 0).getTime() - new Date(a.updatedAt ?? a.createdAt ?? 0).getTime())
+                .filter((obituario, index, items) =>
+                    items.findIndex((item) => item.sala === obituario.sala) === index
+                );
+        },
         [sedeSeleccionada]
     );
 
@@ -155,15 +170,23 @@ export function TrasladosTab({
         [salas]
     );
 
-    const salasDisponibles = useMemo(
-        () =>
-            salas.filter(
-                (obituario) =>
-                    !obituario.name?.trim() &&
-                    !obituario.surname?.trim()
-            ),
-        [salas]
-    );
+    const salasDisponibles = useMemo(() => {
+        if (!sedeSeleccionada) return [];
+
+        // Una sala disponible no depende de que exista una fila vacía en la
+        // base de datos. Se calcula desde la configuración real de la sede.
+        return getRooms(
+            sedeSeleccionada.numeroSalas ?? 0,
+            Boolean(sedeSeleccionada.salaVip)
+        )
+            .filter(
+                (sala) =>
+                    !salasOcupadas.some(
+                        (obituario) => obituario.sala === sala
+                    )
+            )
+            .map((sala) => ({ id: `disponible-${sala}`, sala }));
+    }, [sedeSeleccionada, salasOcupadas]);
 
     const obituarioOrigen = useMemo(
         () =>
