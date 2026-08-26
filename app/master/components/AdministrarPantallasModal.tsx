@@ -7,6 +7,7 @@ import EstadisticaCard from "./EstadisticaCard";
 import RegistrarPantallaModal from "./registrarPantallaModal";
 import PantallaDetalleModal from "./PantallaDetalleModal";
 import CambiarPresentacionModal from "./CambiarPresentacionModal";
+import ConfirmarEliminacionDispositivoModal from "./ConfirmarEliminacionDispositivoModal";
 
 import { isVerticalProjectionSede } from "@/app/proyectar/projection-config";
 
@@ -36,6 +37,10 @@ export default function AdministrarPantallasModal({
 
     const [pantallaPresentacion, setPantallaPresentacion] =
         useState<any | null>(null);
+
+    const [pantallaParaEliminar, setPantallaParaEliminar] =
+        useState<any | null>(null);
+    const [eliminandoPantalla, setEliminandoPantalla] = useState(false);
 
     useEffect(() => {
         if (!sede?.id) return;
@@ -89,16 +94,13 @@ export default function AdministrarPantallasModal({
         }
     }
 
-    async function eliminarPantalla(pantalla: any) {
-        const confirmar = window.confirm(
-            `¿Eliminar la pantalla “${pantalla.nombre}”? El equipo tendrá que registrarse de nuevo con un código nuevo.`
-        );
-
-        if (!confirmar) return;
+    async function eliminarPantalla() {
+        if (!pantallaParaEliminar) return;
 
         try {
+            setEliminandoPantalla(true);
             const response = await fetch(
-                `/api/master/pantallas/${pantalla.id}`,
+                `/api/master/pantallas/${pantallaParaEliminar.id}`,
                 { method: "DELETE" }
             );
             const result = await response.json();
@@ -108,10 +110,13 @@ export default function AdministrarPantallasModal({
                 return;
             }
 
+            setPantallaParaEliminar(null);
             onActualizar();
         } catch (error) {
             console.error("Error eliminando pantalla:", error);
             alert("No fue posible eliminar la pantalla.");
+        } finally {
+            setEliminandoPantalla(false);
         }
     }
 
@@ -196,7 +201,7 @@ export default function AdministrarPantallasModal({
                                         setPantallaPresentacion(pantalla);
                                     }}
                                     onReiniciar={reiniciarPantalla}
-                                    onEliminar={eliminarPantalla}
+                                    onEliminar={setPantallaParaEliminar}
                                 />
                             ))
                         ) : (
@@ -241,6 +246,15 @@ export default function AdministrarPantallasModal({
                     setShowRegistrar(false);
                     onActualizar();
                 }}
+            />
+
+            <ConfirmarEliminacionDispositivoModal
+                open={Boolean(pantallaParaEliminar)}
+                tipo="pantalla"
+                nombre={pantallaParaEliminar?.nombre ?? ""}
+                loading={eliminandoPantalla}
+                onCancel={() => setPantallaParaEliminar(null)}
+                onConfirm={() => void eliminarPantalla()}
             />
         </div>
     );

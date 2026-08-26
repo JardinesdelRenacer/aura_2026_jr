@@ -13,6 +13,7 @@ import {
     WifiOff,
     X,
 } from "lucide-react";
+import ConfirmarEliminacionDispositivoModal from "./ConfirmarEliminacionDispositivoModal";
 
 interface Sede {
     id: string;
@@ -63,6 +64,9 @@ export default function GestionarAuraTouchModal({
     const [error, setError] = useState("");
     const [registroExitoso, setRegistroExitoso] =
         useState(false);
+    const [tabletaParaEliminar, setTabletaParaEliminar] =
+        useState<AuraTouchRegistrada | null>(null);
+    const [eliminandoTableta, setEliminandoTableta] = useState(false);
 
     /*
      * Conserva la cantidad anterior para detectar
@@ -303,18 +307,15 @@ export default function GestionarAuraTouchModal({
         );
     }
 
-    async function eliminarTableta(tableta: AuraTouchRegistrada) {
-        const confirmar = window.confirm(
-            `¿Eliminar la tableta “${tableta.nombre}”? El dispositivo tendrá que registrarse de nuevo con un código nuevo.`
-        );
-
-        if (!confirmar) return;
+    async function eliminarTableta() {
+        if (!tabletaParaEliminar) return;
 
         try {
+            setEliminandoTableta(true);
             setError("");
 
             const response = await fetch(
-                `/api/master/aura-touch/${tableta.id}`,
+                `/api/master/aura-touch/${tabletaParaEliminar.id}`,
                 { method: "DELETE" }
             );
             const result = await response.json();
@@ -326,8 +327,9 @@ export default function GestionarAuraTouchModal({
             }
 
             setTabletas((actuales) =>
-                actuales.filter((actual) => actual.id !== tableta.id)
+                actuales.filter((actual) => actual.id !== tabletaParaEliminar.id)
             );
+            setTabletaParaEliminar(null);
         } catch (error) {
             console.error("Error eliminando tableta:", error);
             setError(
@@ -335,6 +337,8 @@ export default function GestionarAuraTouchModal({
                     ? error.message
                     : "No fue posible eliminar la tableta."
             );
+        } finally {
+            setEliminandoTableta(false);
         }
     }
 
@@ -568,7 +572,7 @@ export default function GestionarAuraTouchModal({
 
                                             <button
                                                 type="button"
-                                                onClick={() => eliminarTableta(tableta)}
+                                                onClick={() => setTabletaParaEliminar(tableta)}
                                                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-red-600 transition hover:bg-red-100"
                                                 aria-label={`Eliminar ${tableta.nombre}`}
                                                 title="Eliminar tableta"
@@ -685,6 +689,15 @@ export default function GestionarAuraTouchModal({
                     </button>
                 </div>
             </div>
+
+            <ConfirmarEliminacionDispositivoModal
+                open={Boolean(tabletaParaEliminar)}
+                tipo="tableta"
+                nombre={tabletaParaEliminar?.nombre ?? ""}
+                loading={eliminandoTableta}
+                onCancel={() => setTabletaParaEliminar(null)}
+                onConfirm={() => void eliminarTableta()}
+            />
         </div>
     );
 }

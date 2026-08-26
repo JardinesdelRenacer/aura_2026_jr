@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 // Importación de las Animaciones
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
@@ -29,6 +29,8 @@ export default function KioskCondolencias() {
 
     const [selectedObituary, setSelectedObituary] = useState<Obituary | null>(null);
 
+    const [sinServicios, setSinServicios] = useState(false);
+
     const reduceMotion = useReducedMotion();
 
     const direction = screenOrder[screen] >= screenOrder[previousScreen] ? 1 : -1;
@@ -53,6 +55,23 @@ export default function KioskCondolencias() {
         setPreviousScreen(screen);
         setScreen(nextScreen);
     };
+
+    const informarSinServicios = useCallback(() => {
+        setSinServicios(true);
+    }, []);
+
+    useEffect(() => {
+        if (!sinServicios) return;
+
+        const timer = window.setTimeout(() => {
+            setSelectedObituary(null);
+            setPreviousScreen("select");
+            setScreen("welcome");
+            setSinServicios(false);
+        }, 3500);
+
+        return () => window.clearTimeout(timer);
+    }, [sinServicios]);
     
     useEffect(() => {
         if (screen !== "thanks") return;
@@ -193,6 +212,7 @@ export default function KioskCondolencias() {
                                         "form"
                                     );
                                 }}
+                                onNoServices={informarSinServicios}
                             />
                         )}
 
