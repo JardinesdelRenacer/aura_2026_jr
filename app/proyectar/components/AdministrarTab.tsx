@@ -57,6 +57,7 @@ export default function AdministrarTab({
             handleObituaryChange(room, "endTime", "");
             handleObituaryChange(room, "endDate", "");
             handleObituaryChange(room, "massTime", "");
+            handleObituaryChange(room, "massDate", "");
             handleObituaryChange(room, "massChurch", "");
             handleObituaryChange(room, "massChurchType", "Parroquia");
             handleObituaryChange(room, "massAddress", "");
@@ -261,6 +262,10 @@ export default function AdministrarTab({
                                     <div className="rounded-2xl border border-amber-100 bg-linear-to-br from-amber-50/80 to-white p-4">
                                         <div className="mb-4 flex items-center gap-2"><span className="grid h-7 w-7 place-items-center rounded-lg bg-amber-100 text-sm">⛪</span><div><h4 className="text-sm font-black text-slate-700">Eucaristía</h4><p className="text-[11px] text-slate-400">Información opcional de ceremonia</p></div></div>
                                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                            <div>
+                                                <label className={fieldLabelClass}>Fecha</label>
+                                                <input type="date" value={obituaries[room].massDate || ""} onChange={(e) => handleObituaryChange(room, "massDate", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className={dateTimeInputClass} />
+                                            </div>
                                             <div>
                                                 <label className={fieldLabelClass}>Hora</label>
                                                 <input type="time" value={obituaries[room].massTime || ""} onChange={(e) => handleObituaryChange(room, "massTime", e.target.value)} onKeyDown={(e) => { if (!["Tab", "Backspace", "Delete"].includes(e.key)) e.preventDefault(); }} className={dateTimeInputClass} />

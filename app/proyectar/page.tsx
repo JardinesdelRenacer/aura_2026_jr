@@ -16,13 +16,13 @@ import { isObituaryExpired } from "@/src/utils/obituaryAvailability";
 
 
 // Tipos para los obituarios (se usarán en la Fase 2)
-export type Obituary = { name: string, surname: string, dob: string, dod: string, timeStart: string, timeEnd: string, cemetery: string, endTime?: string, endDate?: string, massTime?: string, massChurch?: string, massChurchType?: string, massAddress?: string };
+export type Obituary = { name: string, surname: string, dob: string, dod: string, timeStart: string, timeEnd: string, cemetery: string, endTime?: string, endDate?: string, massDate?: string, massTime?: string, massChurch?: string, massChurchType?: string, massAddress?: string };
 export type RoomKeys = string;
 export type MediaItem = { id: string; url: string; type: string; room: RoomKeys | null; file?: File };
 
 export const emptyObituary = (): Obituary => ({
     name: "", surname: "", dob: "", dod: "", timeStart: "", timeEnd: "", cemetery: "",
-    endTime: "", endDate: "", massTime: "", massChurch: "", massChurchType: "Parroquia", massAddress: "",
+    endTime: "", endDate: "", massDate: "", massTime: "", massChurch: "", massChurchType: "Parroquia", massAddress: "",
 });
 
 export default function Proyectar() {
@@ -302,6 +302,7 @@ export default function Proyectar() {
                         cemetery: ob.cemetery ?? "",
                         endTime: ob.endTime ?? "",
                         endDate: ob.endDate ?? "",
+                        massDate: ob.massDate ?? "",
                         massTime: ob.massTime ?? "",
                         massChurch: ob.massChurch ?? "",
                         massChurchType: ob.massChurchType ?? "Parroquia",

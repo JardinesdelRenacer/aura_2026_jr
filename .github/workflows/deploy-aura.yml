@@ -56,6 +56,11 @@ jobs:
             '
 
             install -d -o deploy -g deploy /var/www/aura/public/uploads
+            # Las subcarpetas pueden venir de una carga o restauración manual.
+            # Aura corre como deploy, así que debe poder escribir en todas ellas.
+            chown -R deploy:deploy /var/www/aura/public/uploads
+            find /var/www/aura/public/uploads -type d -exec chmod 755 {} +
+            find /var/www/aura/public/uploads -type f -exec chmod 644 {} +
             systemctl restart aura
             systemctl is-active --quiet aura
 

@@ -99,8 +99,18 @@ export async function POST(request: Request) {
         }
 
         console.error("No se pudo guardar la multimedia local.", error);
+        const errorCode =
+            typeof error === "object" && error && "code" in error
+                ? String(error.code)
+                : "";
+        const message = errorCode === "EACCES"
+            ? "El servidor no tiene permiso para guardar en esta carpeta. Intenta de nuevo en unos minutos."
+            : errorCode === "ENOSPC"
+              ? "No hay espacio disponible en el servidor para guardar el archivo."
+              : "No se pudo guardar la multimedia.";
+
         return NextResponse.json(
-            { success: false, error: "No se pudo guardar la multimedia." },
+            { success: false, error: message },
             { status: 500 }
         );
     }

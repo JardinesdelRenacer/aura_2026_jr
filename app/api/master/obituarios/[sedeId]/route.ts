@@ -159,6 +159,10 @@ export async function PUT(
                             ob?.endTime ||
                             null,
 
+                        massDate:
+                            ob?.massDate ||
+                            null,
+
                         massTime:
                             ob?.massTime ||
                             null,
@@ -218,6 +222,10 @@ export async function PUT(
 
                     endTime:
                         ob?.endTime ||
+                        null,
+
+                    massDate:
+                        ob?.massDate ||
                         null,
 
                     massTime:

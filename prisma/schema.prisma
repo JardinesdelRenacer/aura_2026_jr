@@ -145,6 +145,7 @@ model Obituario {
   endTime String?
   endDate String?
 
+  massDate       String?
   massTime       String?
   massChurch     String?
   massChurchType String? @default("Parroquia")

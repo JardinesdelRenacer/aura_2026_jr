@@ -27,6 +27,7 @@ export async function GET() {
                 cemetery: true,
                 endDate: true,
                 endTime: true,
+                massDate: true,
                 massTime: true,
                 massChurch: true,
                 massChurchType: true,

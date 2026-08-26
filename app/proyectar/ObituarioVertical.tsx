@@ -35,13 +35,16 @@ export default function ObituarioVertical({ obituary, formatDate, formatTime }: 
                         </div>
                     )}
 
-                    {(obituary.massTime || obituary.massChurch) && (
+                    {(obituary.massDate || obituary.massTime || obituary.massChurch) && (
                         <div className="mb-2 flex w-[95%] flex-col items-center justify-center overflow-hidden rounded-xl border border-black/10 bg-white/55 px-4 py-2 shadow-lg backdrop-blur-sm">
                             <span className="text-xs font-bold uppercase tracking-widest text-black/80">Eucaristía</span>
                             <span className="w-full truncate px-2 text-base font-bold sm:text-xl">
                                 {obituary.massChurch ? `${obituary.massChurchType || "Parroquia"}: ${obituary.massChurch}` : (obituary.massChurchType || "Parroquia")}
                                 {obituary.massTime && ` - ${formatTime(obituary.massTime)}`}
                             </span>
+                            {obituary.massDate && (
+                                <span className="w-full truncate px-2 text-xs font-semibold text-black/80 sm:text-sm">Fecha: {formatDate(obituary.massDate)}</span>
+                            )}
                             {obituary.massAddress && (
                                 <span className="w-full truncate px-2 text-sm font-medium text-black/80 sm:text-base">{obituary.massAddress}</span>
                             )}

@@ -24,6 +24,7 @@ type Obituary = {
     cemetery: string;
     endTime?: string;
     endDate?: string;
+    massDate?: string;
     massTime?: string;
     massChurch?: string;
     massChurchType?: string;
@@ -34,7 +35,7 @@ type ObituariesData = Record<RoomKeys, Obituary>;
 
 const emptyObituary = (): Obituary => ({
     name: "", surname: "", dob: "", dod: "", timeStart: "", timeEnd: "", cemetery: "",
-    endTime: "", endDate: "", massTime: "", massChurch: "", massChurchType: "Parroquia", massAddress: "",
+    endTime: "", endDate: "", massDate: "", massTime: "", massChurch: "", massChurchType: "Parroquia", massAddress: "",
 });
 
 interface PantallaViewProps {
@@ -490,12 +491,13 @@ export default function PantallaView({
                                                         </div>
                                                     )}
 
-                                                    {(ob.massTime || ob.massChurch) && (
+                                                    {(ob.massDate || ob.massTime || ob.massChurch) && (
                                                         <div className="flex flex-col items-center justify-center gap-1 bg-white/40 px-3 lg:px-4 py-1.5 lg:py-2 rounded-xl border border-black/10 shadow-md backdrop-blur-sm mb-2 sm:mb-4 w-[95%] overflow-hidden">
                                                             <span className="text-[0.45rem] sm:text-[0.55rem] lg:text-[0.65rem] font-bold uppercase tracking-widest text-black/80">Eucaristía</span>
                                                             <span className="text-[0.65rem] sm:text-xs lg:text-sm font-bold text-black truncate w-full px-1">
                                                                 {ob.massChurch ? `${ob.massChurchType || "Parroquia"}: ${ob.massChurch}` : (ob.massChurchType || "Parroquia")} {ob.massTime && `- ${formatTime(ob.massTime)}`}
                                                             </span>
+                                                            {ob.massDate && <span className="text-[0.5rem] sm:text-[0.6rem] lg:text-xs font-semibold text-black/80 truncate w-full px-1">Fecha: {formatDate(ob.massDate)}</span>}
                                                             {ob.massAddress && <span className="text-[0.55rem] sm:text-[0.65rem] lg:text-xs font-medium text-black/80 truncate w-full px-1">{ob.massAddress}</span>}
                                                         </div>
                                                     )}
@@ -568,12 +570,13 @@ export default function PantallaView({
                                             </div>
                                         )}
 
-                                        {(ob.massTime || ob.massChurch) && (
+                                        {(ob.massDate || ob.massTime || ob.massChurch) && (
                                             <div className="flex flex-col items-center justify-center gap-1 bg-white/40 px-4 sm:px-6 md:px-8 py-2 md:py-3 rounded-2xl border border-black/10 shadow-xl backdrop-blur-sm mb-4 sm:mb-6 md:mb-8 w-[95%] overflow-hidden">
                                                 <span className="text-[0.65rem] sm:text-xs md:text-sm lg:text-base font-bold uppercase tracking-widest text-black/80">Eucaristía</span>
                                                 <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-black truncate w-full px-2">
                                                     {ob.massChurch ? `${ob.massChurchType || "Parroquia"}: ${ob.massChurch}` : (ob.massChurchType || "Parroquia")} {ob.massTime && `- ${formatTime(ob.massTime)}`}
                                                 </span>
+                                                {ob.massDate && <span className="text-[0.6rem] sm:text-xs md:text-sm lg:text-base font-semibold text-black/80 truncate w-full px-2">Fecha: {formatDate(ob.massDate)}</span>}
                                                 {ob.massAddress && <span className="text-xs sm:text-sm md:text-base lg:text-lg font-medium text-black/80 truncate w-full px-2">{ob.massAddress}</span>}
                                             </div>
                                         )}

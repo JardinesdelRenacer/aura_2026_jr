@@ -191,6 +191,10 @@ export async function POST(req: Request) {
                             ob?.endDate ||
                             null,
 
+                        massDate:
+                            ob?.massDate ||
+                            null,
+
                         massTime:
                             ob?.massTime ||
                             null,
@@ -289,6 +293,10 @@ export async function POST(req: Request) {
                             ob?.endDate ||
                             null,
 
+                        massDate:
+                            ob?.massDate ||
+                            null,
+
                         massTime:
                             ob?.massTime ||
                             null,
@@ -349,6 +357,10 @@ export async function POST(req: Request) {
 
                     endDate:
                         ob?.endDate ||
+                        null,
+
+                    massDate:
+                        ob?.massDate ||
                         null,
 
                     massTime:

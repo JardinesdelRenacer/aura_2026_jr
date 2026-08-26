@@ -23,6 +23,7 @@ export default function UploadMedia({
     
     const [isUploading, setIsUploading] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [uploadError, setUploadError] = useState("");
     
     const handleChange =  async(
         e: React.ChangeEvent<HTMLInputElement>
@@ -36,6 +37,7 @@ export default function UploadMedia({
 
         setIsUploading(true);
         setShowSuccess(false);
+        setUploadError("");
 
         // Creamos objetos File con la información del room para el estado local
         const archivosConRoom = nuevosArchivos.map((file) => {
@@ -49,6 +51,9 @@ export default function UploadMedia({
         });
 
         try {
+            const archivosSubidos: typeof archivosConRoom = [];
+            const errors: string[] = [];
+
             for (const file of nuevosArchivos) {
                 const formData = new FormData();
                 formData.append("file", file);
@@ -60,30 +65,37 @@ export default function UploadMedia({
                     body: formData,
                 });
 
-                const result = await response.json();
+                const result = await response.json().catch(() => null);
 
                 if (!response.ok || !result.success) {
                     console.error(
-                    "Error guardando la multimedia local.",
+                        "Error guardando la multimedia local.",
                         result
                     );
+                    errors.push(result?.error || `No se pudo cargar ${file.name}.`);
                     continue;
                 }
 
+                const fileWithRoom = file as File & { room?: string };
+                fileWithRoom.room = room;
+                archivosSubidos.push(fileWithRoom);
+
             }
 
-            setFiles((prev) => [
-                ...prev,
-                ...archivosConRoom,
-            ]);
+            if (archivosSubidos.length) {
+                setFiles((prev) => [
+                    ...prev,
+                    ...archivosSubidos,
+                ]);
 
-            await onUploadComplete?.();
+                await onUploadComplete?.();
+                setShowSuccess(true);
+                setTimeout(() => setShowSuccess(false), 3000);
+            }
 
-            setShowSuccess(true);
-
-            setTimeout(() => {
-                setShowSuccess(false);
-            }, 3000);
+            if (errors.length) {
+                setUploadError(errors[0]);
+            }
         } catch (error) {
             console.error(
                 "Error inesperado durante la carga: ",
@@ -99,7 +111,7 @@ export default function UploadMedia({
     };
 
     return (
-      <div className="w-full flex justify-center md:justify-start">
+      <div className="w-full flex flex-col items-center md:items-start">
         <label htmlFor={inputId} className={`cursor-pointer inline-flex items-center justify-center px-8 py-4 font-bold text-white transition-all duration-300 rounded-xl backdrop-blur-md w-full sm:w-auto text-center overflow-hidden relative group ${
             isUploading
                 ? "bg-slate-400 border-slate-500 cursor-not-allowed"
@@ -170,6 +182,12 @@ export default function UploadMedia({
             onChange={handleChange}
             disabled={isUploading}
         />
+
+        {uploadError && (
+            <p role="alert" className="mt-2 w-full text-center text-xs font-semibold text-red-600 md:text-left">
+                {uploadError}
+            </p>
+        )}
     </div>
 
     // return(
