@@ -5,6 +5,7 @@ import {
     Check,
     DoorOpen,
     Monitor,
+    RotateCw,
     X,
 } from "lucide-react";
 import { roomLabel, type RoomKey } from "@/src/lib/rooms";
@@ -17,10 +18,12 @@ interface Props {
         id: string;
         nombre?: string;
         verticalRoom?: RoomKey | null;
+        screenRotation?: string | null;
     };
 
     rooms: RoomKey[];
     permiteModoVertical: boolean;
+    permiteRotacionFisica: boolean;
     onActualizada: () => void;
 }
 
@@ -34,6 +37,7 @@ export default function CambiarPresentacionModal({
     pantalla,
     rooms,
     permiteModoVertical,
+    permiteRotacionFisica,
     onActualizada,
 }: Props) {
     const [seleccionada, setSeleccionada] =
@@ -44,6 +48,9 @@ export default function CambiarPresentacionModal({
     const [guardando, setGuardando] =
         useState(false);
 
+    const [screenRotation, setScreenRotation] =
+        useState("0");
+
     const [error, setError] = useState("");
 
     useEffect(() => {
@@ -52,12 +59,18 @@ export default function CambiarPresentacionModal({
         setSeleccionada(
             pantalla.verticalRoom ?? null
         );
+        setScreenRotation(
+            ["90", "270"].includes(pantalla.screenRotation ?? "")
+                ? pantalla.screenRotation!
+                : "0"
+        );
 
         setError("");
     }, [
         open,
         pantalla.id,
         pantalla.verticalRoom,
+        pantalla.screenRotation,
     ]);
 
     async function guardar() {
@@ -77,6 +90,9 @@ export default function CambiarPresentacionModal({
                         verticalRoom: permiteModoVertical
                             ? seleccionada
                             : null,
+                        ...(permiteRotacionFisica
+                            ? { screenRotation }
+                            : {}),
                     }),
                 }
             );
@@ -133,7 +149,7 @@ export default function CambiarPresentacionModal({
 
                         <div>
                             <h2 className="text-2xl font-black text-slate-900">
-                                ¿Qué sala quiere visualizar?
+                                Configurar proyección
                             </h2>
 
                             <p className="mt-1 text-sm text-slate-500">
@@ -253,6 +269,55 @@ export default function CambiarPresentacionModal({
                                 );
                             })}
                         </div>
+                    )}
+
+                    {permiteRotacionFisica && (
+                        <section className="mt-6 rounded-2xl border border-violet-200 bg-violet-50/70 p-5">
+                            <div className="flex items-start gap-3">
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-600 text-white">
+                                    <RotateCw size={19} />
+                                </div>
+
+                                <div>
+                                    <h3 className="font-bold text-slate-900">
+                                        Montaje vertical de la TV
+                                    </h3>
+                                    <p className="mt-1 text-sm text-slate-600">
+                                        Solo afecta esta pantalla física de Zaragoza. La vista previa no se modifica.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                                {[
+                                    { value: "0", title: "Sin giro", description: "Usar la orientación actual." },
+                                    { value: "90", title: "Giro a la derecha", description: "Para TV montada 90°." },
+                                    { value: "270", title: "Giro a la izquierda", description: "Para el montaje contrario." },
+                                ].map((option) => {
+                                    const active = screenRotation === option.value;
+
+                                    return (
+                                        <button
+                                            key={option.value}
+                                            type="button"
+                                            onClick={() => setScreenRotation(option.value)}
+                                            className={`rounded-xl border-2 p-3 text-left transition-all ${
+                                                active
+                                                    ? "border-violet-600 bg-white shadow-sm"
+                                                    : "border-transparent bg-white/70 hover:border-violet-200"
+                                            }`}
+                                        >
+                                            <span className="block text-sm font-bold text-slate-900">
+                                                {option.title}
+                                            </span>
+                                            <span className="mt-1 block text-xs leading-4 text-slate-500">
+                                                {option.description}
+                                            </span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </section>
                     )}
 
                     {error && (

@@ -289,6 +289,10 @@ model PantallaCliente {
 
   verticalRoom String?
 
+  // Giro físico del lienzo cuando la TV está instalada en vertical pero el
+  // navegador informa un viewport horizontal. 0 = sin giro.
+  screenRotation String @default("0")
+
   online Boolean @default(false)
 
   estado EstadoPantalla @default(OFFLINE)

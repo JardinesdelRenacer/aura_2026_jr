@@ -9,7 +9,10 @@ import PantallaDetalleModal from "./PantallaDetalleModal";
 import CambiarPresentacionModal from "./CambiarPresentacionModal";
 import ConfirmarEliminacionDispositivoModal from "./ConfirmarEliminacionDispositivoModal";
 
-import { isVerticalProjectionSede } from "@/app/proyectar/projection-config";
+import {
+    isPortraitMountedSede,
+    isVerticalProjectionSede,
+} from "@/app/proyectar/projection-config";
 import { getRooms, type RoomKey } from "@/src/lib/rooms";
 
 interface Props {
@@ -207,6 +210,9 @@ export default function AdministrarPantallasModal({
                     rooms={roomsDisponibles}
                     permiteModoVertical={isVerticalProjectionSede(
                         sede?.nombre
+                    )}
+                    permiteRotacionFisica={isPortraitMountedSede(
+                        sede?.ciudad
                     )}
                     onClose={() => {
                         setPantallaPresentacion(null);

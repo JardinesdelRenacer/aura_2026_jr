@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { useSearchParams } from "next/navigation";
 import Slideshow from "@/components/Slideshow";
 import ObituarioVertical from "@/app/proyectar/ObituarioVertical";
@@ -57,6 +57,7 @@ export default function PantallaView({
     const [projectionMode, setProjectionMode] = useState("classic");
 
     const [verticalRoom, setVerticalRoom] = useState<RoomKeys | "">("");
+    const [screenRotation, setScreenRotation] = useState("0");
     const [obituaries, setObituaries] =
         useState<ObituariesData | null>(null);
 
@@ -194,6 +195,11 @@ export default function PantallaView({
 
                 setVerticalRoom(
                     result.data.verticalRoom ?? ""
+                );
+                setScreenRotation(
+                    ["90", "270"].includes(result.data.screenRotation)
+                        ? result.data.screenRotation
+                        : "0"
                 );
                 setScreenRegistered(true);
             } catch (error) {
@@ -384,6 +390,25 @@ export default function PantallaView({
         setShowObituaries(true);
     }, []);
 
+    // Algunos equipos ONN están instalados físicamente en vertical, pero el
+    // navegador conserva un viewport horizontal. El giro se aplica solo a la
+    // pantalla registrada, nunca a la previsualización del panel Master.
+    const shouldRotatePhysicalScreen =
+        !preview && (screenRotation === "90" || screenRotation === "270");
+    const screenCanvasClass = shouldRotatePhysicalScreen
+        ? "fixed left-0 top-0 overflow-hidden"
+        : "h-screen w-screen";
+    const screenCanvasStyle: CSSProperties | undefined =
+        shouldRotatePhysicalScreen
+            ? {
+                width: "100vh",
+                height: "100vw",
+                transformOrigin: "top left",
+                transform: screenRotation === "90"
+                    ? "rotate(90deg) translateY(-100%)"
+                    : "rotate(-90deg) translateX(-100%)",
+            }
+            : undefined;
 
     if (!obituaries) return <div className="w-screen h-screen bg-blue-50 flex items-center justify-center text-blue-800 font-bold text-2xl">Cargando presentación...</div>;
 
@@ -405,7 +430,7 @@ export default function PantallaView({
         );
 
         return (
-            <div className="w-screen h-screen flex items-center justify-center overflow-hidden bg-black">
+            <div className={`${screenCanvasClass} flex items-center justify-center overflow-hidden bg-black`} style={screenCanvasStyle}>
                 <div className="h-full max-w-full aspect-[9/16] bg-black overflow-hidden relative">
                     {roomKey ? (
                         <div className="flex h-full w-full flex-col gap-3 bg-slate-950 p-3">
@@ -451,7 +476,7 @@ export default function PantallaView({
     // RENDERIZADO EN MODO PANTALLA DIVIDIDA (L + PUBLICIDAD)
     if (projectionMode === "split") {
         return (
-            <div className="w-screen h-screen bg-blue-50 overflow-hidden relative font-sans">
+            <div className={`${screenCanvasClass} bg-blue-50 overflow-hidden relative font-sans`} style={screenCanvasStyle}>
                 <div className="w-full h-full p-4 sm:p-6 lg:p-8 bg-linear-to-br from-white/60 via-blue-50/50 to-white/40 backdrop-blur-2xl border border-white/80 shadow-[inset_0_0_20px_rgba(255,255,255,0.9),0_8px_32px_rgba(0,0,0,0.1)]">
                     <div className="grid h-full w-full gap-4 sm:gap-6 lg:gap-8" style={{ gridTemplateColumns: `repeat(${splitColumns}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${splitRows}, minmax(0, 1fr))` }}>
                         <div className="min-h-0 min-w-0 h-full w-full rounded-4xl overflow-hidden relative shadow-2xl border border-white/80 bg-white/40">
@@ -536,7 +561,7 @@ export default function PantallaView({
     }
 
     return (
-        <div className="w-screen h-screen bg-blue-50 overflow-hidden relative font-sans">
+        <div className={`${screenCanvasClass} bg-blue-50 overflow-hidden relative font-sans`} style={screenCanvasStyle}>
             {isShowingObituaries ? (
                 <div className="grid h-full w-full gap-3 border border-white/80 bg-linear-to-br from-white/60 via-blue-50/50 to-white/40 p-3 shadow-[inset_0_0_20px_rgba(255,255,255,0.9),0_8px_32px_rgba(0,0,0,0.1)] backdrop-blur-2xl sm:gap-4 sm:p-4 md:gap-5 md:p-5 lg:gap-6 lg:p-6" style={{ gridTemplateColumns: `repeat(${obituaryColumns}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${obituaryRows}, minmax(0, 1fr))` }}>
                     {roomsToShow

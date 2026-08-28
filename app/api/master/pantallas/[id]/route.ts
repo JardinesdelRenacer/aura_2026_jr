@@ -11,7 +11,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
         const existente = await prisma.pantallaCliente.findUnique({
             where: { id },
-            select: { sede: { select: { numeroSalas: true, salaVip: true } } },
+            select: {
+                screenRotation: true,
+                sede: { select: { numeroSalas: true, salaVip: true } },
+            },
         });
 
         if (!existente) {
@@ -25,11 +28,24 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
             );
         }
 
+        const requestedRotation =
+            typeof body.screenRotation === "string"
+                ? body.screenRotation
+                : existente.screenRotation;
+
+        if (!["0", "90", "270"].includes(requestedRotation)) {
+            return NextResponse.json(
+                { success: false, error: "La orientación de pantalla no es válida." },
+                { status: 400 },
+            );
+        }
+
         const pantalla = await prisma.pantallaCliente.update({
             where: { id },
 
             data: {
-                verticalRoom: body.verticalRoom ?? null
+                verticalRoom: body.verticalRoom ?? null,
+                screenRotation: requestedRotation,
             },
 
             include: {

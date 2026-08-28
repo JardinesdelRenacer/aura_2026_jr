@@ -38,6 +38,7 @@ export async function GET(request: NextRequest) {
                     id: true,
                     nombre: true,
                     verticalRoom: true,
+                    screenRotation: true,
                     presentacionId: true,
                     sedeId: true,
                     estado: true,

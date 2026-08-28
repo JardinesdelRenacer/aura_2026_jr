@@ -26,3 +26,10 @@ const VERTICAL_PROJECTION_SEDES = new Set(
 export function isVerticalProjectionSede(name?: string | null) {
     return Boolean(name && VERTICAL_PROJECTION_SEDES.has(normalizeSedeName(name)));
 }
+
+// Zaragoza utiliza TV instaladas físicamente en vertical, aunque el navegador
+// del equipo mantiene un viewport horizontal. Esta regla se mantiene separada
+// del modo de contenido vertical para no afectar otras sedes ni previsualizaciones.
+export function isPortraitMountedSede(city?: string | null) {
+    return normalizeSedeName(city ?? "") === "zaragoza";
+}
